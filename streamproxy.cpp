@@ -66,11 +66,15 @@ int main(int argc, char **argv)
 		MpegTSPat::pat_t::const_iterator it;
 
 		for(it = pat.pat.begin(); it != pat.pat.end(); it++)
-		{
-			vlog("program %d, pid: %x", it->first, it->second);
-
 			if(pmt.probe(it->second))
 				break;
+
+		if(it != pat.pat.end())
+		{
+			vlog("* program %d, pmt pid: %x", it->first, it->second);
+			vlog("* pcr pid:   %x", pmt.pcr_pid);
+			vlog("* video pid: %x", pmt.video_pid);
+			vlog("* audio pid: %x", pmt.audio_pid);
 		}
 
 		exit(0);
