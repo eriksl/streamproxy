@@ -1,10 +1,13 @@
 #include "mpegts_pmt.h"
 #include "vlog.h"
 
+#include "stddef.h"
+
+#include <boost/algorithm/string.hpp>
+
 #include <string>
 using std::string;
 
-#include "stddef.h"
 
 MpegTSPmt::MpegTSPmt(int fd_in) throw() :
 	MpegTSSectionReader(fd_in)
@@ -13,17 +16,19 @@ MpegTSPmt::MpegTSPmt(int fd_in) throw() :
 
 bool MpegTSPmt::probe(int filter_pid) throw(string)
 {
-	int		attempt, pcr_pid, programinfo_length, esinfo_length;
+	int		attempt, programinfo_length, esinfo_length;
 	int		es_pid, es_data_length, es_data_skip, es_data_offset;
 	int		ds_data_skip, ds_data_offset;
+	bool	private_stream_is_ac3;
 	string	stream_language;
 
-	stream_type_t			stream_type;
 	const	uint8_t			*es_data;
 	const	pmt_header_t	*pmt_header;
 	const	pmt_es_entry_t	*es_entry;
 	const	pmt_ds_entry_t	*ds_entry;
 	const	pmt_ds_a_t		*ds_a;
+
+	pcr_pid = video_pid = audio_pid = -1;
 	
 	for(attempt = 0; attempt < 16; attempt++)
 	{
@@ -96,38 +101,20 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 			switch(es_entry->stream_type)
 			{
 				case(mpeg_streamtype_video_mpeg1):
-				{
-					stream_type = video_mpeg1;
-					break;
-				}
-
 				case(mpeg_streamtype_video_mpeg2):
-				{
-					stream_type = video_mpeg2;
-					break;
-				}
-
 				case(mpeg_streamtype_video_h264):
 				{
-					stream_type = video_h264;
+					if(video_pid < 0)
+						video_pid = es_pid;
 					break;
 				}
 
 				case(mpeg_streamtype_audio_mpeg1):
-				{
-					stream_type = audio_mpeg1;
-					/* fallthrough */
-				}
-
 				case(mpeg_streamtype_audio_mpeg2):
+				case(mpeg_streamtype_private_pes):	// ac3
 				{
-					if(stream_type == none)
-						stream_type = audio_mpeg2;
-					/* fallthrough */
-				}
+					private_stream_is_ac3 = false;
 
-				case(mpeg_streamtype_private_pes):
-				{
 					ds_data_skip = es_data_offset + offsetof(pmt_es_entry_t, descriptors); 
 
 					for(ds_data_offset = 0; (ds_data_offset + 2) < esinfo_length; )
@@ -143,65 +130,37 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 							case(desc_language):
 						{
 								ds_a = (const pmt_ds_a_t *)&ds_entry->data;
-								//vlog(">>>> lang: %c%c%c [%d]",
-										//ds_a->lang[0], ds_a->lang[1], ds_a->lang[2], ds_a->code);
+								//vlog(">>>> lang: %c%c%c [%d]", ds_a->lang[0],
+										// ds_a->lang[1], ds_a->lang[2], ds_a->code);
 
-								stream_language.append((const char *)&ds_a->lang, offsetof(pmt_ds_a_t, code));
+								stream_language.assign((const char *)&ds_a->lang, offsetof(pmt_ds_a_t, code));
 
 								break;
 							}
 
 							case(desc_ac3):
 							{
-								stream_type = audio_ac3;
+								private_stream_is_ac3 = true;
 								break;
 							}
 						}
 
 						ds_data_offset += ds_entry->length + offsetof(pmt_ds_entry_t, data);
 					}
+
+					if(!boost::iequals(stream_language, "nar"))
+					{
+						if(private_stream_is_ac3 || (audio_pid < 0)) // ac3 stream has preference
+							audio_pid = es_pid;
+					}
 				}
 			}
 
-			if(stream_type != none)
-				vlog("-> pid %x, %s, \"%s\"", es_pid,
-						stream_description(stream_type).c_str(),
-						stream_language.c_str());
-
-			es_data_offset += es_data_skip + esinfo_length;
+next:		es_data_offset += es_data_skip + esinfo_length;
 		}
 
 		return(true);
 	}
 
 	return(false);
-}
-
-string MpegTSPmt::stream_description(stream_type_t ix) const throw()
-{
-	static const char *description[] = 
-	{
-		"none",
-		"mpeg1 video",
-		"mpeg2 video",
-		"h264 video",
-		"mpeg1 audio",
-		"mpeg2 audio",
-		"ac3 audio",
-	};
-
-	if((ix < none) || (ix >= last))
-		return("<out of range>");
-
-	return(description[ix]);
-}
-
-bool MpegTSPmt::is_video(stream_type_t ix) const throw()
-{
-	return((ix == video_mpeg1) || (ix == video_mpeg2) || (ix == video_h264));
-}
-
-bool MpegTSPmt::is_audio(stream_type_t ix) const throw()
-{
-	return((ix == audio_mpeg1) || (ix == audio_mpeg2) || (ix == audio_ac3));
 }

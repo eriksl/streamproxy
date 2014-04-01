@@ -80,28 +80,13 @@ class MpegTSPmt : public MpegTSSectionReader
 
 	public:
 
-		typedef enum
-		{
-			none = 0,
-			video_mpeg1,
-			video_mpeg2,
-			video_h264,
-			audio_mpeg1,
-			audio_mpeg2,
-			audio_ac3,
-			last,
-		} stream_type_t;
-
-		typedef std::map<int, int> pmt_t;
-
-		pmt_t pmt;
-
 		MpegTSPmt(int fd) throw();
 
-		bool probe(int filter_pid)								throw(std::string);
-		std::string stream_description(stream_type_t)	const	throw();
-		bool is_video(stream_type_t)					const	throw();
-		bool is_audio(stream_type_t)					const	throw();
+		int	pcr_pid;
+		int	video_pid;
+		int	audio_pid;
+
+		bool probe(int filter_pid) throw(std::string);
 };
 
 #endif
