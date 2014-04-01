@@ -33,7 +33,7 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 	for(attempt = 0; attempt < 16; attempt++)
 	{
 		if(!MpegTSSectionReader::probe(filter_pid, table_pmt))
-			continue;
+			break;
 
 		pmt_header = (const pmt_header_t *)table_data.data();
 		pcr_pid = (pmt_header->pcrpid_high << 8) | pmt_header->pcrpid_low;

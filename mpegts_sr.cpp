@@ -209,7 +209,7 @@ retry:
 		table_data.clear();
 	}
 
-	if(timeout >= 2000)
+	if(table_data.length() == 0)
 	{
 		//vlog("timeout");
 		return(false);
