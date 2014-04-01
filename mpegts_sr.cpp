@@ -61,7 +61,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 		if((cc != -1) && (cc != packet.header.cc))
 		{
-			vlog("discontinuety: %d/%d", cc, packet.header.cc);
+			vlog("discontinuity: %d/%d", cc, packet.header.cc);
 			goto retry;
 		}
 

@@ -12,7 +12,7 @@ class MpegTSPmt : public MpegTSSectionReader
 
 		enum
 		{
-			table_pmt		= 0x02,
+			table_pmt = 0x02,
 		};
 
 		enum
