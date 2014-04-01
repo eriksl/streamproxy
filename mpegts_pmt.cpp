@@ -80,9 +80,6 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 			}
 
 			//vlog(">> pid: %x", es_pid);
-			//vlog(">> reserved 2: %x", es_entry->reserved_2);
-			//vlog(">> unused: %x", es_entry->unused);
-			//vlog(">> esinfo_length: %d", esinfo_length);
 
 			if(es_entry->reserved_2 != 0x0f)
 			{

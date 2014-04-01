@@ -71,7 +71,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() > 0)
 			{
-				vlog("start payload upexpected");
+				//vlog("start payload upexpected");
 				goto retry;
 			}
 		}
@@ -79,7 +79,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() <= 0)
 			{
-				vlog("continue payload unexpected");
+				//vlog("continue payload unexpected");
 				goto retry;
 			}
 		}
@@ -154,7 +154,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 			raw_table_data.append((const uint8_t *)syntax, offsetof(table_syntax_t, data));
 
-			vlog("tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
+			//vlog("tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
 
 			if(syntax->reserved != 0x03)
 			{
@@ -162,13 +162,13 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 				goto retry;
 			}
 
-			vlog("currnext: %d", syntax->currnext);
-			vlog("version: %d", syntax->version);
-			vlog("ordinal: %d", syntax->ordinal);
-			vlog("last: %d", syntax->last);
+			//vlog("currnext: %d", syntax->currnext);
+			//vlog("version: %d", syntax->version);
+			//vlog("ordinal: %d", syntax->ordinal);
+			//vlog("last: %d", syntax->last);
 
 			payload_length = sizeof(packet_t) - ((const uint8_t *)&syntax->data - &packet.byte[0]);
-			vlog("payload length: %d", payload_length);
+			//vlog("payload length: %d", payload_length);
 
 			if(payload_length > section_length_remaining)
 				payload_length = section_length_remaining;
