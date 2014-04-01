@@ -35,12 +35,26 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 		programinfo_length = (pmt_header->programinfo_length_high << 8) |
 			pmt_header->programinfo_length_low;
 
-		//vlog("\n> reserved_1: %x", pmt_header->reserved_1);
+		if(pmt_header->reserved_1 != 0x07)
+		{
+			vlog("\n> reserved_1: %x", pmt_header->reserved_1);
+			continue;
+		}
+
 		//vlog("> pcr_pid: %x", pcr_pid);
 		//vlog("> program info length: %d", programinfo_length);
-		//vlog("> unused: %x", pmt_header->unused);
-		//vlog("> reserved_2: %x", pmt_header->reserved_2);
-		(void)pcr_pid;
+
+		if(pmt_header->unused != 0x00)
+		{
+			vlog("> unused: %x", pmt_header->unused);
+			continue;
+		}
+
+		if(pmt_header->reserved_2 != 0x0f)
+		{
+			vlog("> reserved_2: %x", pmt_header->reserved_2);
+			continue;
+		}
 
 		es_data			= &(table_data.data()[offsetof(pmt_header_t, data) + programinfo_length]);
 		es_data_length	= table_data.length() - offsetof(pmt_header_t, data);
@@ -53,14 +67,31 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 			es_pid			= (es_entry->es_pid_high << 8) | es_entry->es_pid_low;
 
 			//vlog("\n>> stream type: %x", es_entry->stream_type);
-			//vlog(">> reserved 1: %x", es_entry->reserved_1);
+
+			if(es_entry->reserved_1 != 0x07)
+			{
+				vlog(">> reserved 1: %x", es_entry->reserved_1);
+				goto next;
+			}
+
 			//vlog(">> pid: %x", es_pid);
 			//vlog(">> reserved 2: %x", es_entry->reserved_2);
 			//vlog(">> unused: %x", es_entry->unused);
 			//vlog(">> esinfo_length: %d", esinfo_length);
 
-			stream_type		= none;
-			stream_language	= "";
+			if(es_entry->reserved_2 != 0x0f)
+			{
+				vlog(">> reserved 2: %x", es_entry->reserved_2);
+				goto next;
+			}
+
+			if(es_entry->unused != 0x00)
+			{
+				vlog(">> unused: %x", es_entry->unused);
+				goto next;
+			}
+
+			//vlog(">> esinfo_length: %d", esinfo_length);
 
 			switch(es_entry->stream_type)
 			{
