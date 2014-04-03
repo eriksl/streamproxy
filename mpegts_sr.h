@@ -74,9 +74,7 @@ class MpegTSSectionReader
 
 	protected:
 
-		u8string	table_data;
-
-	public:
+		u8string table_data;
 
 		MpegTSSectionReader(int fd) throw();
 
