@@ -1,6 +1,8 @@
 #ifndef _queue_h_
 #define	_queue_h_
 
+#include <stdlib.h>
+
 #include <string>
 using std::string;
 
@@ -13,6 +15,9 @@ class Queue
 		size_t	buffer_size;
 		char	*buffer;
 
+		Queue();
+		Queue(const Queue &);
+
 	public:
 
 		Queue(int size)		throw(string);
@@ -21,18 +26,11 @@ class Queue
 		void	reset()											throw();
 		size_t	size()									const	throw();
 		size_t	length()								const	throw();
-		void	dump()									const	throw();
+		size_t	usage()									const	throw();
 		void	append(size_t length, const char *data)			throw();
 		size_t	extract(size_t length, char *data)				throw();
 		bool	read(int fd, ssize_t maxread = -1)				throw();
 		bool	write(int fd, ssize_t maxwrite = -1)			throw();
-
-
-
-	private:
-
-		Queue();
-		Queue(const Queue &);
 };
 
 #endif

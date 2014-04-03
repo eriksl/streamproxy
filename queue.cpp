@@ -1,7 +1,6 @@
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-#include <stdlib.h>
 
 #include "queue.h"
 #include "vlog.h"
@@ -43,10 +42,9 @@ size_t Queue::length() const throw()
 	return(len);
 }
 
-void Queue::dump() const throw()
+size_t Queue::usage() const throw()
 {
-	vlog("in  pointer: %d", inptr);
-	vlog("out pointer: %d", outptr);
+	return((length() * 100) / buffer_size);
 }
 
 void Queue::append(size_t len, const char *data) throw()
