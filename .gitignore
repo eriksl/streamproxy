@@ -5,3 +5,5 @@ with-poll/
 with-queue/
 *.o
 *.d
+.deps
+streamproxy
