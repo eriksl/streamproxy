@@ -38,9 +38,9 @@ class Encoder
 		Encoder(const PidMap &)					throw(string);
 		~Encoder()								throw();
 
-		void	start_init()					throw(string);
-		void	start_finish()					throw(string);
-		void	stop()							throw(string);
+		bool	start_init()					throw();
+		bool	start_finish()					throw();
+		bool	stop()							throw();
 
 		int		getfd()					const	throw();
 		PidMap	getpids()				const	throw();

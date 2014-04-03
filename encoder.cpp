@@ -116,26 +116,27 @@ void* Encoder::start_thread_function(void * arg)
 	return((void *)0);
 }
 
-void Encoder::start_init() throw(string)
+bool Encoder::start_init() throw()
 {
 	vlog("encoder START TRANSCODING start");
 
 	if(start_thread_running || !start_thread_joined)
 	{
 		vlog("encoder start: start thread already running");
-		throw(string("encoder start: start thread aready runnning"));
+		return(true);
 	}
 
 	if(pthread_create(&start_thread, 0, &start_thread_function, (void *)this))
 	{
 		vlog("encoder start: pthread create failed");
-		throw(string("encoder start failed"));
+		return(false);
 	}
 
 	vlog("encoder START TRANSCODING done");
+	return(true);
 }
 
-void Encoder::start_finish() throw(string)
+bool Encoder::start_finish() throw()
 {
 	if(!start_thread_running && !start_thread_joined)
 	{
@@ -143,10 +144,14 @@ void Encoder::start_finish() throw(string)
 		pthread_join(start_thread, 0);
 		vlog("encoder START joined start thread");
 		start_thread_joined = true;
+
+		return(true);
 	}
+
+	return(false);
 }
 
-void Encoder::stop() throw(string)
+bool Encoder::stop() throw()
 {
 	struct pollfd pfd;
 	char buffer[4096];
@@ -157,7 +162,7 @@ void Encoder::stop() throw(string)
 	if(stopped)
 	{
 		vlog("already stopped");
-		return;
+		return(true);
 	}
 
 	if(start_thread_running)
@@ -166,7 +171,8 @@ void Encoder::stop() throw(string)
 		start_thread_joined = false;
 	}
 
-	(void)start_finish();
+	if(!start_finish())
+		return(false);
 
 	if(ioctl(fd, IOCTL_VUPLUS_STOP_TRANSCODING, 0))
 		vlog("IOCTL stop transcoding");
@@ -203,6 +209,8 @@ void Encoder::stop() throw(string)
 
 	vlog("draining done");
 	vlog("encoder STOP TRANSCODING done");
+
+	return(true);
 }
 
 int Encoder::getfd() const throw()
