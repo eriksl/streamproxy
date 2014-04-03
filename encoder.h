@@ -1,12 +1,9 @@
 #ifndef _encoder_h_
 #define _encoder_h_
 
-#include <pthread.h>
-
-#include <string>
-using std::string;
-
 #include "pidmap.h"
+#include <string>
+#include <pthread.h>
 
 class Encoder
 {
@@ -35,7 +32,7 @@ class Encoder
 
 	public:
 
-		Encoder(const PidMap &)					throw(string);
+		Encoder(const PidMap &)					throw(std::string);
 		~Encoder()								throw();
 
 		bool	start_init()					throw();

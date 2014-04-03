@@ -48,7 +48,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		arg1 = 1;
 
 		if(setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&arg1, sizeof(arg1)))
-			throw(string("ClientSocket:: cannot set NODELAY"));
+			throw(string("ClientSocket: cannot set NODELAY"));
 #endif
 
 #if 0
@@ -58,19 +58,19 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		arg2 = sizeof(arg1);
 
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
-			throw(string("getsockopt 1"));
+			throw(string("ClientSocket: getsockopt 1"));
 
-		vlog("current buffer size: %d", arg1);
+		vlog("ClientSocket: current buffer size: %d", arg1);
 
 		arg1 = 256 * 1024;
 
 		if(setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, sizeof(arg1)))
-			throw(string("setsockopt"));
+			throw(string("ClientSocket: setsockopt"));
 
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
-			throw(string("getsockopt 2"));
+			throw(string("ClientSocket: getsockopt 2"));
 
-		vlog("new buffer size: %d", arg1);
+		vlog("ClientSocket: new buffer size: %d", arg1);
 #endif
 
 		start = time(0);
@@ -81,15 +81,15 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			pfd.events = POLLIN | POLLRDHUP;
 
 			if(poll(&pfd, 1, 1000) < 0)
-				throw(string("poll error"));
+				throw(string("ClientSocket: poll error"));
 
 			if(pfd.revents & (POLLHUP | POLLRDHUP | POLLERR | POLLNVAL))
-				throw(string("peer disconnects"));
+				throw(string("ClientSocket: peer disconnects"));
 
 			if(pfd.revents & POLLIN)
 			{
 				if((bytes_read = read(fd, read_buffer, sizeof(read_buffer))) <= 0)
-					throw(string("peer disconnected"));
+					throw(string("ClientSocket: peer disconnected"));
 
 				request.append(read_buffer, bytes_read);
 
@@ -98,11 +98,11 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			}
 
 			if((time(0) - start) > 10)
-				throw(string("peer connection timeout"));
+				throw(string("ClientSocket: peer connection timeout"));
 		}
 
 		if(idx == string::npos)
-			throw(string(""));
+			throw(string("ClientSocket: no request"));
 
 		split(lines, request, boost::is_any_of("\r\n"));
 
@@ -117,7 +117,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 
 		for(it1 = lines.begin(); it1 != lines.end(); it1++)
 		{
-			vlog("line: \"%s\"", it1->c_str());
+			vlog("ClientSocket: line: \"%s\"", it1->c_str());
 
 			if(it1->find("GET ") == 0)
 			{
@@ -141,21 +141,21 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 				continue;
 			}
 
-			vlog("ignoring junk line: %s\n", it1->c_str());
+			vlog("ClientSocket: ignoring junk line: %s\n", it1->c_str());
 		}
 
 		if(lines.size() < 1)
-			throw(string(""));
+			throw(string("ClientSocket: invalid request"));
 
 		for(headit = headers.begin(); headit != headers.end(); headit++)
-			vlog("header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
+			vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
 
-		vlog("url: %s", url.c_str());
+		vlog("ClientSocket: url: %s", url.c_str());
 
 		urlparams = Url(url).split();
 
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
-			vlog("parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
+			vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
 		if((urlparams[""] == "/stream") && urlparams.count("service"))
 		{
@@ -181,18 +181,18 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 
 		if((urlparams[""] == "/filestream") && urlparams.count("file"))
 		{
-			vlog("file streaming request");
+			vlog("ClientSocket: file streaming request");
 			(void)FileStreaming(urlparams["file"], fd);
-			vlog("file streaming ends");
+			vlog("ClientSocket: file streaming ends");
 
 			return;
 		}
 
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
-			vlog("file transcoding request");
+			vlog("ClientSocket: file transcoding request");
 			(void)FileTranscoding(urlparams["file"], fd);
-			vlog("file transcoding ends");
+			vlog("ClientSocket: file transcoding ends");
 
 			return;
 		}
@@ -201,20 +201,20 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		{
 			if((urlparams[""].substr(1, 1) == "/"))
 			{
-				vlog("default file request");
+				vlog("ClientSocket: default file request");
 
 				if(default_action == action_stream)
 				{
-					vlog("streaming file");
+					vlog("ClientSocket: streaming file");
 					(void)FileStreaming(urlparams["file"], fd);
 				}
 				else
 				{
-					vlog("transcoding file");
+					vlog("ClientSocket: transcoding file");
 					(void)FileTranscoding(urlparams["file"], fd);
 				}
 
-				vlog("default file ends");
+				vlog("ClientSocket: default file ends");
 
 				return;
 			}
@@ -239,13 +239,13 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			}
 		}
 
-		throw(string("unknown request: ") + urlparams[""]);
+		throw(string("ClientSocket: unknown request: ") + urlparams[""]);
 	}
 	catch(const string &e)
 	{
 		string reply;
 
-		vlog("exception: %s", e.c_str());
+		vlog("ClientSocket: exception: %s", e.c_str());
 		reply = string("400 Bad request: ") + e + "\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
@@ -253,7 +253,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 	{
 		string reply;
 
-		vlog("unknown exception");
+		vlog("ClientSocket: unknown exception");
 		reply = "400 Bad request: \r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}

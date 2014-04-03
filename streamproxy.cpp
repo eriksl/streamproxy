@@ -42,8 +42,8 @@ int main(int argc, char **argv)
 		bpo::store(bpo::parse_command_line(argc, argv, desc), vm);
 		bpo::notify(vm);
 
-		vlog("port: %s", port.c_str());
-		vlog("default action: %s", default_action_arg.c_str());
+		vlog("streamproxy: port: %s", port.c_str());
+		vlog("streamproxy: default action: %s", default_action_arg.c_str());
 
 		if(default_action_arg == "stream")
 			default_action = ClientSocket::action_stream;
@@ -53,7 +53,7 @@ int main(int argc, char **argv)
 				default_action = ClientSocket::action_transcode;
 			else
 			{
-				vlog("default action should be either \"stream\" or \"action\"");
+				vlog("streamproxy: default action should be either \"stream\" or \"action\"");
 				exit(1);
 			}
 		}
@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 		{
 			new_fd = accept_socket.accept();
 
-			vlog("accept new connection: %d", new_fd);
+			vlog("streamproxy: accept new connection: %d", new_fd);
 
 			if(fork()) // parent
 				close(new_fd);
@@ -77,20 +77,20 @@ int main(int argc, char **argv)
 	}
 	catch(const string &e)
 	{
-		vlog("caught exception: %s", e.c_str());
+		vlog("streamproxy: caught exception: %s", e.c_str());
 		exit(1);
 	}
 	catch(bpo::error &e)
 	{
-		vlog("%s", e.what());
+		vlog("streamproxy: %s", e.what());
 		convert.str("");
 		convert << desc;
-		vlog("%s", convert.str().c_str());
+		vlog("streamproxy: %s", convert.str().c_str());
 		exit(1);
 	}
 	catch(...)
 	{
-		vlog("default exception");
+		vlog("streamproxy: default exception");
 		exit(1);
 	}
 

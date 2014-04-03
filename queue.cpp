@@ -1,9 +1,9 @@
+#include "queue.h"
+#include "vlog.h"
+
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
-
-#include "queue.h"
-#include "vlog.h"
 
 Queue::Queue(int size_in) throw(string)
 {
@@ -126,13 +126,13 @@ bool Queue::read(int fd, ssize_t maxread) throw()
 
 	if(chunk <= 0)
 	{
-		vlog("queue_read: chunk <= 0: %d", chunk);
+		vlog("Queue: queue_read: chunk <= 0: %d", chunk);
 		return(true);
 	}
 
 	rv = ::read(fd, &buffer[inptr], chunk);
 
-	//vlog("*** queue_read: %d bytes received", rv);
+	//vlog("Queue: *** queue_read: %d bytes received", rv);
 
 	if(rv < 0)
 	{
@@ -155,14 +155,14 @@ bool Queue::read(int fd, ssize_t maxread) throw()
 
 	if((inptr < outptr) && ((inptr + rv) > outptr))
 	{
-		vlog("!!! queue overrun: inptr was: %d, inptr is %d, outptr = %d, rv is %d",
+		vlog("Queue: !!! queue overrun: inptr was: %d, inptr is %d, outptr = %d, rv is %d",
 				inptr, inptr + rv, outptr, rv);
 	}
 
 	inptr += rv;
 
 	if(inptr > buffer_size)
-		vlog("**** queue_read: corruption");
+		vlog("Queue: **** queue_read: corruption");
 
 	if(inptr >= buffer_size)
 		inptr = 0;
@@ -191,7 +191,7 @@ bool Queue::write(int fd, ssize_t maxwrite) throw()
 	else
 		rv = 0;
 
-	//vlog("*** queue_write: written %d bytes", rv);
+	//vlog("Queue: *** queue_write: written %d bytes", rv);
 
 	if(rv < 0)
 	{
@@ -210,7 +210,7 @@ bool Queue::write(int fd, ssize_t maxwrite) throw()
 	outptr += rv;
 
 	if(outptr > buffer_size)
-		vlog("**** queue_write: corruption");
+		vlog("Queue: **** queue_write: corruption");
 
 	if(outptr >= buffer_size)
 		outptr = 0;

@@ -27,11 +27,11 @@ bool MpegTSPat::probe() throw(string)
 		{
 			program = (entry[current].program_high << 8) | (entry[current].program_low);
 			pid = (entry[current].pmt_pid_high << 8) | (entry[current].pmt_pid_low);
-			//vlog("> program: %d -> pid %x", program, pid);
+			//vlog("MpegTSPAt: > program: %d -> pid %x", program, pid);
 
 			if(entry[current].reserved != 0x07)
 			{
-				vlog("> reserved != 0x07: 0x%x", entry[current].reserved);
+				vlog("MpegTSPAt: > reserved != 0x07: 0x%x", entry[current].reserved);
 				goto next;
 			}
 

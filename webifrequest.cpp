@@ -1,12 +1,3 @@
-#include <stdio.h>
-#include <netdb.h>
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <sys/ioctl.h>
-#include <unistd.h>
-#include <linux/sockios.h>
-#include <stdlib.h>
-
 #include "pidmap.h"
 #include "webifrequest.h"
 #include "vlog.h"
@@ -18,6 +9,15 @@ using std::string;
 using std::vector;
 
 #include <boost/algorithm/string.hpp>
+
+#include <stdio.h>
+#include <netdb.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <linux/sockios.h>
+#include <stdlib.h>
 
 static const struct addrinfo gai_webif_hints =
 {
@@ -43,27 +43,27 @@ WebifRequest::WebifRequest(const Service &service_in) throw(string) :
 	demuxer_id	= -1;
 
 	if((rv = getaddrinfo("127.0.0.1", "80", &gai_webif_hints, &gai_webif_address)))
-		throw(string("webifrequest: cannot get address for localhost") + gai_strerror(rv));
+		throw(string("WebifRequest: cannot get address for localhost") + gai_strerror(rv));
 
 	if(!gai_webif_address)
-		throw(string("webifrequest: cannot get address for localhost"));
+		throw(string("WebifRequest: cannot get address for localhost"));
 
 	if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("webifrequest: cannot create socket"));
+		throw(string("WebifRequest: cannot create socket"));
 	}
 
 	if(setsockopt(fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)))
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("webifrequest: cannot set linger"));
+		throw(string("WebifRequest: cannot set linger"));
 	}
 
 	if(connect(fd, gai_webif_address->ai_addr, gai_webif_address->ai_addrlen))
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("webifrequest: cannot connect"));
+		throw(string("WebifRequest: cannot connect"));
 	}
 
 	freeaddrinfo(gai_webif_address);
@@ -71,7 +71,7 @@ WebifRequest::WebifRequest(const Service &service_in) throw(string) :
 	request = string("GET /web/stream?StreamService=") + service.service_string() + " HTTP/1.0\r\n\r\n";
 
 	if(write(fd, request.c_str(), request.length()) != (ssize_t)request.length())
-		throw(string("webifrequest: cannot send request"));
+		throw(string("WebifRequest: cannot send request"));
 }
 
 WebifRequest::~WebifRequest()
@@ -99,7 +99,7 @@ void WebifRequest::poll() throw(string)
 	stringvector::const_iterator it;
 
 	if(ioctl(fd, SIOCINQ, &bytes))
-		throw(string("webifrequest: ioctl SIOCINQ"));
+		throw(string("WebifRequest: ioctl SIOCINQ"));
 
 	if(bytes == 0)
 		return;
@@ -108,7 +108,7 @@ void WebifRequest::poll() throw(string)
 
 	if((bytes_read = read(fd, buffer, bytes)) != bytes)
 	{
-		vlog("webifrequest: read returns %d", bytes_read);
+		vlog("WebifRequest: read returns %d", bytes_read);
 		free(buffer);
 		return;
 	}

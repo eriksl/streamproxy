@@ -1,17 +1,17 @@
-#include <stdio.h>
-#include <stdint.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <ctype.h>
+#include "url.h"
+#include "vlog.h"
 
 #include <string>
 using std::string;
 
 #include <boost/algorithm/string.hpp>
 
-#include "url.h"
-#include "vlog.h"
+#include <stdio.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 
 Url::Url(const string &url_in) throw() : url(url_in)
 {

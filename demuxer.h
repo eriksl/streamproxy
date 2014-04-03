@@ -6,29 +6,26 @@
 #include <stdlib.h>
 
 #include <string>
-using std::string;
-
-#include <map>
-using std::map;
 
 class Demuxer
 {
 	private:
 
+		enum
+		{
+			buffer_size = 1024 * 188,
+		};
+
+		int		id;
+		int		fd;
+		PidMap	pids;
+
 		Demuxer();
 		Demuxer(const Demuxer &);
 
-	private:
-
-		static const int buffer_size = 1024 * 188;
-
-		PidMap	pids;
-		int		id;
-		int		fd;
-
 	public:
 
-		Demuxer(int id, const PidMap &)	throw(string);
+		Demuxer(int id, const PidMap &)	throw(std::string);
 		~Demuxer()						throw();
 
 		int getfd()				const	throw();

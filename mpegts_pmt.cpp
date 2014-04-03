@@ -1,13 +1,12 @@
 #include "mpegts_pmt.h"
 #include "vlog.h"
 
-#include "stddef.h"
-
 #include <boost/algorithm/string.hpp>
 
 #include <string>
 using std::string;
 
+#include "stddef.h"
 
 MpegTSPmt::MpegTSPmt(int fd_in) throw() :
 	MpegTSSectionReader(fd_in)
@@ -42,22 +41,22 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 
 		if(pmt_header->reserved_1 != 0x07)
 		{
-			vlog("\n> reserved_1: %x", pmt_header->reserved_1);
+			vlog("\nMpegTSPmt: > reserved_1: %x", pmt_header->reserved_1);
 			continue;
 		}
 
-		//vlog("> pcr_pid: %x", pcr_pid);
-		//vlog("> program info length: %d", programinfo_length);
+		//vlog("MpegTSPmt: > pcr_pid: %x", pcr_pid);
+		//vlog("MpegTSPmt: > program info length: %d", programinfo_length);
 
 		if(pmt_header->unused != 0x00)
 		{
-			vlog("> unused: %x", pmt_header->unused);
+			vlog("MpegTSPmt: > unused: %x", pmt_header->unused);
 			continue;
 		}
 
 		if(pmt_header->reserved_2 != 0x0f)
 		{
-			vlog("> reserved_2: %x", pmt_header->reserved_2);
+			vlog("MpegTSPmt: > reserved_2: %x", pmt_header->reserved_2);
 			continue;
 		}
 
@@ -71,29 +70,29 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 			esinfo_length	= (es_entry->es_length_high << 8) | es_entry->es_length_low;
 			es_pid			= (es_entry->es_pid_high << 8) | es_entry->es_pid_low;
 
-			//vlog("\n>> stream type: %x", es_entry->stream_type);
+			//vlog("\nMpegTSPmt: >> stream type: %x", es_entry->stream_type);
 
 			if(es_entry->reserved_1 != 0x07)
 			{
-				vlog(">> reserved 1: %x", es_entry->reserved_1);
+				vlog("MpegTSPmt: >> reserved 1: %x", es_entry->reserved_1);
 				goto next;
 			}
 
-			//vlog(">> pid: %x", es_pid);
+			//vlog("MpegTSPmt: >> pid: %x", es_pid);
 
 			if(es_entry->reserved_2 != 0x0f)
 			{
-				vlog(">> reserved 2: %x", es_entry->reserved_2);
+				vlog("MpegTSPmt: >> reserved 2: %x", es_entry->reserved_2);
 				goto next;
 			}
 
 			if(es_entry->unused != 0x00)
 			{
-				vlog(">> unused: %x", es_entry->unused);
+				vlog("MpegTSPmt: >> unused: %x", es_entry->unused);
 				goto next;
 			}
 
-			//vlog(">> esinfo_length: %d", esinfo_length);
+			//vlog("MpegTSPmt: >> esinfo_length: %d", esinfo_length);
 
 			switch(es_entry->stream_type)
 			{
@@ -118,16 +117,16 @@ bool MpegTSPmt::probe(int filter_pid) throw(string)
 					{
 						ds_entry = (const pmt_ds_entry_t *)&es_data[ds_data_skip + ds_data_offset];
 
-						//vlog("\n>>> offset: %d", ds_data_offset);
-						//vlog(">>> descriptor id: %x", ds_entry->id);
-						//vlog(">>> length: %d", ds_entry->length);
+						//vlog("\nMpegTSPmt: >>> offset: %d", ds_data_offset);
+						//vlog("MpegTSPmt: >>> descriptor id: %x", ds_entry->id);
+						//vlog("MpegTSPmt: >>> length: %d", ds_entry->length);
 
 						switch(ds_entry->id)
 						{
 							case(desc_language):
 						{
 								ds_a = (const pmt_ds_a_t *)&ds_entry->data;
-								//vlog(">>>> lang: %c%c%c [%d]", ds_a->lang[0],
+								//vlog("MpegTSPmt: >>>> lang: %c%c%c [%d]", ds_a->lang[0],
 										// ds_a->lang[1], ds_a->lang[2], ds_a->code);
 
 								stream_language.assign((const char *)&ds_a->lang, offsetof(pmt_ds_a_t, code));

@@ -40,9 +40,6 @@ FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
 				vlog("FileStreaming: eof");
 				break;
 			}
-
-			//vlog("FileStreaming: read file, after: length: %d, fill: %d",
-					//socket_queue.length(), socket_queue.usage());
 		}
 
 		if(socket_queue.usage() > max_fill_socket)
@@ -65,7 +62,6 @@ FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
 
 		if(pfd.revents & POLLOUT)
 		{
-			//vlog("socket can write");
 			if(!socket_queue.write(socket_fd))
 			{
 				vlog("FileStreaming: write socket error");

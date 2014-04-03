@@ -1,10 +1,3 @@
-#include <stdio.h>
-#include <unistd.h>
-#include <sys/ioctl.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <poll.h>
-
 #include "pidmap.h"
 #include "encoder.h"
 #include "demuxer.h"
@@ -13,13 +6,21 @@
 #include <string>
 using std::string;
 
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <poll.h>
+
 Encoder::Encoder(const PidMap &pids_in) throw(string)
 {
-	PidMap::const_iterator it;
-	PidMap::iterator it2;
-	PidMap::const_iterator pmt, video, audio;
-	int encoder;
-	char encoder_device[128];
+	PidMap::const_iterator	it;
+	PidMap::iterator		it2;
+	PidMap::const_iterator	pmt, video, audio;
+
+	static char	encoder_device[128];
+			int	encoder;
 
 	start_thread_running	= false;
 	start_thread_joined		= true;
@@ -54,41 +55,40 @@ Encoder::Encoder(const PidMap &pids_in) throw(string)
 	}
 
 	if((pmt == pids.end()) || (video == pids.end()) || (audio == pids.end()))
-		throw(string("encoder: missing pmt, video or audio pid"));
+		throw(string("Encoder: missing pmt, video or audio pid"));
 
 	for(encoder = 0; encoder < 8; encoder++)
 	{
 		snprintf(encoder_device, sizeof(encoder_device), "/dev/bcm_enc%d", encoder);
 		errno = 0;
-		vlog("open encoder %s", encoder_device);
+		vlog("Encoder: open encoder %s", encoder_device);
 
 		if((fd = open(encoder_device, O_RDWR, 0)) < 0)
 		{
 			if(errno == ENOENT)
 			{
-				vlog("not found %s", encoder_device);
+				vlog("Encoder: not found %s", encoder_device);
 				break;
 			}
 
-			vlog("encoder %d is busy", encoder);
+			vlog("Encoder: encoder %d is busy", encoder);
 		}
 		else
 			break;
 	}
 
 	if(fd < 0)
-		throw(string("cannot open encoder"));
+		throw(string("Encoder: cannot open encoder"));
 
-	vlog("encoder ioctl SET PMTPID: 0x%x", pmt->second);
-	vlog("encoder ioctl SET VPID: 0x%x", video->second);
-	vlog("encoder ioctl SET APID: 0x%x", audio->second);
+	//vlog("Encoder: ioctl SET PMTPID: 0x%x", pmt->second);
+	//vlog("Encoder: ioctl SET VPID: 0x%x", video->second);
+	//vlog("Encoder: ioctl SET APID: 0x%x", audio->second);
 
 	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt->second) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video->second) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_APID, audio->second))
 	{
-			vlog("cannot set pids on encoder");
-			throw(string("cannot init encoder"));
+			throw(string("Encoder: cannot init encoder"));
 	}
 }
 
@@ -102,14 +102,14 @@ void* Encoder::start_thread_function(void * arg)
 {
 	Encoder *_this = (Encoder *)arg;
 
-	vlog("encoder start thread: start ioctl");
+	//vlog("Encoder: start thread: start ioctl");
 
 	_this->start_thread_joined	= false;
 	_this->start_thread_running	= true;
 	_this->stopped				= false;
 
 	if(ioctl(_this->fd, IOCTL_VUPLUS_START_TRANSCODING, 0))
-		vlog("IOCTL start transcoding");
+		vlog("Encoder: IOCTL start transcoding");
 
 	_this->start_thread_running = false;
 
@@ -118,21 +118,21 @@ void* Encoder::start_thread_function(void * arg)
 
 bool Encoder::start_init() throw()
 {
-	vlog("encoder START TRANSCODING start");
+	//vlog("Encoder: START TRANSCODING start");
 
 	if(start_thread_running || !start_thread_joined)
 	{
-		vlog("encoder start: start thread already running");
+		vlog("Encoder: start thread already running");
 		return(true);
 	}
 
 	if(pthread_create(&start_thread, 0, &start_thread_function, (void *)this))
 	{
-		vlog("encoder start: pthread create failed");
+		vlog("Encoder: pthread create failed");
 		return(false);
 	}
 
-	vlog("encoder START TRANSCODING done");
+	//vlog("Encoder: START TRANSCODING done");
 	return(true);
 }
 
@@ -140,9 +140,9 @@ bool Encoder::start_finish() throw()
 {
 	if(!start_thread_running && !start_thread_joined)
 	{
-		vlog("encoder START detects start thread stopped");
+		//vlog("Encoder: START detects start thread stopped");
 		pthread_join(start_thread, 0);
-		vlog("encoder START joined start thread");
+		//vlog("Encoder: START joined start thread");
 		start_thread_joined = true;
 
 		return(true);
@@ -157,11 +157,11 @@ bool Encoder::stop() throw()
 	char buffer[4096];
 	ssize_t rv;
 
-	vlog("encoder STOP TRANSCODING begin");
+	//vlog("Encoder: STOP TRANSCODING begin");
 
 	if(stopped)
 	{
-		vlog("already stopped");
+		vlog("Encoder: already stopped");
 		return(true);
 	}
 
@@ -175,9 +175,9 @@ bool Encoder::stop() throw()
 		return(false);
 
 	if(ioctl(fd, IOCTL_VUPLUS_STOP_TRANSCODING, 0))
-		vlog("IOCTL stop transcoding");
+		vlog("Encoder: IOCTL stop transcoding");
 
-	vlog("starting draining");
+	vlog("Encoder: starting draining");
 
 	for(;;)
 	{
@@ -189,14 +189,14 @@ bool Encoder::stop() throw()
 
 		if(rv < 0)
 		{
-			vlog("poll error");
+			vlog("Encoder: poll error");
 			break;
 		}
 
 		if(pfd.revents & POLLIN)
 		{
 			rv = read(fd, buffer, sizeof(buffer));
-			vlog("encoder STOP, drained %d bytes", rv);
+			vlog("Encoder: STOP, drained %d bytes", rv);
 
 			if(rv <= 0)
 				break;
@@ -207,8 +207,7 @@ bool Encoder::stop() throw()
 
 	stopped = true;
 
-	vlog("draining done");
-	vlog("encoder STOP TRANSCODING done");
+	vlog("Encoder: encoder STOP TRANSCODING done");
 
 	return(true);
 }

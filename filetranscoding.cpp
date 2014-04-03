@@ -28,7 +28,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 						"\r\n";
 	Queue			socket_queue(256 * 1024);
 
-	vlog("transcoding file: %s", file.c_str());
+	vlog("FileTranscoding: %s", file.c_str());
 
 	encoder_buffer = new char[vuplus_magic_buffer_size];
 
@@ -46,20 +46,20 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 			break;
 
 	if(pat_it == pat.pat.end())
-		throw(string("FileTranscoding: transcoding: invalid transport stream"));
+		throw(string("FileTranscoding: invalid transport stream"));
 
 	pids["pmt"]		= pat_it->second;
 	pids["video"]	= pmt.video_pid;
 	pids["audio"]	= pmt.audio_pid;
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		vlog("pid[%s] = %x", it->first.c_str(), it->second);
+		vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
 	Encoder encoder(pids);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		vlog("encoder pid[%s] = %x", it->first.c_str(), it->second);
+		vlog("FileTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	if((encoder_fd = encoder.getfd()) < 0)
 		throw(string("FileTranscoding: transcoding: encoder: fd not open"));
@@ -80,7 +80,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 				if(encoder.start_init())
 				{
 					encoder_state = state_starting;
-					vlog("state init -> starting");
+					//vlog("state init -> starting");
 				}
 				break;
 			}
@@ -90,7 +90,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 				if(encoder.start_finish())
 				{
 					encoder_state = state_running;
-					vlog("state starting -> running");
+					//vlog("state starting -> running");
 				}
 				break;
 			}
@@ -129,9 +129,6 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 
 		if(pfd[0].revents & POLLOUT)
 		{
-			//if(pfd[0].revents & POLLOUT)
-				//vlog("FileTranscoding: encoder can write (poll)");
-
 			if((bytes_read = read(file_fd, encoder_buffer, vuplus_magic_buffer_size)) != vuplus_magic_buffer_size)
 			{
 				vlog("FileTranscoding: eof");
@@ -143,21 +140,15 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 				vlog("FileTranscoding: encoder error");
 				break;
 			}
-
-			//vlog("FileTranscoding: written %d bytes to encoder", bytes_read);
 		}
 
 		if(pfd[0].revents & POLLIN)
 		{
-			//vlog("FileTranscoding: encoder can read");
-
 			if(!socket_queue.read(encoder_fd, vuplus_magic_buffer_size))
 			{
-				vlog("Transcoding: read encoder error");
+				vlog("FileTranscoding: read encoder error");
 				break;
 			}
-
-			//vlog("FileTranscoding: data in socket queue: %d", socket_queue.length());
 		}
 
 		if(pfd[1].revents & POLLOUT)
@@ -170,8 +161,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 		}
 	}
 
-	vlog("FileTranscoding: socket max queue fill: %d%%", max_fill_socket);
-	vlog("FileTranscoding: streaming ends");
+	vlog("FileTranscoding: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }
 
 FileTranscoding::~FileTranscoding() throw()

@@ -8,23 +8,15 @@
 #include <linux/dvb/dmx.h>
 #include <poll.h>
 
-#include <vector>
-using std::vector;
-
-#include <algorithm>
-using std::sort;
-
-#include "demuxer.h"
-#include "vlog.h"
-
 Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 {
-	PidMap::const_iterator demux_it;
-	PidMap::const_iterator it;
-	PidMap::iterator it2;
-	struct dmx_pes_filter_params dmx_filter;
-	char demuxer_device[128];
-	uint16_t pid;
+	PidMap::const_iterator	demux_it;
+	PidMap::const_iterator	it;
+	PidMap::iterator		it2;
+
+	struct		dmx_pes_filter_params dmx_filter;
+	char		demuxer_device[128];
+	uint16_t	pid;
 
 	id = id_in;
 
@@ -48,15 +40,15 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 
 	if((pids.find("pat") == pids.end()) || (pids.find("pmt") == pids.end()) ||
 			(pids.find("video") == pids.end()) || (pids.find("audio") == pids.end()))
-		throw(string("demuxer: missing primary pids"));
+		throw(string("Demuxer: missing primary pids"));
 
 	snprintf(demuxer_device, sizeof(demuxer_device), "/dev/dvb/adapter0/demux%d", id);
 
 	if((fd = open(demuxer_device, O_RDWR | O_NONBLOCK)) < 0)
-		throw(string("demuxer: cannot open demuxer device"));
+		throw(string("Demuxer: cannot open demuxer device"));
 
 	if(ioctl(fd, DMX_SET_BUFFER_SIZE, buffer_size))
-		throw(string("demuxer: cannot set buffer size"));
+		throw(string("Demuxer: cannot set buffer size"));
 
 	dmx_filter.pid		= pids["pat"];
 	dmx_filter.input	= DMX_IN_FRONTEND;
@@ -65,7 +57,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 	dmx_filter.flags	= DMX_IMMEDIATE_START;
 
 	if(ioctl(fd, DMX_SET_PES_FILTER, &dmx_filter))
-		throw(string("cannot set pes filter"));
+		throw(string("Demuxer: cannot set pes filter"));
 
 	for(it = pids.begin(); it != pids.end(); it++)
 	{
@@ -73,10 +65,10 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 			continue;
 
 		pid = it->second;
-		vlog("ioctl demuxer ADD PID: %s -> 0x%x", it->first.c_str(), pid);
+		vlog("Demuxer: ioctl demuxer ADD PID: %s -> 0x%x", it->first.c_str(), pid);
 
 		if(ioctl(fd, DMX_ADD_PID, &pid))
-			throw(string("Demux: cannot add pid for ") + it->first);
+			throw(string("Demuxer: cannot add pid for ") + it->first);
 	}
 }
 
@@ -86,7 +78,7 @@ Demuxer::~Demuxer() throw()
 	char buffer[4096];
 	ssize_t rv;
 
-	vlog("demuxer STOP, start draining");
+	vlog("Demuxer: demuxer STOP, start draining");
 
 	for(;;)
 	{
@@ -98,14 +90,14 @@ Demuxer::~Demuxer() throw()
 
 		if(rv < 0)
 		{
-			vlog("poll error");
+			vlog("Demuxer: poll error");
 			break;
 		}
 
 		if(pfd.revents & POLLIN)
 		{
 			rv = read(fd, buffer, sizeof(buffer));
-			vlog("drained %d bytes", rv);
+			vlog("Demuxer: drained %d bytes", rv);
 
 			if(rv <= 0)
 				break;
@@ -114,7 +106,7 @@ Demuxer::~Demuxer() throw()
 			break;
 	}
 
-	vlog("demuxer STOP, draining done");
+	vlog("Demuxer: demuxer STOP, draining done");
 }
 
 int Demuxer::getfd() const throw()

@@ -1,6 +1,5 @@
-#include <string.h>
-
-#include <boost/algorithm/string.hpp>
+#include "service.h"
+#include "vlog.h"
 
 #include <string>
 using std::string;
@@ -8,23 +7,24 @@ using std::string;
 #include <vector>
 using std::vector;
 
-#include "service.h"
-#include "vlog.h"
+#include <boost/algorithm/string.hpp>
+
+#include <string.h>
 
 Service::Service(string service_in) throw(string)
 {
 	typedef boost::algorithm::split_iterator<string::iterator> string_split_iterator;
 
-	string_split_iterator find_it;
-	intvector::iterator int_it;
-	string::const_iterator string_it;
-	int value;
-	string field;
+	string_split_iterator	find_it;
+	intvector::iterator		int_it;
+	string::const_iterator	string_it;
+	int						value;
+	string					field;
 
 	service = service_in;
 	valid	= false;
 
-	vlog("create service: %s", service.c_str());
+	vlog("Service: create service: %s", service.c_str());
 
 	for(find_it = make_split_iterator(service, first_finder(":", boost::algorithm::is_equal()));
 		find_it != string_split_iterator(); find_it++)
@@ -33,11 +33,11 @@ Service::Service(string service_in) throw(string)
 
 		field = boost::copy_range<string>(*find_it);
 
-		//vlog("field: \"%s\"", field.c_str());
+		//vlog("Service: field: \"%s\"", field.c_str());
 
 		if(field.length() == 0)
 		{
-			vlog("invalid service (empty field)");
+			vlog("Service: invalid service (empty field)");
 			service_field.clear();
 			return;
 		}
@@ -56,7 +56,7 @@ Service::Service(string service_in) throw(string)
 						value += char(*string_it) - 'A' + 10;
 					else
 					{
-						vlog("invalid service");
+						vlog("Service: invalid service");
 						service_field.clear();
 						return;
 					}
@@ -66,11 +66,11 @@ Service::Service(string service_in) throw(string)
 	}
 
 	//for(int_it = service_field.begin(); int_it != service_field.end(); int_it++)
-		//vlog("service field: %x", *int_it);
+		//vlog("Service: service field: %x", *int_it);
 
 	if(service_field.size() != 10)
 	{
-		vlog("invalid service (invalid # of fields");
+		vlog("Service: invalid service (invalid # of fields");
 		service_field.clear();
 		return;
 	}
@@ -86,7 +86,7 @@ bool Service::is_valid() const throw()
 string Service::service_string() const throw(string)
 {
 	if(!valid)
-		throw(string("service invalid"));
+		throw(string("Service: service invalid"));
 
 	return(service);
 }
@@ -94,7 +94,7 @@ string Service::service_string() const throw(string)
 Service::intvector Service::service_vector() const throw(string)
 {
 	if(!valid)
-		throw(string("service invalid"));
+		throw(string("Service: service invalid"));
 
 	return(service_field);
 }

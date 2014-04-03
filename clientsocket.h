@@ -2,25 +2,23 @@
 #define _clientsocket_h_
 
 #include <string>
-using std::string;
-
 #include <vector>
-using std::vector;
-
 #include <map>
-using std::map;
 
 class ClientSocket
 {
 	private:
 
-		typedef vector<string>		stringvector;
-		typedef map<string, string>	stringmap;
+		typedef std::vector<std::string>			stringvector;
+		typedef std::map<std::string, std::string>	stringmap;
 
-		int			fd;
-		string		request;
-		string		url;
-		stringmap	headers;
+		int				fd;
+		std::string		request;
+		std::string		url;
+		stringmap		headers;
+
+		ClientSocket();
+		ClientSocket(const ClientSocket &);
 
 	public:
 
@@ -34,10 +32,6 @@ class ClientSocket
 			    ~ClientSocket()													throw();
 		void	run()															throw();
 
-	private:
-
-		ClientSocket();
-		ClientSocket(const ClientSocket &);
 };
 
 #endif

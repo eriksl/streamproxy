@@ -2,7 +2,6 @@
 #define _mpegts_pat_h_
 
 #include "mpegts_sr.h"
-
 #include <string>
 #include <map>
 

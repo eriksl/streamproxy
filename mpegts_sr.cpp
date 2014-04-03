@@ -4,10 +4,10 @@
 #include <unistd.h>
 #include <stddef.h>
 
+#include <boost/crc.hpp>
+
 #include <string>
 using std::string;
-
-#include <boost/crc.hpp>
 
 MpegTSSectionReader::MpegTSSectionReader(int fd_in) throw()
 {
@@ -38,12 +38,10 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 	raw_table_data.clear();
 	table_data.clear();
 
-	//vlog("\nstart probe\n");
-
 	for(timeout = 0; timeout < 2000; timeout++)
 	{
 		if(read(fd, (void *)&packet, sizeof(packet)) != sizeof(packet))
-			throw(string("MpegTSSectionReader::read: read error"));
+			throw(string("MpegTSSectonReader::read: read error"));
 
 		if(packet.header.sync_byte != MpegTSSectionReader::sync_byte_value)
 			throw(string("MpegTSSectionReader: no sync byte found"));
@@ -61,7 +59,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 		if((cc != -1) && (cc != packet.header.cc))
 		{
-			vlog("discontinuity: %d/%d", cc, packet.header.cc);
+			vlog("MpegTSSectionReader: discontinuity: %d/%d", cc, packet.header.cc);
 			goto retry;
 		}
 
@@ -71,7 +69,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() > 0)
 			{
-				//vlog("start payload upexpected");
+				//vlog("MpegTSSectionReader: start payload upexpected");
 				goto retry;
 			}
 		}
@@ -79,26 +77,26 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() <= 0)
 			{
-				//vlog("continue payload unexpected");
+				//vlog("MpegTSSectionReader: continue payload unexpected");
 				goto retry;
 			}
 		}
 
-		//vlog("correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
+		//vlog("MpegTSSectionReader: correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
 
 		packet_payload_offset = sizeof(packet.header);
 
-		//vlog("payload offset: %d", packet_payload_offset);
+		//vlog("MpegTSSectionReader: payload offset: %d", packet_payload_offset);
 
 		if(packet.header.af)
 			packet_payload_offset += packet.byte[sizeof(packet.header)] + 1;
 
-		//vlog("payload offset after adaptation field: %d", packet_payload_offset);
+		//vlog("MpegTSSectionReader: payload offset after adaptation field: %d", packet_payload_offset);
 
 		if(packet.header.pusi)
 			packet_payload_offset += packet.byte[packet_payload_offset] + 1; // psi payload pointer byte
 
-		//vlog("payload offset after section pointer field: %d", packet_payload_offset);
+		//vlog("MpegTSSectionReader: payload offset after section pointer field: %d", packet_payload_offset);
 
 		if(table_data.length() == 0)
 		{
@@ -106,7 +104,7 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 			raw_table_data.assign((const uint8_t *)table, offsetof(table_header_t, payload));
 
-			//vlog("table id: %d", table->table_id);
+			//vlog("MpegTSSectionReader: table id: %d", table->table_id);
 
 			if(table->table_id != filter_table)
 			{
@@ -139,11 +137,11 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 			}
 
 			section_length = ((table->section_length_high << 8) | (table->section_length_low)) - offsetof(table_syntax_t, data);
-			//vlog("section length: %d", section_length);
+			//vlog("MpegTSSectionReader: section length: %d", section_length);
 
 			if(section_length < 0)
 			{
-				vlog("section length < 0: %d", section_length);
+				vlog("MpegTSSectionReader: section length < 0: %d", section_length);
 				goto retry;
 			}
 
@@ -154,26 +152,26 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 			raw_table_data.append((const uint8_t *)syntax, offsetof(table_syntax_t, data));
 
-			//vlog("tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
+			//vlog("MpegTSSectionReader: tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
 
 			if(syntax->reserved != 0x03)
 			{
-				vlog("syntax reserved != 0x03: %d", syntax->reserved);
+				vlog("MpegTSSectionReader: syntax reserved != 0x03: %d", syntax->reserved);
 				goto retry;
 			}
 
-			//vlog("currnext: %d", syntax->currnext);
-			//vlog("version: %d", syntax->version);
-			//vlog("ordinal: %d", syntax->ordinal);
-			//vlog("last: %d", syntax->last);
+			//vlog("MpegTSSectionReader: currnext: %d", syntax->currnext);
+			//vlog("MpegTSSectionReader: version: %d", syntax->version);
+			//vlog("MpegTSSectionReader: ordinal: %d", syntax->ordinal);
+			//vlog("MpegTSSectionReader: last: %d", syntax->last);
 
 			payload_length = sizeof(packet_t) - ((const uint8_t *)&syntax->data - &packet.byte[0]);
-			//vlog("payload length: %d", payload_length);
+			//vlog("MpegTSSectionReader: payload length: %d", payload_length);
 
 			if(payload_length > section_length_remaining)
 				payload_length = section_length_remaining;
 
-			//vlog("payload length after trimming: %d", payload_length);
+			//vlog("MpegTSSectionReader: payload length after trimming: %d", payload_length);
 
 			raw_table_data.append((const uint8_t *)&syntax->data, payload_length);
 			table_data.append((const uint8_t *)&syntax->data, payload_length);
@@ -192,16 +190,16 @@ bool MpegTSSectionReader::probe(int filter_pid, int filter_table) throw(string)
 
 		section_length_remaining -= payload_length;
 
-		//vlog("appended table data, %d bytes, length: %d, section: %d, remaining: %d", payload_length, table_data.length(), section_length, section_length_remaining);
+		//vlog("MpegTSSectionReader: appended table data, %d bytes, length: %d, section: %d, remaining: %d", payload_length, table_data.length(), section_length, section_length_remaining);
 
 		if((section_length > 0) && (section_length_remaining == 0))
 			break;
 
-		//vlog("\nnext packet");
+		//vlog("\nMpegTSSectionReader: next packet");
 		continue;
 
 retry:
-		//vlog("\nprobe retry");
+		//vlog("\nMpegTSSectionReader: probe retry");
 
 		section_length = -1;
 		section_length_remaining = -1;
@@ -211,13 +209,13 @@ retry:
 
 	if(table_data.length() == 0)
 	{
-		//vlog("timeout");
+		//vlog("MpegTSSectionReader: timeout");
 		return(false);
 	}
 
 	if(section_length < (int)sizeof(mpeg_crc_t))
 	{
-		vlog("table too small");
+		vlog("MpegTSSectionReader: table too small");
 		return(false);
 	}
 
@@ -228,7 +226,7 @@ retry:
 
 	if(my_crc.checksum() != their_crc)
 	{
-		vlog("crc mismatch: my crc: %x, their crc: %x\n", my_crc.checksum(), their_crc);
+		vlog("MpegTSSectionReader: crc mismatch: my crc: %x, their crc: %x\n", my_crc.checksum(), their_crc);
 		return(false);
 	}
 

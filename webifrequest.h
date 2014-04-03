@@ -3,7 +3,6 @@
 
 #include "service.h"
 #include "pidmap.h"
-
 #include <string>
 
 class WebifRequest

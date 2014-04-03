@@ -1,22 +1,20 @@
-#include <ctype.h>
-#include <unistd.h>
-#include <poll.h>
-#include <time.h>
-
-#include <string>
-using std::string;
-
 #include "pidmap.h"
-#include "streamingsocket.h"
 #include "webifrequest.h"
 #include "vlog.h"
 #include "queue.h"
 #include "service.h"
 #include "demuxer.h"
-#include "encoder.h"
 #include "livestreaming.h"
 
-LiveStreaming::LiveStreaming(const Service &service, int socketfd, streaming_mode mode) throw(string)
+#include <string>
+using std::string;
+
+#include <ctype.h>
+#include <unistd.h>
+#include <poll.h>
+#include <time.h>
+
+LiveStreaming::LiveStreaming(const Service &service, int socketfd) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -124,7 +122,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, streaming_mod
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("streaming: demuxer error");
+			vlog("LiveStreaming: demuxer error");
 			break;
 		}
 
@@ -146,7 +144,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, streaming_mod
 
 			if(!dst_queue->read(demuxer_fd))
 			{
-				vlog("streaming: read demux error");
+				vlog("LiveStreaming: read demuxer error");
 				break;
 			}
 		}
@@ -173,7 +171,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, streaming_mod
 		{
 			if(!socket_queue->write(socketfd))
 			{
-				vlog("streaming: write socket error");
+				vlog("LiveStreaming: write socket error");
 				break;
 			}
 		}
