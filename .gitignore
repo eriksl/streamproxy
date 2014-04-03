@@ -1,9 +1,3 @@
-backup/
-old/
-test/
-with-poll/
-with-queue/
 *.o
 *.d
-.deps
 streamproxy
