@@ -5,21 +5,18 @@
 using std::string;
 
 #include <vector>
-using std::vector;
-
 #include <map>
-using std::map;
 
 class Url
 {
 	private:
 
-		typedef vector<string> stringvector;
+		typedef std::vector<string> stringvector;
 		string url;
 
 	public:
 
-		typedef map<string, string> urlparam;
+		typedef std::map<string, string> urlparam;
 
 		Url(const string &url)			throw();
 		urlparam split() 		const	throw();

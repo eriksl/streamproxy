@@ -1,3 +1,9 @@
+#include "demuxer.h"
+#include "vlog.h"
+
+#include <string>
+using std::string;
+
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -75,7 +81,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 Demuxer::~Demuxer() throw()
 {
 	struct pollfd pfd;
-	char buffer[4096];
+	static char buffer[4096];
 	ssize_t rv;
 
 	vlog("Demuxer: demuxer STOP, start draining");

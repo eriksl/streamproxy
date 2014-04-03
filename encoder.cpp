@@ -154,7 +154,7 @@ bool Encoder::start_finish() throw()
 bool Encoder::stop() throw()
 {
 	struct pollfd pfd;
-	char buffer[4096];
+	static char buffer[4096];
 	ssize_t rv;
 
 	//vlog("Encoder: STOP TRANSCODING begin");

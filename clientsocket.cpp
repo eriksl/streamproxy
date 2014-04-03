@@ -22,7 +22,6 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 {
 	try
 	{
-		int			arg1;
 		static		char read_buffer[1024];
 		ssize_t		bytes_read;
 		size_t		idx = string::npos;

@@ -9,8 +9,7 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
-	socket_queue(32 * 1024)
+FileStreaming::FileStreaming(string file, int socket_fd) throw(string)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -21,10 +20,10 @@ FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
 	
 	vlog("FileStreaming: streaming file: %s", file.c_str());
 
-	socket_fd = socket_fd_in;
-
-	if((fd = open(file.c_str(), O_RDONLY, 0)) < 0)
+	if((file_fd = open(file.c_str(), O_RDONLY, 0)) < 0)
 		throw(string("FileStreaming: cannot open file " + file));
+
+	Queue socket_queue(32 * 1024);
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -32,10 +31,7 @@ FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
 	{
 		if(socket_queue.usage() < 50)
 		{
-			//vlog("FileStreaming: read file, before: length: %d, fill: %d",
-					//socket_queue.length(), socket_queue.usage());
-
-			if(!socket_queue.read(fd))
+			if(!socket_queue.read(file_fd))
 			{
 				vlog("FileStreaming: eof");
 				break;
@@ -70,12 +66,11 @@ FileStreaming::FileStreaming(string file, int socket_fd_in) throw(string) :
 		}
 	}
 
-	vlog("FileStreaming: socket max queue fill: %d%%", max_fill_socket);
-	vlog("FileStreaming: streaming ends");
+	vlog("FileStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }
 
 FileStreaming::~FileStreaming() throw()
 {
 	vlog("FileStreaming: cleanup up");
-	close(fd);
+	close(file_fd);
 }

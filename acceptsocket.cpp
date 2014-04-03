@@ -8,7 +8,6 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
-#include <linux/dvb/dmx.h>
 
 static const struct addrinfo gai_accept_hints =
 {

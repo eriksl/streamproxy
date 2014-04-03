@@ -1,20 +1,16 @@
 #ifndef _filestreaming_h_
 #define _filestreaming_h_
 
-#include "queue.h"
-
 #include <string>
 
 class FileStreaming
 {
 	private:
 
+		int file_fd;
+
 		FileStreaming()					throw();
 		FileStreaming(FileStreaming &)	throw();
-
-		int		fd;
-		int		socket_fd;
-		Queue	socket_queue;
 
 	public:
 
