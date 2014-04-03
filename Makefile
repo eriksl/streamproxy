@@ -5,7 +5,7 @@ DESTDIR			= /usr/local
 PROGRAM			= streamproxy
 OBJS			= url.o vlog.o queue.o service.o \
 				  streamproxy.o acceptsocket.o clientsocket.o \
-				  livestreaming.o \
+				  livestreaming.o livetranscoding.o \
 				  filestreaming.o filetranscoding.o \
 				  webifrequest.o \
 				  demuxer.o encoder.o \

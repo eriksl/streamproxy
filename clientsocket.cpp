@@ -1,6 +1,7 @@
 #include "clientsocket.h"
 #include "service.h"
 #include "livestreaming.h"
+#include "livetranscoding.h"
 #include "filestreaming.h"
 #include "filetranscoding.h"
 #include "vlog.h"
@@ -157,13 +158,13 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
 			vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
-		if((urlparams[""] == "/stream") && urlparams.count("service"))
+		if((urlparams[""] == "/livestream") && urlparams.count("service"))
 		{
 			Service service(urlparams["service"]);
 
-			vlog("live streaming request");
-			(void)LiveStreaming(service, fd, LiveStreaming::mode_stream);
-			vlog("live streaming ends");
+			vlog("ClientSocket: live streaming request");
+			(void)LiveStreaming(service, fd);
+			vlog("ClientSocket: live streaming ends");
 
 			return;
 		}
@@ -172,9 +173,9 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		{
 			Service service(urlparams["service"]);
 
-			vlog("live transcoding request");
-			(void)LiveStreaming(service, fd, LiveStreaming::mode_transcode);
-			vlog("live transcoding ends");
+			vlog("ClientSocket: live transcoding request");
+			(void)LiveTranscoding(service, fd);
+			vlog("ClientSocket: live transcoding ends");
 
 			return;
 		}
@@ -221,18 +222,23 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			else
 			{
 				Service service(urlparams[""].substr(1));
-				LiveStreaming::streaming_mode mode;
+
+				vlog("ClientSocket: default live request");
 
 				if(service.is_valid())
 				{
 					if(default_action == action_transcode)
-						mode = LiveStreaming::mode_transcode;
+					{
+						vlog("ClientSocket: streaming service");
+						(void)LiveStreaming(service, fd);
+					}
 					else
-						mode = LiveStreaming::mode_stream;
+					{
+						vlog("ClientSocket: transcoding service");
+						//(void)LiveTranscoding(service, fd);
+					}
 
-					vlog("default live request");
-					(void)LiveStreaming(service, fd, mode);
-					vlog("default live ends");
+					vlog("ClientSocket: default live ends");
 
 					return;
 				}
