@@ -1,5 +1,5 @@
 #include "acceptsocket.h"
-#include "streamingsocket.h"
+#include "clientsocket.h"
 #include "vlog.h"
 #include "mpegts_pat.h"
 #include "mpegts_pmt.h"
@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 		int		new_fd;
 		string	port;
 		string	default_action_arg;
-		StreamingSocket::default_streaming_action default_action;
+		ClientSocket::default_streaming_action default_action;
 
 		desc.add_options()
 			("port",		bpo::value<string>(&port)->default_value("8002"),					"bind to tcp port")
@@ -46,38 +46,17 @@ int main(int argc, char **argv)
 		vlog("default action: %s", default_action_arg.c_str());
 
 		if(default_action_arg == "stream")
-			default_action = StreamingSocket::action_stream;
+			default_action = ClientSocket::action_stream;
 		else
 		{
 			if(default_action_arg == "transcode")
-				default_action = StreamingSocket::action_transcode;
+				default_action = ClientSocket::action_transcode;
 			else
 			{
 				vlog("default action should be either \"stream\" or \"action\"");
 				exit(1);
 			}
 		}
-
-		MpegTSPat pat(0);
-		MpegTSPmt pmt(0);
-
-		pat.probe();
-
-		MpegTSPat::pat_t::const_iterator it;
-
-		for(it = pat.pat.begin(); it != pat.pat.end(); it++)
-			if(pmt.probe(it->second))
-				break;
-
-		if(it != pat.pat.end())
-		{
-			vlog("* program %d, pmt pid: %x", it->first, it->second);
-			vlog("* pcr pid:   %x", pmt.pcr_pid);
-			vlog("* video pid: %x", pmt.video_pid);
-			vlog("* audio pid: %x", pmt.audio_pid);
-		}
-
-		exit(0);
 
 		AcceptSocket accept_socket(port);
 
@@ -91,7 +70,7 @@ int main(int argc, char **argv)
 				close(new_fd);
 			else
 			{
-				(void)StreamingSocket(new_fd, default_action);
+				(void)ClientSocket(new_fd, default_action);
 				_exit(0);
 			}
 		}
