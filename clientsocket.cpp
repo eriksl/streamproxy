@@ -1,3 +1,11 @@
+#include "clientsocket.h"
+#include "service.h"
+#include "livestreaming.h"
+#include "filestreaming.h"
+#include "filetranscoding.h"
+#include "vlog.h"
+#include "url.h"
+
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -9,25 +17,17 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "service.h"
-#include "streamingsocket.h"
-#include "livestreaming.h"
-#include "vlog.h"
-#include "url.h"
-
-StreamingSocket::StreamingSocket(int fd_in, default_streaming_action default_action) throw()
+ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) throw()
 {
 	try
 	{
-		int arg1;
-		static	char read_buffer[1024];
-		ssize_t	bytes_read;
-		size_t	idx = string::npos;
-		string	header;
-		struct	pollfd pfd;
-		time_t	start;
-		bool	url_live, url_stream, url_default;
-		string	service_id;
+		int			arg1;
+		static		char read_buffer[1024];
+		ssize_t		bytes_read;
+		size_t		idx = string::npos;
+		string		header;
+		struct		pollfd pfd;
+		time_t		start;
 
 		stringvector lines;
 		stringvector tokens;
@@ -37,9 +37,6 @@ StreamingSocket::StreamingSocket(int fd_in, default_streaming_action default_act
 
 		Url::urlparam urlparams;
 		Url::urlparam::const_iterator param_it;
-		Url::urlparam::const_iterator service_it;
-
-		LiveStreaming::streaming_mode mode;
 
 		fd = fd_in;
 
@@ -51,7 +48,7 @@ StreamingSocket::StreamingSocket(int fd_in, default_streaming_action default_act
 		arg1 = 1;
 
 		if(setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&arg1, sizeof(arg1)))
-			throw(string("StreamingSocket:: cannot set NODELAY"));
+			throw(string("ClientSocket:: cannot set NODELAY"));
 #endif
 
 #if 0
@@ -160,59 +157,86 @@ StreamingSocket::StreamingSocket(int fd_in, default_streaming_action default_act
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
 			vlog("parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
-		url_stream = url_live = url_default = 0;
-
-		if(((url_stream = (urlparams[""] == "/stream"))) || ((url_live = (urlparams[""] == "/live"))) ||
-				(url_default = Service(urlparams[""].substr(1)).is_valid()))
+		if((urlparams[""] == "/stream") && urlparams.count("service"))
 		{
-			if((service_it = urlparams.find("service")) != urlparams.end())
-				service_id = service_it->second;
-			else
-				service_id = "";
+			Service service(urlparams["service"]);
 
-			if(url_default)
-			{
-				if(default_action == action_transcode)
-					mode = LiveStreaming::mode_transcode;
-				else
-					mode = LiveStreaming::mode_stream;
+			vlog("live streaming request");
+			(void)LiveStreaming(service, fd, LiveStreaming::mode_stream);
+			vlog("live streaming ends");
 
-				service_id = urlparams[""].substr(1);
-			}
-			else
-			{
-				if(url_stream)
-				{
-					mode = LiveStreaming::mode_stream;
-				}
-				else
-				{
-					if(url_live)
-					{
-						mode = LiveStreaming::mode_transcode;
-					}
-					else
-					{
-						mode = LiveStreaming::mode_stream; // keep GCC happy
-					}
-				}
-			}
-
-			Service service(service_id);
-
-			if(service.is_valid())
-			{
-				vlog("streaming request");
-				(void)LiveStreaming(service, fd, mode);
-				vlog("streaming ends");
-				return;
-			}
+			return;
 		}
 
-		if(urlparams[""] == "/file")
+		if((urlparams[""] == "/live") && urlparams.count("service"))
+		{
+			Service service(urlparams["service"]);
+
+			vlog("live transcoding request");
+			(void)LiveStreaming(service, fd, LiveStreaming::mode_transcode);
+			vlog("live transcoding ends");
+
+			return;
+		}
+
+		if((urlparams[""] == "/filestream") && urlparams.count("file"))
+		{
+			vlog("file streaming request");
+			(void)FileStreaming(urlparams["file"], fd);
+			vlog("file streaming ends");
+
+			return;
+		}
+
+		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			vlog("file transcoding request");
+			(void)FileTranscoding(urlparams["file"], fd);
+			vlog("file transcoding ends");
+
 			return;
+		}
+
+		if(urlparams[""].length() > 1)
+		{
+			if((urlparams[""].substr(1, 1) == "/"))
+			{
+				vlog("default file request");
+
+				if(default_action == action_stream)
+				{
+					vlog("streaming file");
+					(void)FileStreaming(urlparams["file"], fd);
+				}
+				else
+				{
+					vlog("transcoding file");
+					(void)FileTranscoding(urlparams["file"], fd);
+				}
+
+				vlog("default file ends");
+
+				return;
+			}
+			else
+			{
+				Service service(urlparams[""].substr(1));
+				LiveStreaming::streaming_mode mode;
+
+				if(service.is_valid())
+				{
+					if(default_action == action_transcode)
+						mode = LiveStreaming::mode_transcode;
+					else
+						mode = LiveStreaming::mode_stream;
+
+					vlog("default live request");
+					(void)LiveStreaming(service, fd, mode);
+					vlog("default live ends");
+
+					return;
+				}
+			}
 		}
 
 		throw(string("unknown request: ") + urlparams[""]);
@@ -235,7 +259,7 @@ StreamingSocket::StreamingSocket(int fd_in, default_streaming_action default_act
 	}
 }
 
-StreamingSocket::~StreamingSocket() throw()
+ClientSocket::~ClientSocket() throw()
 {
 	close(fd);
 }

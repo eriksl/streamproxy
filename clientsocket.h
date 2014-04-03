@@ -1,5 +1,5 @@
-#ifndef _streamingsocket_h_
-#define _streamingsocket_h_
+#ifndef _clientsocket_h_
+#define _clientsocket_h_
 
 #include <string>
 using std::string;
@@ -10,7 +10,7 @@ using std::vector;
 #include <map>
 using std::map;
 
-class StreamingSocket
+class ClientSocket
 {
 	private:
 
@@ -30,14 +30,14 @@ class StreamingSocket
 			action_transcode,
 		} default_streaming_action;
 
-				StreamingSocket(int fd, default_streaming_action default_action)	throw();
-			    ~StreamingSocket()													throw();
-		void	run()																throw();
+				ClientSocket(int fd, default_streaming_action default_action)	throw();
+			    ~ClientSocket()													throw();
+		void	run()															throw();
 
 	private:
 
-		StreamingSocket(); // delete default constructors
-		StreamingSocket(const StreamingSocket &);
+		ClientSocket();
+		ClientSocket(const ClientSocket &);
 };
 
 #endif
