@@ -101,7 +101,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 					break;
 			}
 
-			if((time(0) - start) > 10)
+			if((time(0) - start) > 5)
 				throw(string("ClientSocket: peer connection timeout"));
 		}
 
@@ -121,7 +121,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 
 		for(it1 = lines.begin(); it1 != lines.end(); it1++)
 		{
-			vlog("ClientSocket: line: \"%s\"", it1->c_str());
+			//vlog("ClientSocket: line: \"%s\"", it1->c_str());
 
 			if(it1->find("GET ") == 0)
 			{
@@ -252,18 +252,20 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 	}
 	catch(const string &e)
 	{
-		string reply;
-
 		vlog("ClientSocket: exception: %s", e.c_str());
-		reply = string("400 Bad request: ") + e + "\r\n\r\n";
+		reply = string("HTTP/1.0 400 Bad request: ") + e + "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+		write(fd, reply.c_str(), reply.length());
+	}
+	catch(const std::exception &e)
+	{
+		vlog("ClientSocket: unknown std exception: %s", typeid(e).name());
+		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(...)
 	{
-		string reply;
-
 		vlog("ClientSocket: unknown exception");
-		reply = "400 Bad request: \r\n\r\n";
+		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 }

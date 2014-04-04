@@ -6,7 +6,7 @@
 #include <syslog.h>
 #include <string.h>
 
-char foreground = 1;
+bool foreground = 1;
 
 void vlog(const char *format, ...)
 {

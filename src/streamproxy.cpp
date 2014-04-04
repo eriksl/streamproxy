@@ -77,15 +77,15 @@ int main(int argc, char **argv)
 	}
 	catch(const string &e)
 	{
-		vlog("streamproxy: caught exception: %s", e.c_str());
+		fprintf(stderr, "streamproxy: %s\n", e.c_str());
 		exit(1);
 	}
 	catch(bpo::error &e)
 	{
-		vlog("streamproxy: %s", e.what());
+		fprintf(stderr, "streamproxy: %s\n", e.what());
 		convert.str("");
 		convert << desc;
-		vlog("streamproxy: %s", convert.str().c_str());
+		fprintf(stderr, "streamproxy: %s\n", convert.str().c_str());
 		exit(1);
 	}
 	catch(...)
