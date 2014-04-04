@@ -8,13 +8,15 @@ class AcceptSocket
 {
 	private:
 
-		int fd;
+		int				fd;
+		struct addrinfo *gai_accept_address;
 
 		AcceptSocket();
 		AcceptSocket(const AcceptSocket &);
 
 	public:
 			AcceptSocket(string port)	throw(string);
+			~AcceptSocket()				throw();
 		int	accept()			const	throw(string);
 };
 

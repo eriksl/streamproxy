@@ -29,52 +29,41 @@ static const struct linger so_linger =
 
 AcceptSocket::AcceptSocket(string port) throw(string)
 {
-	struct addrinfo *gai_accept_address;
 	int rv;
+
+	gai_accept_address = 0;
 
 	if((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
 		throw("AcceptSocket: cannot create accept socket");
 
 	if(setsockopt(fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)))
-	{
-		close(fd);
-		throw("AcceptSocket: cannot set linger on accept socket");
-	}
+		throw(string("AcceptSocket: cannot set linger on accept socket"));
 
 	rv = 1;
 
 	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &rv, sizeof(rv)))
-	{
-		close(fd);
-		throw("AcceptSocket: cannot set reuseaddr on accept socket");
-	}
+		throw(string("AcceptSocket: cannot set reuseaddr on accept socket"));
 
 	if((rv = getaddrinfo(0, port.c_str(), &gai_accept_hints, &gai_accept_address)))
-	{
-		close(fd);
 		throw(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv));
-	}
 
 	if(!gai_accept_address)
-	{
-		close(fd);
 		throw(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv));
-	}
 
 	if(bind(fd, gai_accept_address->ai_addr, gai_accept_address->ai_addrlen))
-	{
-		close(fd);
-		freeaddrinfo(gai_accept_address);
-		throw("AcceptSocket: cannot bind accept socket");
-	}
-
-	freeaddrinfo(gai_accept_address);
+		throw(string("AcceptSocket: cannot bind accept socket"));
 
 	if(listen(fd, 4))
-	{
+		throw(string("AcceptSocket: cannot listen on accept socket"));
+}
+
+AcceptSocket::~AcceptSocket() throw()
+{
+	if(gai_accept_address)
+		freeaddrinfo(gai_accept_address);
+
+	if(fd >= 0)
 		close(fd);
-		throw("AcceptSocket: cannot listen on accept socket");
-	}
 }
 
 int AcceptSocket::accept() const throw(string)
@@ -82,7 +71,7 @@ int AcceptSocket::accept() const throw(string)
 	int new_fd;
 
 	if((new_fd = ::accept(fd, 0, 0)) < 0)
-		throw("AcceptSocket: error in accept");
+		throw(string("AcceptSocket: error in accept"));
 
 	return(new_fd);
 }
