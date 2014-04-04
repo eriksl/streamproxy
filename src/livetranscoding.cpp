@@ -15,7 +15,7 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveTranscoding::LiveTranscoding(const Service &service, int socketfd) throw(string)
+LiveTranscoding::LiveTranscoding(const Service &service, int socketfd, string webauth) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -40,7 +40,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd) throw(str
 	if(!service.is_valid())
 		throw(string("LiveTranscoding: invalid service"));
 
-	WebifRequest webifrequest(service);
+	WebifRequest webifrequest(service, webauth);
 
 	while((time(0) - timeout) < 30)
 	{

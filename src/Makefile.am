@@ -4,6 +4,7 @@ streamproxy_SOURCES = \
 	acceptsocket.cpp \
 	clientsocket.cpp \
 	demuxer.cpp \
+	enigma_settings.cpp \
 	encoder.cpp \
 	filestreaming.cpp \
 	filetranscoding.cpp \
@@ -20,4 +21,4 @@ streamproxy_SOURCES = \
 	webifrequest.cpp
 
 streamproxy_CXXFLAGS = -Wall -Wextra -Wshadow -Wundef -Wformat=2 -Winit-self -Wunused -Werror -Wpointer-arith -Wcast-qual -Wmultichar
-streamproxy_LDADD = -lpthread -lboost_program_options
+streamproxy_LDADD = -lpthread -lboost_program_options -lcrypt

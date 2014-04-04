@@ -25,7 +25,8 @@ class LiveTranscoding
 
 	public:
 
-		LiveTranscoding(const Service &service, int socketfd) throw(std::string);
+		LiveTranscoding(const Service &service, int socketfd,
+				std::string webauth) throw(std::string);
 };
 
 #endif

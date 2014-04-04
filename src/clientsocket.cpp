@@ -15,11 +15,17 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <poll.h>
+#include <ctype.h>
+#include <pwd.h>
+#include <shadow.h>
 
 #include <boost/algorithm/string.hpp>
 
-ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) throw()
+ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
+		default_streaming_action default_action) throw()
 {
+	string	reply;
+
 	try
 	{
 		static		char read_buffer[1024];
@@ -28,6 +34,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		string		header;
 		struct		pollfd pfd;
 		time_t		start;
+		string		webauth, user, password;
 
 		stringvector lines;
 		stringvector tokens;
@@ -151,6 +158,40 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 		if(lines.size() < 1)
 			throw(string("ClientSocket: invalid request"));
 
+		if(use_web_authentication)
+		{
+			if(!headers.count("Authorization"))
+			{
+				vlog("ClientSocket: no authorisation received from client");
+				reply = string("HTTP/1.0 401 Unauthorized\r\n") +
+					"WWW-Authenticate: Basic realm=\"OpenWebif\"\r\n" +
+					"Content-Type: text/html\r\n" +
+					"Connection: close\r\n\r\n";
+				write(fd, reply.c_str(), reply.length());
+
+				return;
+			}
+
+			webauth = headers.at("Authorization");
+
+			if((idx = webauth.find(' ')) == string::npos)
+				throw(string("ClientSocket: web authentication: invalid syntax (1)"));
+
+			webauth = webauth.substr(idx + 1);
+			user = base64_decode(webauth);
+
+			if((idx = user.find(':')) == string::npos)
+				throw(string("ClientSocket: web authentication: invalid syntax (2)"));
+
+			password = user.substr(idx + 1);
+			user = user.substr(0, idx);
+
+			vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
+
+			if(!validate_user(user, password))
+				throw(string("Invalid authentication"));
+		}
+
 		for(headit = headers.begin(); headit != headers.end(); headit++)
 			vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
 
@@ -166,7 +207,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			Service service(urlparams["service"]);
 
 			vlog("ClientSocket: live streaming request");
-			(void)LiveStreaming(service, fd);
+			(void)LiveStreaming(service, fd, webauth);
 			vlog("ClientSocket: live streaming ends");
 
 			return;
@@ -177,7 +218,7 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 			Service service(urlparams["service"]);
 
 			vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscoding(service, fd);
+			(void)LiveTranscoding(service, fd, webauth);
 			vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -230,15 +271,15 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 
 				if(service.is_valid())
 				{
-					if(default_action == action_transcode)
+					if(default_action == action_stream)
 					{
 						vlog("ClientSocket: streaming service");
-						(void)LiveStreaming(service, fd);
+						(void)LiveStreaming(service, fd, webauth);
 					}
 					else
 					{
 						vlog("ClientSocket: transcoding service");
-						//(void)LiveTranscoding(service, fd);
+						(void)LiveTranscoding(service, fd, webauth);
 					}
 
 					vlog("ClientSocket: default live ends");
@@ -273,4 +314,113 @@ ClientSocket::ClientSocket(int fd_in, default_streaming_action default_action) t
 ClientSocket::~ClientSocket() throw()
 {
 	close(fd);
+}
+
+/*
+	base64.cpp and base64.h
+
+	Copyright (C) 2004-2008 René Nyffenegger
+
+	This source code is provided 'as-is', without any express or implied
+	warranty. In no event will the author be held liable for any damages
+	arising from the use of this software.
+
+	Permission is granted to anyone to use this software for any purpose,
+	including commercial applications, and to alter it and redistribute it
+	freely, subject to the following restrictions:
+
+	1. The origin of this source code must not be misrepresented; you must not
+		claim that you wrote the original source code. If you use this source code
+		in a product, an acknowledgment in the product documentation would be
+		appreciated but is not required.
+
+	2. Altered source versions must be plainly marked as such, and must not be
+		misrepresented as being the original source code.
+
+	3. This notice may not be removed or altered from any source distribution.
+
+	René Nyffenegger rene.nyffenegger@adp-gmbh.ch
+*/
+
+const std::string ClientSocket::base64_chars =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+	"abcdefghijklmnopqrstuvwxyz"
+	"0123456789+/";
+
+bool ClientSocket::is_base64(unsigned char c)
+{
+	return(isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string ClientSocket::base64_decode(const std::string &encoded_string) throw()
+{
+	int in_len = encoded_string.size();
+	int i = 0;
+	int j = 0;
+	int in_ = 0;
+	unsigned char char_array_4[4], char_array_3[3];
+	std::string ret;
+
+	while(in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_]))
+	{
+		char_array_4[i++] = encoded_string[in_];
+		in_++;
+
+		if(i ==4)
+		{
+			for(i = 0; i <4; i++)
+				char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+			char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+			char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+			char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+			for(i = 0; (i < 3); i++)
+				ret += char_array_3[i];
+			i = 0;
+		}
+	}
+
+	if(i)
+	{
+		for (j = i; j <4; j++)
+			char_array_4[j] = 0;
+
+		for (j = 0; j <4; j++)
+			char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+		char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+		char_array_3[1] = ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+		char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+		for(j = 0; (j < i - 1); j++)
+			ret += char_array_3[j];
+	}
+
+	return ret;
+}
+
+bool ClientSocket::validate_user(string user, string password) throw()
+{
+	struct passwd	*pw;
+	struct spwd		*sp;
+	string			encrypted;
+	string			pw_password;
+
+	if((sp = getspnam(user.c_str())))
+		pw_password = sp->sp_pwdp;
+	else
+	{
+		if((pw = getpwnam(user.c_str())))
+			pw_password = pw->pw_passwd;
+		else
+		{
+			vlog("ClientSocket: user %s not in passwd file");
+			return(false);
+		}
+	}
+
+	encrypted = crypt(password.c_str(), pw_password.c_str());
+
+	return(encrypted == pw_password);
 }

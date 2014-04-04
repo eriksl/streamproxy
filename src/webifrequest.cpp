@@ -31,7 +31,7 @@ static const struct addrinfo gai_webif_hints =
 	.ai_next        = 0,
 };
 
-WebifRequest::WebifRequest(const Service &service_in) throw(string) :
+WebifRequest::WebifRequest(const Service &service_in, string webauth) throw(string) :
 		service(service_in)
 {
 	struct addrinfo *gai_webif_address;
@@ -68,7 +68,14 @@ WebifRequest::WebifRequest(const Service &service_in) throw(string) :
 
 	freeaddrinfo(gai_webif_address);
 
-	request = string("GET /web/stream?StreamService=") + service.service_string() + " HTTP/1.0\r\n\r\n";
+	request = string("GET /web/stream?StreamService=") + service.service_string() + " HTTP/1.0\r\n";
+
+	if(webauth.length())
+		request += "Authorization: Basic " + webauth + "\r\n";
+
+	request += "\r\n";
+
+	vlog("WebifRequest: send request to webif: \"%s\"", request.c_str());
 
 	if(write(fd, request.c_str(), request.length()) != (ssize_t)request.length())
 		throw(string("WebifRequest: cannot send request"));

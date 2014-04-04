@@ -21,7 +21,7 @@ class WebifRequest
 
 	public:
 
-		WebifRequest(const Service &service)	throw(std::string);
+		WebifRequest(const Service &service, std::string webauth) throw(std::string);
 		~WebifRequest();
 
 		void	poll()							throw(std::string);

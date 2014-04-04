@@ -92,7 +92,9 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-clientsocket.$(OBJEXT) \
-	streamproxy-demuxer.$(OBJEXT) streamproxy-encoder.$(OBJEXT) \
+	streamproxy-demuxer.$(OBJEXT) \
+	streamproxy-enigma_settings.$(OBJEXT) \
+	streamproxy-encoder.$(OBJEXT) \
 	streamproxy-filestreaming.$(OBJEXT) \
 	streamproxy-filetranscoding.$(OBJEXT) \
 	streamproxy-livestreaming.$(OBJEXT) \
@@ -262,6 +264,7 @@ streamproxy_SOURCES = \
 	acceptsocket.cpp \
 	clientsocket.cpp \
 	demuxer.cpp \
+	enigma_settings.cpp \
 	encoder.cpp \
 	filestreaming.cpp \
 	filetranscoding.cpp \
@@ -278,7 +281,7 @@ streamproxy_SOURCES = \
 	webifrequest.cpp
 
 streamproxy_CXXFLAGS = -Wall -Wextra -Wshadow -Wundef -Wformat=2 -Winit-self -Wunused -Werror -Wpointer-arith -Wcast-qual -Wmultichar
-streamproxy_LDADD = -lpthread -lboost_program_options
+streamproxy_LDADD = -lpthread -lboost_program_options -lcrypt
 all: all-am
 
 .SUFFIXES:
@@ -370,6 +373,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-clientsocket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-demuxer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-encoder.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-enigma_settings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filestreaming.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filetranscoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livestreaming.Po@am__quote@
@@ -439,6 +443,20 @@ streamproxy-demuxer.obj: demuxer.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='demuxer.cpp' object='streamproxy-demuxer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-demuxer.obj `if test -f 'demuxer.cpp'; then $(CYGPATH_W) 'demuxer.cpp'; else $(CYGPATH_W) '$(srcdir)/demuxer.cpp'; fi`
+
+streamproxy-enigma_settings.o: enigma_settings.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-enigma_settings.o -MD -MP -MF $(DEPDIR)/streamproxy-enigma_settings.Tpo -c -o streamproxy-enigma_settings.o `test -f 'enigma_settings.cpp' || echo '$(srcdir)/'`enigma_settings.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-enigma_settings.Tpo $(DEPDIR)/streamproxy-enigma_settings.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='enigma_settings.cpp' object='streamproxy-enigma_settings.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-enigma_settings.o `test -f 'enigma_settings.cpp' || echo '$(srcdir)/'`enigma_settings.cpp
+
+streamproxy-enigma_settings.obj: enigma_settings.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-enigma_settings.obj -MD -MP -MF $(DEPDIR)/streamproxy-enigma_settings.Tpo -c -o streamproxy-enigma_settings.obj `if test -f 'enigma_settings.cpp'; then $(CYGPATH_W) 'enigma_settings.cpp'; else $(CYGPATH_W) '$(srcdir)/enigma_settings.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-enigma_settings.Tpo $(DEPDIR)/streamproxy-enigma_settings.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='enigma_settings.cpp' object='streamproxy-enigma_settings.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-enigma_settings.obj `if test -f 'enigma_settings.cpp'; then $(CYGPATH_W) 'enigma_settings.cpp'; else $(CYGPATH_W) '$(srcdir)/enigma_settings.cpp'; fi`
 
 streamproxy-encoder.o: encoder.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-encoder.o -MD -MP -MF $(DEPDIR)/streamproxy-encoder.Tpo -c -o streamproxy-encoder.o `test -f 'encoder.cpp' || echo '$(srcdir)/'`encoder.cpp

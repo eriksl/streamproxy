@@ -14,7 +14,7 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveStreaming::LiveStreaming(const Service &service, int socketfd) throw(string)
+LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -34,7 +34,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd) throw(string)
 	if(!service.is_valid())
 		throw(string("LiveStreaming: invalid service"));
 
-	WebifRequest webifrequest(service);
+	WebifRequest webifrequest(service, webauth);
 
 	while((time(0) - timeout) < 30)
 	{

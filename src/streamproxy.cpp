@@ -1,8 +1,7 @@
 #include "acceptsocket.h"
 #include "clientsocket.h"
 #include "vlog.h"
-#include "mpegts_pat.h"
-#include "mpegts_pmt.h"
+#include "enigma_settings.h"
 
 #include <stdio.h>
 #include <stdint.h>
