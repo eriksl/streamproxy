@@ -34,7 +34,7 @@ AcceptSocket::AcceptSocket(string port) throw(string)
 	gai_accept_address = 0;
 
 	if((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
-		throw("AcceptSocket: cannot create accept socket");
+		throw(string("AcceptSocket: cannot create accept socket"));
 
 	if(setsockopt(fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)))
 		throw(string("AcceptSocket: cannot set linger on accept socket"));
