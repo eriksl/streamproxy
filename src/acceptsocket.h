@@ -18,6 +18,7 @@ class AcceptSocket
 			AcceptSocket(string port)	throw(string);
 			~AcceptSocket()				throw();
 		int	accept()			const	throw(string);
+		int	get_fd()			const	throw();
 };
 
 #endif

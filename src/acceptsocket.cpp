@@ -75,3 +75,8 @@ int AcceptSocket::accept() const throw(string)
 
 	return(new_fd);
 }
+
+int AcceptSocket::get_fd() const throw()
+{
+	return(fd);
+}

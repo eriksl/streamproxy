@@ -12,6 +12,9 @@
 #include <errno.h>
 #include <syslog.h>
 #include <string.h>
+#include <poll.h>
+#include <signal.h>
+#include <sys/wait.h>
 
 #include <sstream>
 using std::ostringstream;
@@ -19,59 +22,157 @@ using std::ostringstream;
 #include <string>
 using std::string;
 
+#include <vector>
+using std::vector;
+
+#include <map>
+using std::map;
+
 #include <boost/program_options.hpp>
+namespace bpo = boost::program_options;
+
+typedef struct
+{
+	ClientSocket::default_streaming_action	default_action;
+	AcceptSocket							*accept_socket;
+} listen_socket_t;
+
+typedef vector<string> multiparameter_t;
+typedef map<string, listen_socket_t> listen_action_t;
+
+static void sigchld(int) // prevent Z)ombie processes
+{
+	vlog("streamproxy: wait for child");
+	waitpid(0, 0, 0);
+	signal(SIGCHLD, sigchld);
+	vlog("streamproxy: wait for child done");
+}
 
 int main(int argc, char **argv)
 {
-	namespace bpo = boost::program_options;
-	bpo::options_description	desc("Options");
-	bpo::variables_map			vm;
+	bpo::options_description	desc("Use single or multiple pairs of port_number:default_action either with --listen or positional");
 	ostringstream				convert;
 
 	try
 	{
-		int		new_fd;
-		string	port;
-		string	default_action_arg;
-		ClientSocket::default_streaming_action default_action;
+		multiparameter_t						listen_parameters;
+		multiparameter_t::const_iterator		it;
+		listen_action_t							listen_action;
+		listen_action_t::iterator				it2;
+		size_t									ix;
+		ssize_t									rv;
+		string									port;
+		string									action_str;
+		ClientSocket::default_streaming_action	action;
+		struct pollfd							*pfd;
+		int										new_socket;
+		static const char						*action_name[2] = { "stream", "transcode" };
+		EnigmaSettings							settings;
+		bpo::positional_options_description		po_desc;
+		bpo::variables_map						vm;
+		bool									use_web_authentication;
+		time_t									start;
+
+		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth") == "true")
+			use_web_authentication = true;
+		else
+			use_web_authentication = false;
+
+		vlog("web auth: %d", use_web_authentication);
+
+		po_desc.add("listen", -1);
 
 		desc.add_options()
-			("port",		bpo::value<string>(&port)->default_value("8002"),					"bind to tcp port")
-			("default",		bpo::value<string>(&default_action_arg)->default_value("stream"),	"default action when only serviceref is given, can be either stream or transcode");
+			("foreground,f",	bpo::bool_switch(&foreground)->implicit_value(true),	"run in foreground (don't become a daemon)")
+			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters),		"listen to tcp port with default action");
 
-		bpo::store(bpo::parse_command_line(argc, argv, desc), vm);
+		bpo::store(bpo::command_line_parser(argc, argv).options(desc).positional(po_desc).run(), vm);
 		bpo::notify(vm);
 
-		vlog("streamproxy: port: %s", port.c_str());
-		vlog("streamproxy: default action: %s", default_action_arg.c_str());
+		//fprintf(stderr, "foreground: %d\n", foreground);
 
-		if(default_action_arg == "stream")
-			default_action = ClientSocket::action_stream;
-		else
+		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
-			if(default_action_arg == "transcode")
-				default_action = ClientSocket::action_transcode;
+			ix = it->find(':');
+
+			if((ix == string::npos) || (ix == 0))
+				throw(string("positional parameter should consist of <port>:<default action>"));
+
+			port		= it->substr(0, ix);
+			action_str	= it->substr(ix + 1);
+
+			if(action_str == "stream")
+				action = ClientSocket::action_stream;
 			else
-			{
-				vlog("streamproxy: default action should be either \"stream\" or \"action\"");
-				exit(1);
-			}
+				if(action_str == "transcode")
+					action = ClientSocket::action_transcode;
+				else
+					throw(string("default action should be either stream or transcode"));
+
+			listen_action[port].default_action = action;
 		}
 
-		AcceptSocket accept_socket(port);
+		if(listen_action.size() == 0)
+			throw(string("no listen_port:default_action parameters given"));
+
+		pfd = new struct pollfd[listen_action.size()];
+
+		for(it2 = listen_action.begin(), ix = 0; it2 != listen_action.end(); it2++, ix++)
+		{
+			it2->second.accept_socket = new AcceptSocket(it2->first);
+			pfd[ix].fd		= it2->second.accept_socket->get_fd();
+			pfd[ix].events	= POLLIN;
+			fprintf(stderr, "> %s -> %s,%d\n", it2->first.c_str(), action_name[it2->second.default_action], it2->second.accept_socket->get_fd());
+		}
+
+		signal(SIGCHLD, sigchld);
 
 		for(;;)
 		{
-			new_fd = accept_socket.accept();
+			errno = 0;
 
-			vlog("streamproxy: accept new connection: %d", new_fd);
-
-			if(fork()) // parent
-				close(new_fd);
-			else
+			if((rv = poll(pfd, listen_action.size(), -1)) < 0)
 			{
-				(void)ClientSocket(new_fd, default_action);
-				_exit(0);
+				if(errno == EINTR)
+					errno = 0;
+				else
+					throw(string("poll error"));
+			}
+
+			for(ix = 0; ix < listen_action.size(); ix++)
+			{
+				if(pfd[ix].revents & (POLLERR | POLLNVAL | POLLHUP))
+					throw(string("poll error on fd"));
+
+				if(!(pfd[ix].revents & POLLIN))
+					continue;
+
+				for(it2 = listen_action.begin(); it2 != listen_action.end(); it2++)
+					if(it2->second.accept_socket->get_fd() == pfd[ix].fd)
+						break;
+
+				if(it2 == listen_action.end())
+					throw(string("poll success on non-existent fd"));
+
+				new_socket = it2->second.accept_socket->accept();
+
+				vlog("streamproxy: accept new connection on port %s, default action: %s, fd %d",
+						it2->first.c_str(), action_name[it2->second.default_action], new_socket);
+
+				if(fork()) // parent
+					close(new_socket);
+				else
+				{
+					(void)ClientSocket(new_socket, use_web_authentication, it2->second.default_action);
+					_exit(0);
+				}
+
+				start = time(0);
+				while((time(0) - start) < 2) // primitive connection rate limiting
+				{
+					vlog("* sleep *");
+					sleep(2);
+				}
 			}
 		}
 	}
