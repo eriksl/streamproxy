@@ -47,13 +47,11 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		fd = fd_in;
 
-#if 0
 		int arg1;
 
 		arg1 = fcntl(fd, F_GETFL, 0);
 		if(fcntl(fd, F_SETFL, arg1 | O_NONBLOCK))
 			throw(string("ClientSocket: F_SETFL"));
-#endif
 
 #if 0
 		arg1 = 1;
