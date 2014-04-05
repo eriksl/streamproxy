@@ -24,6 +24,16 @@ Service::Service(string service_in) throw(string)
 	service = service_in;
 	valid	= false;
 
+	if(service.length() == 0)
+	{
+		vlog("Service: invalid service (empty)");
+		service_field.clear();
+		return;
+	}
+
+	if(service[service.length() - 1] == ':') // OpenWebIF leaves this in
+		service.erase(service.length() - 1);
+
 	vlog("Service: create service: %s", service.c_str());
 
 	for(find_it = make_split_iterator(service, first_finder(":", boost::algorithm::is_equal()));

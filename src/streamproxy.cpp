@@ -86,8 +86,6 @@ int main(int argc, char **argv)
 		bpo::store(bpo::command_line_parser(argc, argv).options(desc).positional(po_desc).run(), vm);
 		bpo::notify(vm);
 
-		//fprintf(stderr, "foreground: %d\n", foreground);
-
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
 			ix = it->find(':');
