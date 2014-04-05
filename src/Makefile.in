@@ -99,11 +99,10 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-filetranscoding.$(OBJEXT) \
 	streamproxy-livestreaming.$(OBJEXT) \
 	streamproxy-livetranscoding.$(OBJEXT) \
-	streamproxy-mpegts_pat.$(OBJEXT) \
-	streamproxy-mpegts_pmt.$(OBJEXT) \
-	streamproxy-mpegts_sr.$(OBJEXT) streamproxy-queue.$(OBJEXT) \
+	streamproxy-mpegts.$(OBJEXT) streamproxy-queue.$(OBJEXT) \
 	streamproxy-service.$(OBJEXT) \
-	streamproxy-streamproxy.$(OBJEXT) streamproxy-url.$(OBJEXT) \
+	streamproxy-streamproxy.$(OBJEXT) \
+	streamproxy-time_offset.$(OBJEXT) streamproxy-url.$(OBJEXT) \
 	streamproxy-vlog.$(OBJEXT) streamproxy-webifrequest.$(OBJEXT)
 streamproxy_OBJECTS = $(am_streamproxy_OBJECTS)
 streamproxy_DEPENDENCIES =
@@ -270,12 +269,11 @@ streamproxy_SOURCES = \
 	filetranscoding.cpp \
 	livestreaming.cpp \
 	livetranscoding.cpp \
-	mpegts_pat.cpp \
-	mpegts_pmt.cpp \
-	mpegts_sr.cpp \
+	mpegts.cpp \
 	queue.cpp \
 	service.cpp \
 	streamproxy.cpp \
+	time_offset.cpp \
 	url.cpp \
 	vlog.cpp \
 	webifrequest.cpp
@@ -378,12 +376,11 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filetranscoding.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livestreaming.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livetranscoding.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts_pat.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts_pmt.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts_sr.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-queue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-streamproxy.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-time_offset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-url.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-vlog.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-webifrequest.Po@am__quote@
@@ -528,47 +525,19 @@ streamproxy-livetranscoding.obj: livetranscoding.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livetranscoding.obj `if test -f 'livetranscoding.cpp'; then $(CYGPATH_W) 'livetranscoding.cpp'; else $(CYGPATH_W) '$(srcdir)/livetranscoding.cpp'; fi`
 
-streamproxy-mpegts_pat.o: mpegts_pat.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_pat.o -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_pat.Tpo -c -o streamproxy-mpegts_pat.o `test -f 'mpegts_pat.cpp' || echo '$(srcdir)/'`mpegts_pat.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_pat.Tpo $(DEPDIR)/streamproxy-mpegts_pat.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_pat.cpp' object='streamproxy-mpegts_pat.o' libtool=no @AMDEPBACKSLASH@
+streamproxy-mpegts.o: mpegts.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts.o -MD -MP -MF $(DEPDIR)/streamproxy-mpegts.Tpo -c -o streamproxy-mpegts.o `test -f 'mpegts.cpp' || echo '$(srcdir)/'`mpegts.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts.Tpo $(DEPDIR)/streamproxy-mpegts.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts.cpp' object='streamproxy-mpegts.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_pat.o `test -f 'mpegts_pat.cpp' || echo '$(srcdir)/'`mpegts_pat.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts.o `test -f 'mpegts.cpp' || echo '$(srcdir)/'`mpegts.cpp
 
-streamproxy-mpegts_pat.obj: mpegts_pat.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_pat.obj -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_pat.Tpo -c -o streamproxy-mpegts_pat.obj `if test -f 'mpegts_pat.cpp'; then $(CYGPATH_W) 'mpegts_pat.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_pat.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_pat.Tpo $(DEPDIR)/streamproxy-mpegts_pat.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_pat.cpp' object='streamproxy-mpegts_pat.obj' libtool=no @AMDEPBACKSLASH@
+streamproxy-mpegts.obj: mpegts.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts.obj -MD -MP -MF $(DEPDIR)/streamproxy-mpegts.Tpo -c -o streamproxy-mpegts.obj `if test -f 'mpegts.cpp'; then $(CYGPATH_W) 'mpegts.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts.Tpo $(DEPDIR)/streamproxy-mpegts.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts.cpp' object='streamproxy-mpegts.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_pat.obj `if test -f 'mpegts_pat.cpp'; then $(CYGPATH_W) 'mpegts_pat.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_pat.cpp'; fi`
-
-streamproxy-mpegts_pmt.o: mpegts_pmt.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_pmt.o -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_pmt.Tpo -c -o streamproxy-mpegts_pmt.o `test -f 'mpegts_pmt.cpp' || echo '$(srcdir)/'`mpegts_pmt.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_pmt.Tpo $(DEPDIR)/streamproxy-mpegts_pmt.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_pmt.cpp' object='streamproxy-mpegts_pmt.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_pmt.o `test -f 'mpegts_pmt.cpp' || echo '$(srcdir)/'`mpegts_pmt.cpp
-
-streamproxy-mpegts_pmt.obj: mpegts_pmt.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_pmt.obj -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_pmt.Tpo -c -o streamproxy-mpegts_pmt.obj `if test -f 'mpegts_pmt.cpp'; then $(CYGPATH_W) 'mpegts_pmt.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_pmt.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_pmt.Tpo $(DEPDIR)/streamproxy-mpegts_pmt.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_pmt.cpp' object='streamproxy-mpegts_pmt.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_pmt.obj `if test -f 'mpegts_pmt.cpp'; then $(CYGPATH_W) 'mpegts_pmt.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_pmt.cpp'; fi`
-
-streamproxy-mpegts_sr.o: mpegts_sr.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_sr.o -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_sr.Tpo -c -o streamproxy-mpegts_sr.o `test -f 'mpegts_sr.cpp' || echo '$(srcdir)/'`mpegts_sr.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_sr.Tpo $(DEPDIR)/streamproxy-mpegts_sr.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_sr.cpp' object='streamproxy-mpegts_sr.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_sr.o `test -f 'mpegts_sr.cpp' || echo '$(srcdir)/'`mpegts_sr.cpp
-
-streamproxy-mpegts_sr.obj: mpegts_sr.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts_sr.obj -MD -MP -MF $(DEPDIR)/streamproxy-mpegts_sr.Tpo -c -o streamproxy-mpegts_sr.obj `if test -f 'mpegts_sr.cpp'; then $(CYGPATH_W) 'mpegts_sr.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_sr.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-mpegts_sr.Tpo $(DEPDIR)/streamproxy-mpegts_sr.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='mpegts_sr.cpp' object='streamproxy-mpegts_sr.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts_sr.obj `if test -f 'mpegts_sr.cpp'; then $(CYGPATH_W) 'mpegts_sr.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts_sr.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-mpegts.obj `if test -f 'mpegts.cpp'; then $(CYGPATH_W) 'mpegts.cpp'; else $(CYGPATH_W) '$(srcdir)/mpegts.cpp'; fi`
 
 streamproxy-queue.o: queue.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-queue.o -MD -MP -MF $(DEPDIR)/streamproxy-queue.Tpo -c -o streamproxy-queue.o `test -f 'queue.cpp' || echo '$(srcdir)/'`queue.cpp
@@ -611,6 +580,20 @@ streamproxy-streamproxy.obj: streamproxy.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='streamproxy.cpp' object='streamproxy-streamproxy.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-streamproxy.obj `if test -f 'streamproxy.cpp'; then $(CYGPATH_W) 'streamproxy.cpp'; else $(CYGPATH_W) '$(srcdir)/streamproxy.cpp'; fi`
+
+streamproxy-time_offset.o: time_offset.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-time_offset.o -MD -MP -MF $(DEPDIR)/streamproxy-time_offset.Tpo -c -o streamproxy-time_offset.o `test -f 'time_offset.cpp' || echo '$(srcdir)/'`time_offset.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-time_offset.Tpo $(DEPDIR)/streamproxy-time_offset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='time_offset.cpp' object='streamproxy-time_offset.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-time_offset.o `test -f 'time_offset.cpp' || echo '$(srcdir)/'`time_offset.cpp
+
+streamproxy-time_offset.obj: time_offset.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-time_offset.obj -MD -MP -MF $(DEPDIR)/streamproxy-time_offset.Tpo -c -o streamproxy-time_offset.obj `if test -f 'time_offset.cpp'; then $(CYGPATH_W) 'time_offset.cpp'; else $(CYGPATH_W) '$(srcdir)/time_offset.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-time_offset.Tpo $(DEPDIR)/streamproxy-time_offset.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='time_offset.cpp' object='streamproxy-time_offset.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-time_offset.obj `if test -f 'time_offset.cpp'; then $(CYGPATH_W) 'time_offset.cpp'; else $(CYGPATH_W) '$(srcdir)/time_offset.cpp'; fi`
 
 streamproxy-url.o: url.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-url.o -MD -MP -MF $(DEPDIR)/streamproxy-url.Tpo -c -o streamproxy-url.o `test -f 'url.cpp' || echo '$(srcdir)/'`url.cpp

@@ -9,7 +9,7 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd) throw(string)
+FileStreaming::FileStreaming(string file, int socket_fd, int time_offset) throw(string)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -18,7 +18,7 @@ FileStreaming::FileStreaming(string file, int socket_fd) throw(string)
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
 	
-	vlog("FileStreaming: streaming file: %s", file.c_str());
+	vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset);
 
 	if((file_fd = open(file.c_str(), O_RDONLY, 0)) < 0)
 		throw(string("FileStreaming: cannot open file " + file));

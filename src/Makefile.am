@@ -10,12 +10,11 @@ streamproxy_SOURCES = \
 	filetranscoding.cpp \
 	livestreaming.cpp \
 	livetranscoding.cpp \
-	mpegts_pat.cpp \
-	mpegts_pmt.cpp \
-	mpegts_sr.cpp \
+	mpegts.cpp \
 	queue.cpp \
 	service.cpp \
 	streamproxy.cpp \
+	time_offset.cpp \
 	url.cpp \
 	vlog.cpp \
 	webifrequest.cpp

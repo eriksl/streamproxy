@@ -6,6 +6,7 @@
 #include "filetranscoding.h"
 #include "vlog.h"
 #include "url.h"
+#include "time_offset.h"
 
 #include <unistd.h>
 #include <fcntl.h>
@@ -35,6 +36,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		struct		pollfd pfd;
 		time_t		start;
 		string		webauth, user, password;
+		int			time_offset;
 
 		stringvector lines;
 		stringvector tokens;
@@ -200,6 +202,11 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
 			vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
+		if(urlparams.count("startfrom"))
+			time_offset = TimeOffset(urlparams["startfrom"]).as_seconds();
+		else
+			time_offset = 0;
+
 		if((urlparams[""] == "/livestream") && urlparams.count("service"))
 		{
 			Service service(urlparams["service"]);
@@ -225,7 +232,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if((urlparams[""] == "/filestream") && urlparams.count("file"))
 		{
 			vlog("ClientSocket: file streaming request");
-			(void)FileStreaming(urlparams["file"], fd);
+			(void)FileStreaming(urlparams["file"], fd, time_offset);
 			vlog("ClientSocket: file streaming ends");
 
 			return;
@@ -234,7 +241,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd);
+			(void)FileTranscoding(urlparams["file"], fd, time_offset);
 			vlog("ClientSocket: file transcoding ends");
 
 			return;
@@ -249,12 +256,12 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 				if(default_action == action_stream)
 				{
 					vlog("ClientSocket: streaming file");
-					(void)FileStreaming(urlparams["file"], fd);
+					(void)FileStreaming(urlparams["file"], fd, time_offset);
 				}
 				else
 				{
 					vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd);
+					(void)FileTranscoding(urlparams["file"], fd, time_offset);
 				}
 
 				vlog("ClientSocket: default file ends");

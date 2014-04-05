@@ -3,8 +3,7 @@
 #include "queue.h"
 #include "encoder.h"
 #include "pidmap.h"
-#include "mpegts_pat.h"
-#include "mpegts_pmt.h"
+#include "mpegts.h"
 
 #include <string>
 using std::string;
@@ -13,7 +12,7 @@ using std::string;
 #include <fcntl.h>
 #include <poll.h>
 
-FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
+FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset) throw(string)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -28,29 +27,17 @@ FileTranscoding::FileTranscoding(string file, int socket_fd) throw(string)
 						"\r\n";
 	Queue			socket_queue(256 * 1024);
 
-	vlog("FileTranscoding: %s", file.c_str());
+	vlog("FileTranscoding: transcoding %s from %d", file.c_str(), time_offset);
 
 	encoder_buffer = new char[vuplus_magic_buffer_size];
 
-	if((file_fd = open(file.c_str(), O_RDONLY, 0)) < 0)
-		throw(string("FileTranscoding: cannot open file " + file));
+	MpegTS stream(file);
 
-	MpegTSPat pat(file_fd);
-	MpegTSPmt pmt(file_fd);
-	MpegTSPat::pat_t::const_iterator pat_it;
+	pids["pmt"]		= stream.pmt_pid;
+	pids["video"]	= stream.video_pid;
+	pids["audio"]	= stream.audio_pid;
 
-	pat.probe();
-
-	for(pat_it = pat.pat.begin(); pat_it != pat.pat.end(); pat_it++)
-		if(pmt.probe(pat_it->second))
-			break;
-
-	if(pat_it == pat.pat.end())
-		throw(string("FileTranscoding: invalid transport stream"));
-
-	pids["pmt"]		= pat_it->second;
-	pids["video"]	= pmt.video_pid;
-	pids["audio"]	= pmt.audio_pid;
+	file_fd = stream.get_fd();
 
 	for(it = pids.begin(); it != pids.end(); it++)
 		vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);

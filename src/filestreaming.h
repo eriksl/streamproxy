@@ -14,7 +14,8 @@ class FileStreaming
 
 	public:
 
-		FileStreaming(std::string file, int socketfd) throw(std::string);
+		FileStreaming(std::string file, int socketfd, int time_offset)
+				throw(std::string);
 		~FileStreaming() throw();
 };
 
