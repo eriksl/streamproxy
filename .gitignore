@@ -1,3 +1,10 @@
 *.o
 *.d
 streamproxy
+Makefile
+config.h
+config.log
+config.status
+src/.deps
+src/Makefile
+stamp-h1
