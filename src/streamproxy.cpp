@@ -77,8 +77,6 @@ int main(int argc, char **argv)
 		else
 			use_web_authentication = false;
 
-		vlog("web auth: %d", use_web_authentication);
-
 		po_desc.add("listen", -1);
 
 		desc.add_options()
@@ -114,6 +112,11 @@ int main(int argc, char **argv)
 		if(listen_action.size() == 0)
 			throw(string("no listen_port:default_action parameters given"));
 
+		if(!foreground && daemon(0, 0))
+			throw(string("daemon() gives error"));
+
+		signal(SIGCHLD, sigchld);
+
 		pfd = new struct pollfd[listen_action.size()];
 
 		for(it2 = listen_action.begin(), ix = 0; it2 != listen_action.end(); it2++, ix++)
@@ -123,8 +126,6 @@ int main(int argc, char **argv)
 			pfd[ix].events	= POLLIN;
 			fprintf(stderr, "> %s -> %s,%d\n", it2->first.c_str(), action_name[it2->second.default_action], it2->second.accept_socket->get_fd());
 		}
-
-		signal(SIGCHLD, sigchld);
 
 		for(;;)
 		{
@@ -168,10 +169,7 @@ int main(int argc, char **argv)
 
 				start = time(0);
 				while((time(0) - start) < 2) // primitive connection rate limiting
-				{
-					vlog("* sleep *");
 					sleep(2);
-				}
 			}
 		}
 	}
