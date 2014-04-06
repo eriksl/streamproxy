@@ -18,12 +18,13 @@
 #include <poll.h>
 #include <ctype.h>
 #include <pwd.h>
+#include <grp.h>
 #include <shadow.h>
 
 #include <boost/algorithm/string.hpp>
 
 ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
-		default_streaming_action default_action) throw()
+		string require_auth_group, default_streaming_action default_action) throw()
 {
 	string	reply;
 
@@ -188,7 +189,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 			vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
 
-			if(!validate_user(user, password))
+			if(!validate_user(user, password, require_auth_group))
 				throw(string("Invalid authentication"));
 		}
 
@@ -405,22 +406,69 @@ std::string ClientSocket::base64_decode(const std::string &encoded_string) throw
 	return ret;
 }
 
-bool ClientSocket::validate_user(string user, string password) throw()
+bool ClientSocket::validate_user(string user, string password, string require_auth_group) throw()
 {
 	struct passwd	*pw;
+	struct group	*gr;
 	struct spwd		*sp;
+	gid_t			user_gid;
+	int				ix;
+	const char 		*group_user;
+	bool			found;
+	string			primary_group;
 	string			encrypted;
 	string			pw_password;
 
-	if((sp = getspnam(user.c_str())))
-		pw_password = sp->sp_pwdp;
-	else
+	if(!(pw = getpwnam(user.c_str())))
 	{
-		if((pw = getpwnam(user.c_str())))
-			pw_password = pw->pw_passwd;
+		vlog("ClientSocket: user %s not in passwd file");
+		return(false);
+	}
+
+	user_gid = pw->pw_gid;
+	pw_password = pw->pw_passwd;
+
+	//vlog("user_gid: %d, pw: %s", user_gid, pw_password.c_str());
+
+	if((sp = getspnam(user.c_str())))
+	{
+		//vlog("shadow pw: %s", pw_password.c_str());
+		pw_password = sp->sp_pwdp;
+	}
+
+	if(require_auth_group.length())
+	{
+		if(!(gr = getgrnam(require_auth_group.c_str())))
+		{
+			//vlog("ClientSocket: group %s not in groups file", require_auth_group.c_str());
+			return(false);
+		}
+
+		found = false;
+
+		if(gr->gr_gid == user_gid)
+		{
+			//vlog("group in primary group of user, ok");
+			found = true;
+		}
 		else
 		{
-			vlog("ClientSocket: user %s not in passwd file");
+			for(ix = 0; (group_user = gr->gr_mem[ix]); ix++)
+			{
+				//vlog("checking as secondary group id, user %s", group_user);
+
+				if(group_user == user)
+				{
+					found = true;
+					//vlog("group in secondary group of user, ok");
+					break;
+				}
+			}
+		}
+
+		if(!found)
+		{
+			//vlog("user not in group, reject");
 			return(false);
 		}
 	}

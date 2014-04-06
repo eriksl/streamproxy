@@ -55,6 +55,7 @@ int main(int argc, char **argv)
 	try
 	{
 		multiparameter_t						listen_parameters;
+		string									require_auth_group;
 		multiparameter_t::const_iterator		it;
 		listen_action_t							listen_action;
 		listen_action_t::iterator				it2;
@@ -80,8 +81,9 @@ int main(int argc, char **argv)
 		po_desc.add("listen", -1);
 
 		desc.add_options()
-			("foreground,f",	bpo::bool_switch(&foreground)->implicit_value(true),	"run in foreground (don't become a daemon)")
-			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters),		"listen to tcp port with default action");
+			("foreground,f",	bpo::bool_switch(&foreground)->implicit_value(true),			"run in foreground (don't become a daemon)")
+			("group,g",			bpo::value<string>(&require_auth_group)->implicit_value(""),	"require streaming users to be member of this group")
+			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters),				"listen to tcp port with default action");
 
 		bpo::store(bpo::command_line_parser(argc, argv).options(desc).positional(po_desc).run(), vm);
 		bpo::notify(vm);
@@ -161,7 +163,7 @@ int main(int argc, char **argv)
 					close(new_socket);
 				else
 				{
-					(void)ClientSocket(new_socket, use_web_authentication, it2->second.default_action);
+					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group, it2->second.default_action);
 					_exit(0);
 				}
 
