@@ -41,10 +41,10 @@ typedef map<string, listen_socket_t> listen_action_t;
 
 static void sigchld(int) // prevent Z)ombie processes
 {
-	vlog("streamproxy: wait for child");
+	//vlog("streamproxy: wait for child");
 	waitpid(0, 0, 0);
 	signal(SIGCHLD, sigchld);
-	vlog("streamproxy: wait for child done");
+	//vlog("streamproxy: wait for child done");
 }
 
 int main(int argc, char **argv)

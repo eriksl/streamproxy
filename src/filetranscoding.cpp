@@ -12,11 +12,11 @@ using std::string;
 #include <fcntl.h>
 #include <poll.h>
 
-FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset) throw(string)
+FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset_s) throw(string)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
-	int				file_fd, encoder_fd, timeout;
+	int				encoder_fd, timeout;
 	size_t			max_fill_socket = 0;
 	ssize_t			bytes_read;
 	struct pollfd	pfd[2];
@@ -27,7 +27,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset) th
 						"\r\n";
 	Queue			socket_queue(256 * 1024);
 
-	vlog("FileTranscoding: transcoding %s from %d", file.c_str(), time_offset);
+	vlog("FileTranscoding: transcoding %s from %d", file.c_str(), time_offset_s);
 
 	encoder_buffer = new char[vuplus_magic_buffer_size];
 
@@ -37,7 +37,8 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset) th
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
 
-	file_fd = stream.get_fd();
+	if(stream.is_seekable)
+		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	for(it = pids.begin(); it != pids.end(); it++)
 		vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
@@ -116,7 +117,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset) th
 
 		if(pfd[0].revents & POLLOUT)
 		{
-			if((bytes_read = read(file_fd, encoder_buffer, vuplus_magic_buffer_size)) != vuplus_magic_buffer_size)
+			if((bytes_read = read(stream.get_fd(), encoder_buffer, vuplus_magic_buffer_size)) != vuplus_magic_buffer_size)
 			{
 				vlog("FileTranscoding: eof");
 				break;

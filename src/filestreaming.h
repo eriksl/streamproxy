@@ -7,16 +7,13 @@ class FileStreaming
 {
 	private:
 
-		int file_fd;
-
 		FileStreaming()					throw();
 		FileStreaming(FileStreaming &)	throw();
 
 	public:
 
-		FileStreaming(std::string file, int socketfd, int time_offset)
+		FileStreaming(std::string file, int socketfd, int time_offset_s)
 				throw(std::string);
-		~FileStreaming() throw();
 };
 
 #endif

@@ -12,7 +12,7 @@ using std::string;
 
 #include <boost/algorithm/string.hpp>
 
-MpegTS::MpegTS(int fd_in) throw()
+MpegTS::MpegTS(int fd_in) throw(string)
 {
 	fd = fd_in;
 	private_fd = false;
@@ -51,6 +51,32 @@ void MpegTS::init() throw(string)
 		throw(string("MpegTS::init: invalid transport stream (no suitable pmt)"));
 
 	pmt_pid = it->second;
+
+	is_seekable = false;
+
+	if(probe_seek())
+	{
+		last_pcr_ms = find_last_pcr_ms(&eof_offset);
+
+		if(lseek64(fd, 0, SEEK_SET) >= 0)
+		{
+			first_pcr_ms = find_pcr_ms();
+
+			if((first_pcr_ms >= 0) && (last_pcr_ms >= 0) && (last_pcr_ms > first_pcr_ms))
+				is_seekable = true;
+		}
+	}
+
+	if(!is_seekable)
+	{
+		first_pcr_ms	= -1;
+		last_pcr_ms		= -1;
+		eof_offset		= -1;
+	}
+
+	//vlog("first_pcr_ms = %d", first_pcr_ms);
+	//vlog("last_pcr_ms = %d", last_pcr_ms);
+	//vlog("eof_offset is at %lld", eof_offset);
 }
 
 bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
@@ -98,7 +124,7 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 		if((cc != -1) && (cc != packet.header.cc))
 		{
-			vlog("MpegTS::read_table discontinuity: %d/%d", cc, packet.header.cc);
+			//vlog("MpegTS::read_table discontinuity: %d/%d", cc, packet.header.cc);
 			goto retry;
 		}
 
@@ -123,12 +149,12 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 		//vlog("MpegTS::read_table: correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
 
-		packet_payload_offset = sizeof(packet.header);
+		packet_payload_offset = offsetof(ts_packet_t, header.payload);
 
 		//vlog("MpegTS::read_table: payload offset: %d", packet_payload_offset);
 
 		if(packet.header.af)
-			packet_payload_offset += packet.byte[sizeof(packet.header)] + 1;
+			packet_payload_offset = offsetof(ts_packet_t, header.afield) + packet_payload_offset;
 
 		//vlog("MpegTS::read_table: payload offset after adaptation field: %d", packet_payload_offset);
 
@@ -229,17 +255,12 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 		section_length_remaining -= payload_length;
 
-		//vlog("MpegTS::read_table: appended table data, %d bytes, length: %d, section: %d, remaining: %d", payload_length, table_data.length(), section_length, section_length_remaining);
-
 		if((section_length > 0) && (section_length_remaining == 0))
 			break;
 
-		//vlog("\nMpegTSSectionReader::read_table: next packet");
 		continue;
 
 retry:
-		//vlog("\nMpegTSSectionReader::read_table: probe retry");
-
 		section_length = -1;
 		section_length_remaining = -1;
 		raw_table_data.clear();
@@ -265,7 +286,7 @@ retry:
 
 	if(my_crc.checksum() != their_crc)
 	{
-		vlog("MpegTS::read_table: crc mismatch: my crc: %x, their crc: %x\n", my_crc.checksum(), their_crc);
+		vlog("MpegTS::read_table: crc mismatch: my crc: %x, their crc: %x", my_crc.checksum(), their_crc);
 		return(false);
 	}
 
@@ -338,7 +359,7 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 
 		if(pmt_header->reserved_1 != 0x07)
 		{
-			vlog("\nMpegTS::read_pmt > reserved_1: %x", pmt_header->reserved_1);
+			vlog("MpegTS::read_pmt > reserved_1: %x", pmt_header->reserved_1);
 			continue;
 		}
 
@@ -367,11 +388,9 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 			esinfo_length	= (es_entry->es_length_high << 8) | es_entry->es_length_low;
 			es_pid			= (es_entry->es_pid_high << 8) | es_entry->es_pid_low;
 
-			//vlog("\nMpegTSPmt::read_pmt: >> stream type: %x", es_entry->stream_type);
-
 			if(es_entry->reserved_1 != 0x07)
 			{
-				vlog("MpegTS::read_pmt: >> reserved 1: %x", es_entry->reserved_1);
+				vlog("MpegTS::read_pmt: reserved 1: %x", es_entry->reserved_1);
 				goto next_descriptor_entry;
 			}
 
@@ -379,17 +398,17 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 
 			if(es_entry->reserved_2 != 0x0f)
 			{
-				vlog("MpegTS::read_pmt: >> reserved 2: %x", es_entry->reserved_2);
+				vlog("MpegTS::read_pmt: reserved 2: %x", es_entry->reserved_2);
 				goto next_descriptor_entry;
 			}
 
 			if(es_entry->unused != 0x00)
 			{
-				vlog("MpegTS::read_pmt: >> unused: %x", es_entry->unused);
+				vlog("MpegTS::read_pmt: unused: %x", es_entry->unused);
 				goto next_descriptor_entry;
 			}
 
-			//vlog("MpegTS::read_pmt: >> esinfo_length: %d", esinfo_length);
+			//vlog("MpegTS::read_pmt: esinfo_length: %d", esinfo_length);
 
 			switch(es_entry->stream_type)
 			{
@@ -414,7 +433,7 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 					{
 						ds_entry = (const pmt_ds_entry_t *)&es_data[ds_data_skip + ds_data_offset];
 
-						//vlog("\nMpegTSPmt::read_pmt: >>> offset: %d", ds_data_offset);
+						//vlog("MpegTS::read_pmt: >>> offset: %d", ds_data_offset);
 						//vlog("MpegTS::read_pmt: >>> descriptor id: %x", ds_entry->id);
 						//vlog("MpegTS::read_pmt: >>> length: %d", ds_entry->length);
 
@@ -462,4 +481,252 @@ next_descriptor_entry:
 int MpegTS::get_fd() const throw()
 {
 	return(fd);
+}
+
+void MpegTS::parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw()
+{
+	h		 = pts_ms / (60 * 60 * 1000);
+	pts_ms	-=     h  * (60 * 60 * 1000);
+	m		 = pts_ms / (60 * 1000);
+	pts_ms	-=     m  * (60 * 1000);
+	s		 = pts_ms / (1000);
+	pts_ms	-=     s  * (1000);
+	ms		 =     pts_ms;
+}
+
+int MpegTS::find_pcr_ms() const throw()
+{
+	ts_packet_t				packet;
+	ts_adaptation_field_t	*afield;
+	int						attempt, pcr_ms = -1, pid;
+	int						ms, h, m, s;
+
+	for(attempt = 0; (pcr_ms < 0) && (attempt < find_pcr_max_probe); attempt++)
+	{
+		if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
+		{
+			//vlog("MpegTS::find_pcr_ms: read error");
+			return(-1);
+		}
+
+		if(packet.header.sync_byte != sync_byte_value)
+		{
+			vlog("MpegTS::find_pcr_ms: no sync byte");
+			return(-1);
+		}
+
+		pid = (packet.header.pid_high << 8) | packet.header.pid_low;
+
+		//vlog("MpegTS::find_pcr_ms: pid: %d", pid);
+
+		if(pid != pcr_pid)
+			continue;
+
+		if(!packet.header.af)
+		{
+			//vlog("MpegTS::find_pcr_ms: no adaptation field");
+			continue;
+		}
+
+		afield = (ts_adaptation_field_t *)&packet.header.afield;
+
+		if(!afield->contains_pcr)
+		{
+			//vlog("MpegTS::find_pcr_ms: adaptation field does not have pcr field");
+			continue;
+		}
+
+		// read 32 bits of the total 42 bits of clock precision, which is
+		// enough for seeking, one tick = 1/45th second
+		
+		pcr_ms = uint32_t(afield->pcr_0 << 24) | uint32_t(afield->pcr_1 << 16) |
+				uint32_t(afield->pcr_2 <<  8) | uint32_t(afield->pcr_3 <<  0);
+		pcr_ms /= 90;
+		pcr_ms <<= 1;
+	}
+
+	if(attempt >= find_pcr_max_probe)
+	{
+		vlog("find_pcr_ms: no pcr found");
+		return(-1);
+	}
+
+	parse_pts_ms(pcr_ms, h, m, s, ms);
+
+	//vlog("PCR found after %d packets", attempt);
+	//vlog("PCR = %d ms (%02d:%02d:%02d:%03d)", pcr_ms, h, m, s, ms);
+
+	return(pcr_ms);
+}
+
+bool MpegTS::probe_seek() const throw()
+{
+	if(lseek64(fd, 0, SEEK_CUR) == (loff_t)-1)
+		return(false);
+
+	return(true);
+}
+
+int MpegTS::find_last_pcr_ms(loff_t *eof_offs) const throw()
+{
+	loff_t	offset;
+	int		rv;
+	int		pts_ms = -1;
+	int		h, m, s, ms;
+	int		attempt = 0;
+
+	if((offset = lseek64(fd, find_last_pcr_end_offset, SEEK_END)) < 0)
+	{
+		vlog("MpegTS::find_last_pcr_ms: seek error (1)");
+		return(-1);
+	}
+
+	offset = (offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
+
+	if((offset = lseek64(fd, offset, SEEK_SET)) < 0)
+	{
+		vlog("MpegTS::find_last_pcr_ms: seek error (2)");
+		return(-1);
+	}
+
+	while((attempt < find_last_pcr_attempts) && (rv = find_pcr_ms()) >= 0)
+	{
+		pts_ms = rv;
+		parse_pts_ms(pts_ms, h, m, s, ms);
+		//vlog("MpegTS::find_last_pcr_ms: attempt: %d, last pcr: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
+		attempt++;
+	}
+
+	if(attempt >= find_last_pcr_attempts)
+	{
+		vlog("MpegTS::find_last_pcr_ms: no more attempts left");
+		return(-1);
+	}
+
+	parse_pts_ms(pts_ms, h, m, s, ms);
+	//vlog("MpegTS::find_last_pcr_ms: last pcr after %d attempt: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
+
+	if((offset = lseek64(fd, 0, SEEK_CUR)) < 0)
+	{
+		vlog("MpegTS::find_last_pcr_ms: seek error (2)");
+		return(-1);
+	}
+
+	if(eof_offs)
+		*eof_offs = offset;
+
+	return(pts_ms);
+}
+
+loff_t MpegTS::seek(int whence, loff_t offset) const throw(string)
+{
+	ts_packet_t	packet;
+	loff_t		actual_offset;
+
+	if(!is_seekable)
+		throw(string("MpegTS::seek: stream is not seekable"));
+
+	offset = ((offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t));
+
+	if(lseek64(fd, offset, whence) < 0)
+		throw(string("MpegTS::seek: lseek64 (1)"));
+
+	if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
+		throw(string("MpegTS::seek: read error"));
+
+	if(packet.header.sync_byte != sync_byte_value)
+		throw(string("MpegTS::seek: no sync byte"));
+
+	if((actual_offset = lseek64(fd, 0 - loff_t(sizeof(packet)), SEEK_CUR)) < 0)
+		throw(string("MpegTS::seek: lseek64 (2)"));
+
+	return(actual_offset);
+}
+
+loff_t MpegTS::seek(int pts_ms) const throw(string)
+{
+	int		h, m, s, ms;
+	int		attempt;
+	loff_t	lower_bound_offset	= 0;
+	int		lower_bound_pts_ms	= first_pcr_ms;
+	loff_t	upper_bound_offset	= eof_offset;
+	int		upper_bound_pts_ms	= last_pcr_ms;
+	loff_t	disect_offset;
+	int		disect_pts_ms;
+	loff_t	current_offset;
+
+	if(!is_seekable)
+		throw(string("MpegTS::seek: stream is not seekable"));
+
+	if(pts_ms < first_pcr_ms)
+	{
+		vlog("MpegTS::seek: seek pts beyond start of file");
+		return(-1);
+	}
+
+	if(pts_ms > last_pcr_ms)
+	{
+		vlog("MpegTS::seek: pts beyond end of file");
+		return(-1);
+	}
+
+	for(attempt = 0; attempt < seek_max_attempts; attempt++)
+	{
+		disect_offset = (lower_bound_offset + upper_bound_offset) / 2;
+
+		parse_pts_ms(pts_ms, h, m, s, ms);
+		//vlog("MpegTS::seek: seek for [%02d:%02d:%02d.%03d] between ", h, m, s, ms);
+		parse_pts_ms(lower_bound_pts_ms, h, m, s, ms);
+		//vlog("MpegTS::seek:  [%02d:%02d:%02d.%03d", h, m, s, ms);
+		parse_pts_ms(upper_bound_pts_ms, h, m, s, ms);
+		//vlog("MpegTS::seek:  -%02d:%02d:%02d.%03d], ", h, m, s, ms);
+		//vlog("MpegTS::seek:  offset = %lld [%lld-%lld], ", disect_offset, lower_bound_offset, upper_bound_offset);
+
+		if((current_offset = seek(SEEK_SET, disect_offset)) < 0)
+		{
+			vlog("MpegTS::seek: seek fails");
+			return(-1);
+		}
+
+		//vlog("MpegTS::seek: current offset = %lld (%lld%%)", current_offset, (current_offset * 100) / eof_offset);
+
+		if((disect_pts_ms = find_pcr_ms()) < 0)
+		{
+			vlog("MpegTS::seek: eof");
+			return(-1);
+		}
+
+		parse_pts_ms(disect_pts_ms, h, m, s, ms);
+		//vlog("MpegTS::seek: disect=[%02d:%02d:%02d.%03d]", h, m, s, ms);
+
+		if(disect_pts_ms < 0)
+		{
+			vlog("MpegTS::seek failed to find pts");
+			return(-1);
+		}
+
+		if(((disect_pts_ms > pts_ms) && ((disect_pts_ms - pts_ms) < 8000)) || 
+			((pts_ms >= disect_pts_ms) && ((pts_ms - disect_pts_ms) < 8000)))
+		{
+			//vlog("MpegTS::seek: found");
+			return(current_offset);
+		}
+
+		if(disect_pts_ms < pts_ms) // seek higher
+		{
+			lower_bound_offset	= disect_offset;
+			lower_bound_pts_ms	= disect_pts_ms;
+
+			//vlog("MpegTS::seek: not found: change lower bound");
+		}
+		else
+		{
+			upper_bound_offset	= disect_offset;
+			upper_bound_pts_ms	= disect_pts_ms;
+
+			//vlog("MpegTS::seek: not found: change upper bound");
+		}
+	}
+
+	return(-1);
 }

@@ -1,6 +1,7 @@
 #include "filestreaming.h"
 #include "vlog.h"
 #include "queue.h"
+#include "mpegts.h"
 
 #include <unistd.h>
 #include <poll.h>
@@ -9,7 +10,7 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd, int time_offset) throw(string)
+FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) throw(string)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -18,10 +19,12 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset) throw(
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
 	
-	vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset);
+	vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
 
-	if((file_fd = open(file.c_str(), O_RDONLY, 0)) < 0)
-		throw(string("FileStreaming: cannot open file " + file));
+	MpegTS stream(file);
+
+	if(stream.is_seekable)
+		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	Queue socket_queue(32 * 1024);
 
@@ -31,7 +34,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset) throw(
 	{
 		if(socket_queue.usage() < 50)
 		{
-			if(!socket_queue.read(file_fd))
+			if(!socket_queue.read(stream.get_fd()))
 			{
 				vlog("FileStreaming: eof");
 				break;
@@ -67,10 +70,4 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset) throw(
 	}
 
 	vlog("FileStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
-}
-
-FileStreaming::~FileStreaming() throw()
-{
-	vlog("FileStreaming: cleanup up");
-	close(file_fd);
 }

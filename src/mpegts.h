@@ -5,13 +5,14 @@
 #include <string>
 
 #include <stdint.h>
+#include <sys/types.h>
 
 class MpegTS
 {
 	private:
 
 		typedef std::basic_string<uint8_t> u8string;
-		typedef unsigned int uint;
+		typedef unsigned int bf;
 
 		enum
 		{
@@ -21,6 +22,14 @@ class MpegTS
 		enum
 		{
 			table_pmt = 0x02,
+		};
+
+		enum
+		{
+			find_pcr_max_probe			= 2000,
+			find_last_pcr_end_offset	= -1000 * 188,
+			find_last_pcr_attempts		= 32,
+			seek_max_attempts			= 32,
 		};
 
 		enum
@@ -48,90 +57,101 @@ class MpegTS
 		{
 			struct
 			{
-				uint sync_byte:8;
-
-				uint pid_high:5;
-				uint tp:1;
-				uint pusi:1;
-				uint tei:1;
-
-				uint pid_low:8;
-
-				uint cc:4;
-				uint payload_present:1;
-				uint af:1;
-				uint sc:2;
+				uint8_t	sync_byte;
+				bf		pid_high:5;
+				bf		tp:1;
+				bf		pusi:1;
+				bf		tei:1;
+				uint8_t	pid_low;
+				bf		cc:4;
+				bf		payload_present:1;
+				bf		af:1;
+				bf		sc:2;
+				uint8_t	payload[0];
+				uint8_t	afield_length;
+				uint8_t	afield[0];
 			} header;
 			uint8_t	byte[188];
 		} ts_packet_t;
 
 		typedef struct
 		{
-			uint	table_id:8;
-			uint	section_length_high:2;
-			uint	section_length_unused:2;
-			uint	reserved:2;
-			uint	private_bit:1;
-			uint	section_syntax:1;
-			uint	section_length_low:8;
+			bf		field_ext:1;
+			bf		private_data:1;
+			bf		splice_point:1;
+			bf		contains_opcr:1;
+			bf		contains_pcr:1;
+			bf		priority:1;
+			bf		gop_start:1;
+			bf		discont:1;
+			uint8_t	pcr_0; // 32 bits of the total 42 bits
+			uint8_t	pcr_1; // of clock precision, which is
+			uint8_t	pcr_2; // enough for seeking
+			uint8_t	pcr_3; // tick = 1/45th second
+		} ts_adaptation_field_t;
+
+		typedef struct
+		{
+			uint8_t	table_id;
+			bf		section_length_high:2;
+			bf		section_length_unused:2;
+			bf		reserved:2;
+			bf		private_bit:1;
+			bf		section_syntax:1;
+			uint8_t	section_length_low;
 			uint8_t	payload[0];
 		} section_table_header_t;
 
 		typedef struct
 		{
-			uint	tide_high:8;
-			uint	tide_low:8;
-			uint	currnext:1;
-			uint	version:5;
-			uint	reserved:2;
-			uint	ordinal:8;
-			uint	last:8;
+			uint8_t	tide_high;
+			uint8_t	tide_low;
+			bf		currnext:1;
+			bf		version:5;
+			bf		reserved:2;
+			uint8_t	ordinal;
+			uint8_t	last;
 			uint8_t	data[0];
 		} section_table_syntax_t;
 
 		typedef struct
 		{
-			uint	program_high:8;
-			uint	program_low:8;
-			uint	pmt_pid_high:5;
-			uint	reserved:3;
-			uint	pmt_pid_low:8;
+			uint8_t	program_high;
+			uint8_t	program_low;
+			bf		pmt_pid_high:5;
+			bf		reserved:3;
+			uint8_t	pmt_pid_low;
 		} pat_entry_t;
 
 		typedef struct
 		{
-			uint	pcrpid_high:5;
-			uint	reserved_1:3;
-			uint	pcrpid_low:8;
+			bf		pcrpid_high:5;
+			bf		reserved_1:3;
+			uint8_t	pcrpid_low;
 			uint	programinfo_length_high:2;
-			uint	unused:2;
-			uint	reserved_2:4;
-			uint	programinfo_length_low:8;
+			bf		unused:2;
+			bf		reserved_2:4;
+			uint8_t	programinfo_length_low;
 			uint8_t	data[0];
 		} pmt_header_t;
 
 		typedef struct
 		{
-			uint	stream_type:8;
-
-			uint	es_pid_high:5;
-			uint	reserved_1:3;
-
-			uint	es_pid_low:8;
-
-			uint	es_length_high:2;
-			uint	unused:2;
-			uint	reserved_2:4;
-
-			uint	es_length_low:8;
-
+			uint8_t	stream_type;
+			bf		es_pid_high:5;
+			bf		reserved_1:3;
+			uint8_t	es_pid_low;
+			bf		es_length_high:2;
+			bf		unused:2;
+			bf		reserved_2:4;
+			uint8_t	es_length_low;
 			uint8_t	descriptors[0];
 		} pmt_es_entry_t;
 
 		typedef struct
 		{
-			uint	id:8;
-			uint	length:8;
+			uint8_t	id;
+			uint8_t	length;
 			uint8_t	data[0];
 		} pmt_ds_entry_t;
 
@@ -152,22 +172,35 @@ class MpegTS
 		u8string		raw_table_data;
 		u8string		table_data;
 
-		void init()											throw(std::string);
-		bool read_table(int filter_pid, int filter_table)	throw(std::string);
-		bool read_pat()										throw(std::string);
-		bool read_pmt(int filter_pid)						throw(std::string);
+		static void	parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw();
+
+		void	init()											throw(std::string);
+		bool	read_table(int filter_pid, int filter_table)	throw(std::string);
+		bool	read_pat()										throw(std::string);
+		bool	read_pmt(int filter_pid)						throw(std::string);
+		int		find_pcr_ms()							const	throw();
+		int		find_last_pcr_ms(loff_t *eof_offs)		const	throw();
+		bool	probe_seek()							const	throw();
 
 	public:
 
-		int	pmt_pid;
-		int	pcr_pid;
-		int	video_pid;
-		int	audio_pid;
+		int		pmt_pid;
+		int		pcr_pid;
+		int		video_pid;
+		int		audio_pid;
 
-		MpegTS(int fd)				throw();
+		bool	is_seekable;
+
+		int		first_pcr_ms;
+		int		last_pcr_ms;
+		loff_t	eof_offset;
+
+		MpegTS(int fd)				throw(std::string);
 		MpegTS(std::string file)	throw(std::string);
 		~MpegTS()					throw();
 
-		int get_fd()		const	throw();
+		int		get_fd()							const	throw();
+		loff_t	seek(int whence, loff_t offset)		const	throw(std::string);
+		loff_t	seek(int pts_ms)					const	throw(std::string);
 };
 #endif

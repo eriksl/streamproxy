@@ -6,6 +6,9 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 if you have the `getspnam' function. */
+#undef HAVE_GETSPNAM
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -26,6 +29,9 @@
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #undef HAVE_NETINET_IN_H
 
+/* Define to 1 if you have the <shadow.h> header file. */
+#undef HAVE_SHADOW_H
+
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
 
@@ -38,6 +44,9 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
 /* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
 
@@ -46,6 +55,9 @@
 
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
+
+/* Define to 1 if you have the `strtol' function. */
+#undef HAVE_STRTOL
 
 /* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
