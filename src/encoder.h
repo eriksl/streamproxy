@@ -26,21 +26,25 @@ class Encoder
 		bool		start_thread_joined;
 		bool		stopped;
 		int			fd;
+		int			ordinal;
 		PidMap		pids;
 
 		static void* start_thread_function(void *);
 
 	public:
 
-		Encoder(const PidMap &)					throw(std::string);
-		~Encoder()								throw();
+		Encoder(const PidMap &)									throw(std::string);
+		~Encoder()												throw();
 
-		bool	start_init()					throw();
-		bool	start_finish()					throw();
-		bool	stop()							throw();
+		std::string	getprop(std::string)				const	throw(std::string);
+		void		setprop(std::string, std::string)	const	throw(std::string);
 
-		int		getfd()					const	throw();
-		PidMap	getpids()				const	throw();
+		bool		start_init()								throw();
+		bool		start_finish()								throw();
+		bool		stop()										throw();
+
+		int			getfd()								const	throw();
+		PidMap		getpids()							const	throw();
 };
 
 #endif

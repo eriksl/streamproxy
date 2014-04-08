@@ -80,6 +80,8 @@ Encoder::Encoder(const PidMap &pids_in) throw(string)
 	if(fd < 0)
 		throw(string("Encoder: cannot open encoder"));
 
+	ordinal = encoder;
+
 	//vlog("Encoder: ioctl SET PMTPID: 0x%x", pmt->second);
 	//vlog("Encoder: ioctl SET VPID: 0x%x", video->second);
 	//vlog("Encoder: ioctl SET APID: 0x%x", audio->second);
@@ -220,4 +222,47 @@ int Encoder::getfd() const throw()
 PidMap Encoder::getpids() const throw()
 {
 	return(pids);
+}
+
+string Encoder::getprop(string property) const throw(string)
+{
+	char	tmp[128];
+	int		procfd;
+	ssize_t	rv;
+
+	snprintf(tmp, sizeof(tmp), "/proc/stb/encoder/%d/%s", ordinal, property.c_str());
+
+	if((procfd = open(tmp, O_RDONLY, 0)) < 0)
+		throw(string("Encoder::getprop: cannot open property: ") + tmp);
+
+	if((rv = read(procfd, tmp, sizeof(tmp))) <= 0)
+	{
+		close(procfd);
+		throw(string("Encoder::getprop: cannot read from property: ") + property);
+	}
+
+	tmp[rv] = '\0';
+
+	close(procfd);
+
+	return(tmp);
+}
+
+void Encoder::setprop(string property, string value) const throw(string)
+{
+	char	tmp[128];
+	int		procfd;
+
+	snprintf(tmp, sizeof(tmp), "/proc/stb/encoder/%d/%s", ordinal, property.c_str());
+
+	if((procfd = open(tmp, O_WRONLY, 0)) < 0)
+		throw(string("Encoder::setprop: cannot open property: ") + tmp);
+
+	if(write(procfd, value.c_str(), value.length()) != (ssize_t)value.length())
+	{
+		close(procfd);
+		throw(string("Encoder::setprop: cannot write to property: ") + property);
+	}
+
+	close(procfd);
 }
