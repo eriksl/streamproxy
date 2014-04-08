@@ -25,7 +25,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, int time_offset_s) 
 						"Connection: Close\r\n"
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
-	Queue			socket_queue(256 * 1024);
+	Queue			socket_queue(1024 * 1024);
 
 	vlog("FileTranscoding: transcoding %s from %d", file.c_str(), time_offset_s);
 

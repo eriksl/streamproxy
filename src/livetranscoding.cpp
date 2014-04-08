@@ -33,7 +33,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd, string we
 						"\r\n";
 
 	Queue			encoder_queue(512 * 1024);
-	Queue			socket_queue(256 * 1024);
+	Queue			socket_queue(1024 * 1024);
 
 	vlog("LiveTranscoding: %s", service.service_string().c_str());
 
