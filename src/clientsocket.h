@@ -38,7 +38,8 @@ class ClientSocket
 
 		ClientSocket(int fd, bool use_web_authentication,
 				std::string require_auth_group,
-				default_streaming_action default_action) throw();
+				default_streaming_action default_action,
+				std::string default_frame_size) throw();
 		~ClientSocket()	throw();
 };
 

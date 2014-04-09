@@ -13,7 +13,7 @@ using std::string;
 #include <errno.h>
 #include <poll.h>
 
-Encoder::Encoder(const PidMap &pids_in) throw(string)
+Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
 {
 	PidMap::const_iterator	it;
 	PidMap::iterator		it2;
@@ -82,9 +82,11 @@ Encoder::Encoder(const PidMap &pids_in) throw(string)
 
 	ordinal = encoder;
 
-	//vlog("Encoder: ioctl SET PMTPID: 0x%x", pmt->second);
-	//vlog("Encoder: ioctl SET VPID: 0x%x", video->second);
-	//vlog("Encoder: ioctl SET APID: 0x%x", audio->second);
+	if((default_frame_size == "480p") || (default_frame_size == "576p") ||
+			(default_frame_size == "720p"))
+		setprop("display_format", default_frame_size);
+	else
+		setprop("display_format", "480p");
 
 	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt->second) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video->second) ||

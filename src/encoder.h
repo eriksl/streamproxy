@@ -33,7 +33,7 @@ class Encoder
 
 	public:
 
-		Encoder(const PidMap &)									throw(std::string);
+		Encoder(const PidMap &, std::string default_frame_size) throw(std::string);
 		~Encoder()												throw();
 
 		std::string	getprop(std::string)				const	throw(std::string);

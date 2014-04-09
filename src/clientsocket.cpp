@@ -24,7 +24,8 @@
 #include <boost/algorithm/string.hpp>
 
 ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
-		string require_auth_group, default_streaming_action default_action) throw()
+		string require_auth_group, default_streaming_action default_action,
+		string default_frame_size) throw()
 {
 	string	reply;
 
@@ -224,7 +225,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 			Service service(urlparams["service"]);
 
 			vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscoding(service, fd, webauth);
+			(void)LiveTranscoding(service, fd, webauth, default_frame_size);
 			vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -242,7 +243,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd, time_offset);
+			(void)FileTranscoding(urlparams["file"], fd, time_offset, default_frame_size);
 			vlog("ClientSocket: file transcoding ends");
 
 			return;
@@ -262,7 +263,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 				else
 				{
 					vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd, time_offset);
+					(void)FileTranscoding(urlparams["file"], fd, time_offset, default_frame_size);
 				}
 
 				vlog("ClientSocket: default file ends");
@@ -285,7 +286,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 					else
 					{
 						vlog("ClientSocket: transcoding service");
-						(void)LiveTranscoding(service, fd, webauth);
+						(void)LiveTranscoding(service, fd, webauth, default_frame_size);
 					}
 
 					vlog("ClientSocket: default live ends");

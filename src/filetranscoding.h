@@ -27,8 +27,9 @@ class FileTranscoding
 	public:
 
 		FileTranscoding(std::string file, int socketfd,
-				int time_offset) throw(std::string);
-		~FileTranscoding() throw();
+				int time_offset, std::string default_frame_size)
+											throw(std::string);
+		~FileTranscoding()					throw();
 };
 
 #endif

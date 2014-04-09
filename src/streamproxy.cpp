@@ -18,6 +18,9 @@
 #include <sstream>
 using std::ostringstream;
 
+#include <fstream>
+using std::ifstream;
+
 #include <string>
 using std::string;
 
@@ -49,7 +52,7 @@ static void sigchld(int) // prevent Z)ombie processes
 
 int main(int argc, char **argv)
 {
-	bpo::options_description	desc("Use single or multiple pairs of port_number:default_action either with --listen or positional");
+	bpo::options_description	options("Use single or multiple pairs of port_number:default_action either with --listen or positional");
 	ostringstream				convert;
 
 	try
@@ -68,24 +71,33 @@ int main(int argc, char **argv)
 		int										new_socket;
 		static const char						*action_name[2] = { "stream", "transcode" };
 		EnigmaSettings							settings;
-		bpo::positional_options_description		po_desc;
+		bpo::positional_options_description		positional_options;
 		bpo::variables_map						vm;
 		bool									use_web_authentication;
 		time_t									start;
+		ifstream								config_file("/etc/enigma2/streamproxy.conf");
+		string									option_default_size;
 
 		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth") == "true")
 			use_web_authentication = true;
 		else
 			use_web_authentication = false;
 
-		po_desc.add("listen", -1);
+		positional_options.add("listen", -1);
 
-		desc.add_options()
+		options.add_options()
 			("foreground,f",	bpo::bool_switch(&foreground)->implicit_value(true),			"run in foreground (don't become a daemon)")
-			("group,g",			bpo::value<string>(&require_auth_group)->implicit_value(""),	"require streaming users to be member of this group")
-			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters),				"listen to tcp port with default action");
+			("group,g",			bpo::value<string>(&require_auth_group),						"require streaming users to be member of this group")
+			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters)->composing(),	"listen to tcp port with default action")
+			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p 576p or 720p");
 
-		bpo::store(bpo::command_line_parser(argc, argv).options(desc).positional(po_desc).run(), vm);
+		if(config_file)
+		{
+			bpo::store(bpo::parse_config_file(config_file, options), vm);
+			bpo::notify(vm);
+		}
+
+		bpo::store(bpo::command_line_parser(argc, argv).options(options).positional(positional_options).run(), vm);
 		bpo::notify(vm);
 
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
@@ -163,7 +175,7 @@ int main(int argc, char **argv)
 					close(new_socket);
 				else
 				{
-					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group, it2->second.default_action);
+					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group, it2->second.default_action, option_default_size);
 					_exit(0);
 				}
 
@@ -182,7 +194,7 @@ int main(int argc, char **argv)
 	{
 		fprintf(stderr, "streamproxy: %s\n", e.what());
 		convert.str("");
-		convert << desc;
+		convert << options;
 		fprintf(stderr, "streamproxy: %s\n", convert.str().c_str());
 		exit(1);
 	}

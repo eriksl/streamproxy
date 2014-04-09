@@ -15,7 +15,8 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveTranscoding::LiveTranscoding(const Service &service, int socketfd, string webauth) throw(string)
+LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
+		string webauth, string default_frame_size) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -62,7 +63,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd, string we
 	for(it = pids.begin(); it != pids.end(); it++)
 		vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
-	Encoder encoder(pids);
+	Encoder encoder(pids, default_frame_size);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
