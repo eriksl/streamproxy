@@ -13,7 +13,9 @@ using std::string;
 #include <poll.h>
 
 FileTranscoding::FileTranscoding(string file, int socket_fd,
-		int time_offset_s, string default_frame_size) throw(string)
+		int time_offset_s, string frame_size, string bitrate,
+		string profile, string level, string bframes)
+		throw(string)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -44,7 +46,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	for(it = pids.begin(); it != pids.end(); it++)
 		Util::vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
-	Encoder encoder(pids, default_frame_size);
+	Encoder encoder(pids, frame_size, bitrate, profile, level, bframes);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)

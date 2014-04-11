@@ -33,11 +33,14 @@ class Encoder
 
 	public:
 
-		Encoder(const PidMap &, std::string default_frame_size) throw(std::string);
+		Encoder(const PidMap &, std::string frame_size,
+				std::string bitrate, std::string profile,
+				std::string level, std::string bframes)
+				throw(std::string);
 		~Encoder()												throw();
 
-		std::string	getprop(std::string)				const	throw(std::string);
-		void		setprop(std::string, std::string)	const	throw(std::string);
+		std::string	getprop(std::string)				const	throw();
+		void		setprop(std::string, std::string)	const	throw();
 
 		bool		start_init()								throw();
 		bool		start_finish()								throw();

@@ -25,7 +25,8 @@
 
 ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		string require_auth_group, default_streaming_action default_action,
-		string default_frame_size) throw()
+		string frame_size, string bitrate, string profile,
+		string level, string bframes) throw()
 {
 	string	reply;
 
@@ -209,6 +210,21 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		else
 			time_offset = 0;
 
+		if(urlparams.count("size"))
+			frame_size = urlparams["size"];
+
+		if(urlparams.count("bitrate"))
+			bitrate = urlparams["bitrate"];
+
+		if(urlparams.count("profile"))
+			profile = urlparams["profile"];
+
+		if(urlparams.count("level"))
+			level = urlparams["level"];
+
+		if(urlparams.count("bframes"))
+			bframes = urlparams["bframes"];
+
 		if((urlparams[""] == "/livestream") && urlparams.count("service"))
 		{
 			Service service(urlparams["service"]);
@@ -224,9 +240,10 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		{
 			Service service(urlparams["service"]);
 
-			vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscoding(service, fd, webauth, default_frame_size);
-			vlog("ClientSocket: live transcoding ends");
+			Util::vlog("ClientSocket: live transcoding request");
+			(void)LiveTranscoding(service, fd, webauth, frame_size,
+					bitrate, profile, level, bframes);
+			Util::vlog("ClientSocket: live transcoding ends");
 
 			return;
 		}
@@ -242,9 +259,10 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
-			vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd, time_offset, default_frame_size);
-			vlog("ClientSocket: file transcoding ends");
+			Util::vlog("ClientSocket: file transcoding request");
+			(void)FileTranscoding(urlparams["file"], fd, time_offset, frame_size,
+					bitrate, profile, level, bframes);
+			Util::vlog("ClientSocket: file transcoding ends");
 
 			return;
 		}
@@ -262,8 +280,9 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 				}
 				else
 				{
-					vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd, time_offset, default_frame_size);
+					Util::vlog("ClientSocket: transcoding file");
+					(void)FileTranscoding(urlparams["file"], fd, time_offset, frame_size,
+							bitrate, profile, level, bframes);
 				}
 
 				Util::vlog("ClientSocket: default file ends");
@@ -285,8 +304,9 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 					}
 					else
 					{
-						vlog("ClientSocket: transcoding service");
-						(void)LiveTranscoding(service, fd, webauth, default_frame_size);
+						Util::vlog("ClientSocket: transcoding service");
+						(void)LiveTranscoding(service, fd, webauth, frame_size,
+							bitrate, profile, level, bframes);
 					}
 
 					Util::vlog("ClientSocket: default live ends");

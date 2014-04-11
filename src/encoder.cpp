@@ -13,16 +13,16 @@ using std::string;
 #include <errno.h>
 #include <poll.h>
 
-Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
+Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
+		string profile, string level, string bframes) throw(string)
 {
 	PidMap::const_iterator	it;
 	PidMap::iterator		it2;
 	PidMap::const_iterator	pmt, video, audio;
 	string	encoder_device;
 	int		encoder;
-
-	static char	encoder_device[128];
-			int	encoder;
+	int		tbr;
+	int		bf;
 
 	start_thread_running	= false;
 	start_thread_joined		= true;
@@ -84,11 +84,37 @@ Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
 
 	id = encoder;
 
-	if((default_frame_size == "480p") || (default_frame_size == "576p") ||
-			(default_frame_size == "720p"))
-		setprop("display_format", default_frame_size);
+	if((frame_size == "480p") || (frame_size == "576p") ||
+			(frame_size == "720p"))
+		setprop("display_format", frame_size);
 	else
 		setprop("display_format", "480p");
+
+	tbr = Util::string_to_int(bitrate);
+
+	if((tbr >= 100) && (tbr <= 10000))
+		tbr *= 1000;
+	else
+		tbr = 1000000;
+
+	setprop("bitrate", Util::int_to_string(tbr));
+
+	if((profile == "baseline") || (profile == "main") || (profile == "high"))
+		setprop("profile", profile);
+	else
+		setprop("profile", "baseline");
+
+	if((level == "3.1") || (level == "3.2") || (level == "4.0"))
+		setprop("level", level);
+	else
+		setprop("level", "3.1");
+
+	bf = Util::string_to_int(bframes);
+
+	if((bf >= 0) && (bf <= 2))
+		setprop("gop_frameb", Util::int_to_string(bf));
+	else
+		setprop("gop_frameb", "0");
 
 	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt->second) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video->second) ||
@@ -228,7 +254,7 @@ PidMap Encoder::getpids() const throw()
 	return(pids);
 }
 
-string Encoder::getprop(string property) const throw(string)
+string Encoder::getprop(string property) const throw()
 {
 	int		procfd;
 	ssize_t	rv;
@@ -238,12 +264,15 @@ string Encoder::getprop(string property) const throw(string)
 	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
 	if((procfd = open(path.c_str(), O_RDONLY, 0)) < 0)
-		throw(string("Encoder::getprop: cannot open property: ") + path);
+	{
+		Util::vlog("Encoder::getprop: cannot open property %s", path.c_str());
+		return("");
+	}
 
 	if((rv = read(procfd, tmp, sizeof(tmp))) <= 0)
 	{
-		close(procfd);
-		throw(string("Encoder::getprop: cannot read from property: ") + property);
+		Util::vlog("Encoder::getprop: cannot read from property %s", property.c_str());
+		rv = 0;
 	}
 
 	tmp[rv] = '\0';
@@ -253,7 +282,7 @@ string Encoder::getprop(string property) const throw(string)
 	return(tmp);
 }
 
-void Encoder::setprop(string property, string value) const throw(string)
+void Encoder::setprop(string property, string value) const throw()
 {
 	int		procfd;
 	string	path;
@@ -261,13 +290,13 @@ void Encoder::setprop(string property, string value) const throw(string)
 	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
 	if((procfd = open(path.c_str(), O_WRONLY, 0)) < 0)
-		throw(string("Encoder::setprop: cannot open property: ") + path);
+	{
+		Util::vlog("Encoder::setprop: cannot open property %s", path.c_str());
+		return;
+	}
 
 	if(write(procfd, value.c_str(), value.length()) != (ssize_t)value.length())
-	{
-		close(procfd);
-		throw(string("Encoder::setprop: cannot write to property: ") + property);
-	}
+		Util::vlog("Encoder::getprop: cannot write to property %s", property.c_str());
 
 	close(procfd);
 }

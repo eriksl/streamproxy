@@ -36,14 +36,16 @@ void Util::vlog(const char * format, ...) throw()
         vfprintf(stderr, format, ap);
 
 		if(errno)
-			fprintf(stderr, ", system error: %s\n", strerror(errno));
+			fprintf(stderr, ", system error: %s", strerror(errno));
+
+		fputs("\n", stderr);
 	}
     else
 	{
         vsyslog(LOG_WARNING, format, ap);
 
    		if(errno)
-			syslog(LOG_WARNING, "system error: %s\n", strerror(errno));
+			vsyslog(LOG_WARNING, "system error: %s", strerror(errno));
 	}
 
     va_end(ap);

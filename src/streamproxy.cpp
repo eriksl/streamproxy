@@ -77,6 +77,10 @@ int main(int argc, char **argv)
 		time_t									start;
 		ifstream								config_file("/etc/enigma2/streamproxy.conf");
 		string									option_default_size;
+		string									option_default_bitrate;
+		string									option_default_profile;
+		string									option_default_level;
+		string									option_default_bframes;
 
 		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth") == "true")
 			use_web_authentication = true;
@@ -89,7 +93,11 @@ int main(int argc, char **argv)
 			("foreground,f",	bpo::bool_switch(&Util::foreground)->implicit_value(true),		"run in foreground (don't become a daemon)")
 			("group,g",			bpo::value<string>(&require_auth_group),						"require streaming users to be member of this group")
 			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters)->composing(),	"listen to tcp port with default action")
-			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p 576p or 720p");
+			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p (default), 576p or 720p)")
+			("bitrate,b",		bpo::value<string>(&option_default_bitrate),					"default transcoding bit rate (100 - 10000 kbps)(default 1000)")
+			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile (baseline (default), main, high)")
+			("level,L",			bpo::value<string>(&option_default_level),						"default transcoding h264 level (3.1 (default), 3.2, 4.0)")
+			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames (0 (default), 1 or 2)");
 
 		if(config_file)
 		{
@@ -175,7 +183,9 @@ int main(int argc, char **argv)
 					close(new_socket);
 				else
 				{
-					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group, it2->second.default_action, option_default_size);
+					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group,
+							it2->second.default_action, option_default_size, option_default_bitrate,
+							option_default_profile, option_default_level, option_default_bframes);
 					_exit(0);
 				}
 

@@ -26,7 +26,9 @@ class LiveTranscoding
 	public:
 
 		LiveTranscoding(const Service &service, int socketfd,
-				std::string webauth, std::string default_frame_size)
+				std::string webauth, std::string frame_size,
+				std::string bitrate, std::string profile,
+				std::string level, std::string bframes)
 			throw(std::string);
 };
 
