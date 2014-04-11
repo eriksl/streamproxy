@@ -1,5 +1,5 @@
 #include "enigma_settings.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string>
 using std::string;
@@ -23,7 +23,7 @@ EnigmaSettings::EnigmaSettings() throw(string)
 	{
 		if(!(value = strchr(buffer, '=')))
 		{
-			vlog("line does not contain delimiter: \"%s\"", buffer);
+			Util::vlog("line does not contain delimiter: \"%s\"", buffer);
 			continue;
 		}
 
@@ -39,7 +39,7 @@ EnigmaSettings::EnigmaSettings() throw(string)
 	}
 
 	//for(it = key_values.begin(); it != key_values.end(); it++)
-		//vlog("> \"%s\"=\"%s\"", it->first.c_str(), it->second.c_str());
+		//Util::vlog("> \"%s\"=\"%s\"", it->first.c_str(), it->second.c_str());
 }
 
 bool EnigmaSettings::exists(string key) const throw()

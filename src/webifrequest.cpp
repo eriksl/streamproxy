@@ -1,6 +1,6 @@
 #include "pidmap.h"
 #include "webifrequest.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string>
 using std::string;
@@ -75,7 +75,7 @@ WebifRequest::WebifRequest(const Service &service_in, string webauth) throw(stri
 
 	request += "\r\n";
 
-	vlog("WebifRequest: send request to webif: \"%s\"", request.c_str());
+	Util::vlog("WebifRequest: send request to webif: \"%s\"", request.c_str());
 
 	if(write(fd, request.c_str(), request.length()) != (ssize_t)request.length())
 		throw(string("WebifRequest: cannot send request"));
@@ -99,7 +99,6 @@ void WebifRequest::poll() throw(string)
 	string	id, newid;
 	string	valuestr;
 	int		value;
-	char	ordstr[8];
 	int		ord;
 
 	stringvector tokens;
@@ -115,7 +114,7 @@ void WebifRequest::poll() throw(string)
 
 	if((bytes_read = read(fd, buffer, bytes)) != bytes)
 	{
-		vlog("WebifRequest: read returns %d", bytes_read);
+		Util::vlog("WebifRequest: read returns %d", bytes_read);
 		free(buffer);
 		return;
 	}
@@ -160,8 +159,8 @@ void WebifRequest::poll() throw(string)
 			{
 				for(ord = 1; ord < 32; ord++)
 				{
-					snprintf(ordstr, sizeof(ordstr), "%d", ord);
-					newid = id + "-" + ordstr;
+					newid = id + "-" + Util::int_to_string(ord);
+					
 					if(pids.find(newid) == pids.end())
 						break;
 				}

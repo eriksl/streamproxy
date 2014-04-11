@@ -26,7 +26,7 @@ class Encoder
 		bool		start_thread_joined;
 		bool		stopped;
 		int			fd;
-		int			ordinal;
+		int			id;
 		PidMap		pids;
 
 		static void* start_thread_function(void *);

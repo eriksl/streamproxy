@@ -1,5 +1,5 @@
 #include "queue.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string.h>
 #include <errno.h>
@@ -75,7 +75,7 @@ size_t Queue::extract(size_t data_size, char *data) throw()
 
 	if(inptr < outptr) //  active data is wrapped
 	{
-		//vlog("data is wrapped");
+		//Util::vlog("data is wrapped");
 		
 		chunk = buffer_size - outptr;
 
@@ -95,7 +95,7 @@ size_t Queue::extract(size_t data_size, char *data) throw()
 
 	if(data_size > 0)
 	{
-		//vlog("data is straight or remaining, out_length: %d, out_size: %d, inptr: %d, outptr: %d",
+		//Util::vlog("data is straight or remaining, out_length: %d, out_size: %d, inptr: %d, outptr: %d",
 			//(int)out_length, (int)out_size, (int)queue->inptr, (int)queue->outptr);
 	
 		chunk = inptr - outptr;
@@ -126,13 +126,13 @@ bool Queue::read(int fd, ssize_t maxread) throw()
 
 	if(chunk <= 0)
 	{
-		vlog("Queue: queue_read: chunk <= 0: %d", chunk);
+		Util::vlog("Queue: queue_read: chunk <= 0: %d", chunk);
 		return(true);
 	}
 
 	rv = ::read(fd, &buffer[inptr], chunk);
 
-	//vlog("Queue: *** queue_read: %d bytes received", rv);
+	//Util::vlog("Queue: *** queue_read: %d bytes received", rv);
 
 	if(rv < 0)
 	{
@@ -155,14 +155,14 @@ bool Queue::read(int fd, ssize_t maxread) throw()
 
 	if((inptr < outptr) && ((inptr + rv) > outptr))
 	{
-		vlog("Queue: !!! queue overrun: inptr was: %d, inptr is %d, outptr = %d, rv is %d",
+		Util::vlog("Queue: !!! queue overrun: inptr was: %d, inptr is %d, outptr = %d, rv is %d",
 				inptr, inptr + rv, outptr, rv);
 	}
 
 	inptr += rv;
 
 	if(inptr > buffer_size)
-		vlog("Queue: **** queue_read: corruption");
+		Util::vlog("Queue: **** queue_read: corruption");
 
 	if(inptr >= buffer_size)
 		inptr = 0;
@@ -191,7 +191,7 @@ bool Queue::write(int fd, ssize_t maxwrite) throw()
 	else
 		rv = 0;
 
-	//vlog("Queue: *** queue_write: written %d bytes", rv);
+	//Util::vlog("Queue: *** queue_write: written %d bytes", rv);
 
 	if(rv < 0)
 	{
@@ -210,7 +210,7 @@ bool Queue::write(int fd, ssize_t maxwrite) throw()
 	outptr += rv;
 
 	if(outptr > buffer_size)
-		vlog("Queue: **** queue_write: corruption");
+		Util::vlog("Queue: **** queue_write: corruption");
 
 	if(outptr >= buffer_size)
 		outptr = 0;

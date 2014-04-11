@@ -4,7 +4,7 @@
 #include "livetranscoding.h"
 #include "filestreaming.h"
 #include "filetranscoding.h"
-#include "vlog.h"
+#include "util.h"
 #include "url.h"
 #include "time_offset.h"
 
@@ -73,7 +73,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
 			throw(string("ClientSocket: getsockopt 1"));
 
-		vlog("ClientSocket: current buffer size: %d", arg1);
+		Util::vlog("ClientSocket: current buffer size: %d", arg1);
 
 		arg1 = 256 * 1024;
 
@@ -83,7 +83,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
 			throw(string("ClientSocket: getsockopt 2"));
 
-		vlog("ClientSocket: new buffer size: %d", arg1);
+		Util::vlog("ClientSocket: new buffer size: %d", arg1);
 #endif
 
 		start = time(0);
@@ -130,7 +130,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		for(it1 = lines.begin(); it1 != lines.end(); it1++)
 		{
-			//vlog("ClientSocket: line: \"%s\"", it1->c_str());
+			//Util::vlog("ClientSocket: line: \"%s\"", it1->c_str());
 
 			if(it1->find("GET ") == 0)
 			{
@@ -154,7 +154,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 				continue;
 			}
 
-			vlog("ClientSocket: ignoring junk line: %s\n", it1->c_str());
+			Util::vlog("ClientSocket: ignoring junk line: %s\n", it1->c_str());
 		}
 
 		if(lines.size() < 1)
@@ -164,7 +164,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		{
 			if(!headers.count("Authorization"))
 			{
-				vlog("ClientSocket: no authorisation received from client");
+				Util::vlog("ClientSocket: no authorisation received from client");
 				reply = string("HTTP/1.0 401 Unauthorized\r\n") +
 					"WWW-Authenticate: Basic realm=\"OpenWebif\"\r\n" +
 					"Content-Type: text/html\r\n" +
@@ -188,21 +188,21 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 			password = user.substr(idx + 1);
 			user = user.substr(0, idx);
 
-			vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
+			Util::vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
 
 			if(!validate_user(user, password, require_auth_group))
 				throw(string("Invalid authentication"));
 		}
 
 		for(headit = headers.begin(); headit != headers.end(); headit++)
-			vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
+			Util::vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
 
-		vlog("ClientSocket: url: %s", url.c_str());
+		Util::vlog("ClientSocket: url: %s", url.c_str());
 
 		urlparams = Url(url).split();
 
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
-			vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
+			Util::vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
 		if(urlparams.count("startfrom"))
 			time_offset = TimeOffset(urlparams["startfrom"]).as_seconds();
@@ -213,9 +213,9 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		{
 			Service service(urlparams["service"]);
 
-			vlog("ClientSocket: live streaming request");
+			Util::vlog("ClientSocket: live streaming request");
 			(void)LiveStreaming(service, fd, webauth);
-			vlog("ClientSocket: live streaming ends");
+			Util::vlog("ClientSocket: live streaming ends");
 
 			return;
 		}
@@ -233,9 +233,9 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		if((urlparams[""] == "/filestream") && urlparams.count("file"))
 		{
-			vlog("ClientSocket: file streaming request");
+			Util::vlog("ClientSocket: file streaming request");
 			(void)FileStreaming(urlparams["file"], fd, time_offset);
-			vlog("ClientSocket: file streaming ends");
+			Util::vlog("ClientSocket: file streaming ends");
 
 			return;
 		}
@@ -253,11 +253,11 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		{
 			if((urlparams[""].substr(1, 1) == "/"))
 			{
-				vlog("ClientSocket: default file request");
+				Util::vlog("ClientSocket: default file request");
 
 				if(default_action == action_stream)
 				{
-					vlog("ClientSocket: streaming file");
+					Util::vlog("ClientSocket: streaming file");
 					(void)FileStreaming(urlparams["file"], fd, time_offset);
 				}
 				else
@@ -266,7 +266,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 					(void)FileTranscoding(urlparams["file"], fd, time_offset, default_frame_size);
 				}
 
-				vlog("ClientSocket: default file ends");
+				Util::vlog("ClientSocket: default file ends");
 
 				return;
 			}
@@ -274,13 +274,13 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 			{
 				Service service(urlparams[""].substr(1));
 
-				vlog("ClientSocket: default live request");
+				Util::vlog("ClientSocket: default live request");
 
 				if(service.is_valid())
 				{
 					if(default_action == action_stream)
 					{
-						vlog("ClientSocket: streaming service");
+						Util::vlog("ClientSocket: streaming service");
 						(void)LiveStreaming(service, fd, webauth);
 					}
 					else
@@ -289,7 +289,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 						(void)LiveTranscoding(service, fd, webauth, default_frame_size);
 					}
 
-					vlog("ClientSocket: default live ends");
+					Util::vlog("ClientSocket: default live ends");
 
 					return;
 				}
@@ -300,19 +300,19 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 	}
 	catch(const string &e)
 	{
-		vlog("ClientSocket: exception: %s", e.c_str());
+		Util::vlog("ClientSocket: exception: %s", e.c_str());
 		reply = string("HTTP/1.0 400 Bad request: ") + e + "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(const std::exception &e)
 	{
-		vlog("ClientSocket: unknown std exception: %s", typeid(e).name());
+		Util::vlog("ClientSocket: unknown std exception: %s", typeid(e).name());
 		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(...)
 	{
-		vlog("ClientSocket: unknown exception");
+		Util::vlog("ClientSocket: unknown exception");
 		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
@@ -422,18 +422,18 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 
 	if(!(pw = getpwnam(user.c_str())))
 	{
-		vlog("ClientSocket: user %s not in passwd file");
+		Util::vlog("ClientSocket: user %s not in passwd file");
 		return(false);
 	}
 
 	user_gid = pw->pw_gid;
 	pw_password = pw->pw_passwd;
 
-	//vlog("user_gid: %d, pw: %s", user_gid, pw_password.c_str());
+	//Util::vlog("user_gid: %d, pw: %s", user_gid, pw_password.c_str());
 
 	if((sp = getspnam(user.c_str())))
 	{
-		//vlog("shadow pw: %s", pw_password.c_str());
+		//Util::vlog("shadow pw: %s", pw_password.c_str());
 		pw_password = sp->sp_pwdp;
 	}
 
@@ -441,7 +441,7 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 	{
 		if(!(gr = getgrnam(require_auth_group.c_str())))
 		{
-			//vlog("ClientSocket: group %s not in groups file", require_auth_group.c_str());
+			//Util::vlog("ClientSocket: group %s not in groups file", require_auth_group.c_str());
 			return(false);
 		}
 
@@ -449,19 +449,19 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 
 		if(gr->gr_gid == user_gid)
 		{
-			//vlog("group in primary group of user, ok");
+			//Util::vlog("group in primary group of user, ok");
 			found = true;
 		}
 		else
 		{
 			for(ix = 0; (group_user = gr->gr_mem[ix]); ix++)
 			{
-				//vlog("checking as secondary group id, user %s", group_user);
+				//Util::vlog("checking as secondary group id, user %s", group_user);
 
 				if(group_user == user)
 				{
 					found = true;
-					//vlog("group in secondary group of user, ok");
+					//Util::vlog("group in secondary group of user, ok");
 					break;
 				}
 			}
@@ -469,7 +469,7 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 
 		if(!found)
 		{
-			//vlog("user not in group, reject");
+			//Util::vlog("user not in group, reject");
 			return(false);
 		}
 	}

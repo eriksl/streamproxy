@@ -1,6 +1,6 @@
 #include "pidmap.h"
 #include "webifrequest.h"
-#include "vlog.h"
+#include "util.h"
 #include "queue.h"
 #include "service.h"
 #include "demuxer.h"
@@ -29,7 +29,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 						"\r\n";
 	Queue			socket_queue(512 * 1024);
 
-	vlog("LiveStreaming: %s", service.service_string().c_str());
+	Util::vlog("LiveStreaming: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
 		throw(string("LiveStreaming: invalid service"));
@@ -54,7 +54,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		vlog("LiveStreaming: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveStreaming: pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, pids);
 
@@ -82,13 +82,13 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("LiveStreaming: demuxer error");
+			Util::vlog("LiveStreaming: demuxer error");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("LiveStreaming: socket error");
+			Util::vlog("LiveStreaming: socket error");
 			break;
 		}
 
@@ -96,7 +96,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 		{
 			if(!socket_queue.read(demuxer_fd))
 			{
-				vlog("LiveStreaming: read demuxer error");
+				Util::vlog("LiveStreaming: read demuxer error");
 				break;
 			}
 		}
@@ -105,11 +105,11 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 		{
 			if(!socket_queue.write(socketfd))
 			{
-				vlog("LiveStreaming: write socket error");
+				Util::vlog("LiveStreaming: write socket error");
 				break;
 			}
 		}
 	}
 
-	vlog("LiveStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("LiveStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }

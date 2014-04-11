@@ -1,6 +1,6 @@
 #include "pidmap.h"
 #include "webifrequest.h"
-#include "vlog.h"
+#include "util.h"
 #include "queue.h"
 #include "service.h"
 #include "demuxer.h"
@@ -36,7 +36,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	Queue			encoder_queue(512 * 1024);
 	Queue			socket_queue(1024 * 1024);
 
-	vlog("LiveTranscoding: %s", service.service_string().c_str());
+	Util::vlog("LiveTranscoding: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
 		throw(string("LiveTranscoding: invalid service"));
@@ -61,13 +61,13 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
 	Encoder encoder(pids, default_frame_size);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		vlog("LiveTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
@@ -96,7 +96,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 				if(encoder.start_init())
 				{
 					encoder_state = state_starting;
-					vlog("LiveTranscoding: state init -> starting");
+					Util::vlog("LiveTranscoding: state init -> starting");
 				}
 				break;
 			}
@@ -106,7 +106,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 				if(encoder.start_finish())
 				{
 					encoder_state = state_running;
-					vlog("LiveTranscoding: state starting -> running");
+					Util::vlog("LiveTranscoding: state starting -> running");
 				}
 				break;
 			}
@@ -137,19 +137,19 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("LiveTranscoding: demuxer error");
+			Util::vlog("LiveTranscoding: demuxer error");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("LiveTranscoding: encoder error");
+			Util::vlog("LiveTranscoding: encoder error");
 			break;
 		}
 
 		if(pfd[2].revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("LiveTranscoding: socket error");
+			Util::vlog("LiveTranscoding: socket error");
 			break;
 		}
 
@@ -157,7 +157,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!encoder_queue.read(demuxer_fd))
 			{
-				vlog("LiveTranscoding: read demux error");
+				Util::vlog("LiveTranscoding: read demux error");
 				break;
 			}
 		}
@@ -166,7 +166,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!encoder_queue.write(encoder_fd, vuplus_magic_buffer_size))
 			{
-				vlog("LiveTranscoding: write encoder error");
+				Util::vlog("LiveTranscoding: write encoder error");
 				break;
 			}
 		}
@@ -175,7 +175,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!socket_queue.read(encoder_fd, vuplus_magic_buffer_size))
 			{
-				vlog("LiveTranscoding: read encoder error");
+				Util::vlog("LiveTranscoding: read encoder error");
 				break;
 			}
 		}
@@ -184,12 +184,12 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!socket_queue.write(socketfd))
 			{
-				vlog("LiveTranscoding: write socket error");
+				Util::vlog("LiveTranscoding: write socket error");
 				break;
 			}
 		}
 	}
 
-	vlog("LiveTranscoding: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
-	vlog("LiveTranscoding: socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("LiveTranscoding: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
+	Util::vlog("LiveTranscoding: socket max queue fill: %d%%", max_fill_socket);
 }

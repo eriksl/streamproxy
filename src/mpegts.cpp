@@ -1,5 +1,5 @@
 #include "mpegts.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <unistd.h>
 #include <stddef.h>
@@ -74,9 +74,9 @@ void MpegTS::init() throw(string)
 		eof_offset		= -1;
 	}
 
-	//vlog("first_pcr_ms = %d", first_pcr_ms);
-	//vlog("last_pcr_ms = %d", last_pcr_ms);
-	//vlog("eof_offset is at %lld", eof_offset);
+	//Util::vlog("first_pcr_ms = %d", first_pcr_ms);
+	//Util::vlog("last_pcr_ms = %d", last_pcr_ms);
+	//Util::vlog("eof_offset is at %lld", eof_offset);
 }
 
 bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
@@ -124,7 +124,7 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 		if((cc != -1) && (cc != packet.header.cc))
 		{
-			//vlog("MpegTS::read_table discontinuity: %d/%d", cc, packet.header.cc);
+			//Util::vlog("MpegTS::read_table discontinuity: %d/%d", cc, packet.header.cc);
 			goto retry;
 		}
 
@@ -134,7 +134,7 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() > 0)
 			{
-				//vlog("MpegTS::read_table: start payload upexpected");
+				//Util::vlog("MpegTS::read_table: start payload upexpected");
 				goto retry;
 			}
 		}
@@ -142,26 +142,26 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 		{
 			if(table_data.length() <= 0)
 			{
-				//vlog("MpegTS::read_table: continue payload unexpected");
+				//Util::vlog("MpegTS::read_table: continue payload unexpected");
 				goto retry;
 			}
 		}
 
-		//vlog("MpegTS::read_table: correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
+		//Util::vlog("MpegTS::read_table: correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
 
 		packet_payload_offset = offsetof(ts_packet_t, header.payload);
 
-		//vlog("MpegTS::read_table: payload offset: %d", packet_payload_offset);
+		//Util::vlog("MpegTS::read_table: payload offset: %d", packet_payload_offset);
 
 		if(packet.header.af)
 			packet_payload_offset = offsetof(ts_packet_t, header.afield) + packet_payload_offset;
 
-		//vlog("MpegTS::read_table: payload offset after adaptation field: %d", packet_payload_offset);
+		//Util::vlog("MpegTS::read_table: payload offset after adaptation field: %d", packet_payload_offset);
 
 		if(packet.header.pusi)
 			packet_payload_offset += packet.byte[packet_payload_offset] + 1; // psi payload pointer byte
 
-		//vlog("MpegTS::read_table: payload offset after section pointer field: %d", packet_payload_offset);
+		//Util::vlog("MpegTS::read_table: payload offset after section pointer field: %d", packet_payload_offset);
 
 		if(table_data.length() == 0)
 		{
@@ -169,44 +169,44 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 			raw_table_data.assign((const uint8_t *)table, offsetof(section_table_header_t, payload));
 
-			//vlog("MpegTS::read_table: table id: %d", table->table_id);
+			//Util::vlog("MpegTS::read_table: table id: %d", table->table_id);
 
 			if(table->table_id != filter_table)
 			{
-				vlog("MpegTS::read_table: table %d != %d", table->table_id, filter_table);
+				Util::vlog("MpegTS::read_table: table %d != %d", table->table_id, filter_table);
 				goto retry;
 			}
 
 			if(table->private_bit)
 			{
-				vlog("MpegTS::read_table: private != 0: %d", table->private_bit);
+				Util::vlog("MpegTS::read_table: private != 0: %d", table->private_bit);
 				goto retry;
 			}
 
 			if(!table->section_syntax)
 			{
-				vlog("MpegTS::read_table: section_syntax == 0: %d", table->section_syntax);
+				Util::vlog("MpegTS::read_table: section_syntax == 0: %d", table->section_syntax);
 				goto retry;
 			}
 
 			if(table->reserved != 0x03)
 			{
-				vlog("MpegTS::read_table: reserved != 0x03: %x", table->reserved);
+				Util::vlog("MpegTS::read_table: reserved != 0x03: %x", table->reserved);
 				goto retry;
 			}
 
 			if(table->section_length_unused != 0x00)
 			{
-				vlog("MpegTS::read_table: section length unused != 0x00: %x", table->section_length_unused);
+				Util::vlog("MpegTS::read_table: section length unused != 0x00: %x", table->section_length_unused);
 				goto retry;
 			}
 
 			section_length = ((table->section_length_high << 8) | (table->section_length_low)) - offsetof(section_table_syntax_t, data);
-			//vlog("MpegTS::read_table: section length: %d", section_length);
+			//Util::vlog("MpegTS::read_table: section length: %d", section_length);
 
 			if(section_length < 0)
 			{
-				vlog("MpegTS::read_table: section length < 0: %d", section_length);
+				Util::vlog("MpegTS::read_table: section length < 0: %d", section_length);
 				goto retry;
 			}
 
@@ -217,26 +217,26 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 
 			raw_table_data.append((const uint8_t *)syntax, offsetof(section_table_syntax_t, data));
 
-			//vlog("MpegTS::read_table: tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
+			//Util::vlog("MpegTS::read_table: tide: 0x%x", (syntax->tide_high << 8) | syntax->tide_low);
 
 			if(syntax->reserved != 0x03)
 			{
-				vlog("MpegTS::read_table: syntax reserved != 0x03: %d", syntax->reserved);
+				Util::vlog("MpegTS::read_table: syntax reserved != 0x03: %d", syntax->reserved);
 				goto retry;
 			}
 
-			//vlog("MpegTS::read_table: currnext: %d", syntax->currnext);
-			//vlog("MpegTS::read_table: version: %d", syntax->version);
-			//vlog("MpegTS::read_table: ordinal: %d", syntax->ordinal);
-			//vlog("MpegTS::read_table: last: %d", syntax->last);
+			//Util::vlog("MpegTS::read_table: currnext: %d", syntax->currnext);
+			//Util::vlog("MpegTS::read_table: version: %d", syntax->version);
+			//Util::vlog("MpegTS::read_table: ordinal: %d", syntax->ordinal);
+			//Util::vlog("MpegTS::read_table: last: %d", syntax->last);
 
 			payload_length = sizeof(ts_packet_t) - ((const uint8_t *)&syntax->data - &packet.byte[0]);
-			//vlog("MpegTS::read_table: payload length: %d", payload_length);
+			//Util::vlog("MpegTS::read_table: payload length: %d", payload_length);
 
 			if(payload_length > section_length_remaining)
 				payload_length = section_length_remaining;
 
-			//vlog("MpegTS::read_table: payload length after trimming: %d", payload_length);
+			//Util::vlog("MpegTS::read_table: payload length after trimming: %d", payload_length);
 
 			raw_table_data.append((const uint8_t *)&syntax->data, payload_length);
 			table_data.append((const uint8_t *)&syntax->data, payload_length);
@@ -269,13 +269,13 @@ retry:
 
 	if(table_data.length() == 0)
 	{
-		//vlog("MpegTS::read_table: timeout");
+		//Util::vlog("MpegTS::read_table: timeout");
 		return(false);
 	}
 
 	if(section_length < (int)sizeof(mpeg_crc_t))
 	{
-		vlog("MpegTS::read_table: table too small");
+		Util::vlog("MpegTS::read_table: table too small");
 		return(false);
 	}
 
@@ -286,7 +286,7 @@ retry:
 
 	if(my_crc.checksum() != their_crc)
 	{
-		vlog("MpegTS::read_table: crc mismatch: my crc: %x, their crc: %x", my_crc.checksum(), their_crc);
+		Util::vlog("MpegTS::read_table: crc mismatch: my crc: %x, their crc: %x", my_crc.checksum(), their_crc);
 		return(false);
 	}
 
@@ -311,11 +311,11 @@ bool MpegTS::read_pat() throw(string)
 		{
 			program = (entry[current].program_high << 8) | (entry[current].program_low);
 			pid = (entry[current].pmt_pid_high << 8) | (entry[current].pmt_pid_low);
-			//vlog("MpegTS::read_pat > program: %d -> pid %x", program, pid);
+			//Util::vlog("MpegTS::read_pat > program: %d -> pid %x", program, pid);
 
 			if(entry[current].reserved != 0x07)
 			{
-				vlog("MpegTS::read_pat > reserved != 0x07: 0x%x", entry[current].reserved);
+				Util::vlog("MpegTS::read_pat > reserved != 0x07: 0x%x", entry[current].reserved);
 				goto next_pat_entry;
 			}
 
@@ -359,22 +359,22 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 
 		if(pmt_header->reserved_1 != 0x07)
 		{
-			vlog("MpegTS::read_pmt > reserved_1: %x", pmt_header->reserved_1);
+			Util::vlog("MpegTS::read_pmt > reserved_1: %x", pmt_header->reserved_1);
 			continue;
 		}
 
-		//vlog("MpegTS::read_pmt: > pcr_pid: %x", pcr_pid);
-		//vlog("MpegTS::read_pmt: > program info length: %d", programinfo_length);
+		//Util::vlog("MpegTS::read_pmt: > pcr_pid: %x", pcr_pid);
+		//Util::vlog("MpegTS::read_pmt: > program info length: %d", programinfo_length);
 
 		if(pmt_header->unused != 0x00)
 		{
-			vlog("MpegTS::read_pmt: > unused: %x", pmt_header->unused);
+			Util::vlog("MpegTS::read_pmt: > unused: %x", pmt_header->unused);
 			continue;
 		}
 
 		if(pmt_header->reserved_2 != 0x0f)
 		{
-			vlog("MpegTS::read_pmt: > reserved_2: %x", pmt_header->reserved_2);
+			Util::vlog("MpegTS::read_pmt: > reserved_2: %x", pmt_header->reserved_2);
 			continue;
 		}
 
@@ -390,25 +390,25 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 
 			if(es_entry->reserved_1 != 0x07)
 			{
-				vlog("MpegTS::read_pmt: reserved 1: %x", es_entry->reserved_1);
+				Util::vlog("MpegTS::read_pmt: reserved 1: %x", es_entry->reserved_1);
 				goto next_descriptor_entry;
 			}
 
-			//vlog("MpegTS::read_pmt: >> pid: %x", es_pid);
+			//Util::vlog("MpegTS::read_pmt: >> pid: %x", es_pid);
 
 			if(es_entry->reserved_2 != 0x0f)
 			{
-				vlog("MpegTS::read_pmt: reserved 2: %x", es_entry->reserved_2);
+				Util::vlog("MpegTS::read_pmt: reserved 2: %x", es_entry->reserved_2);
 				goto next_descriptor_entry;
 			}
 
 			if(es_entry->unused != 0x00)
 			{
-				vlog("MpegTS::read_pmt: unused: %x", es_entry->unused);
+				Util::vlog("MpegTS::read_pmt: unused: %x", es_entry->unused);
 				goto next_descriptor_entry;
 			}
 
-			//vlog("MpegTS::read_pmt: esinfo_length: %d", esinfo_length);
+			//Util::vlog("MpegTS::read_pmt: esinfo_length: %d", esinfo_length);
 
 			switch(es_entry->stream_type)
 			{
@@ -433,16 +433,16 @@ bool MpegTS::read_pmt(int filter_pid) throw(string)
 					{
 						ds_entry = (const pmt_ds_entry_t *)&es_data[ds_data_skip + ds_data_offset];
 
-						//vlog("MpegTS::read_pmt: >>> offset: %d", ds_data_offset);
-						//vlog("MpegTS::read_pmt: >>> descriptor id: %x", ds_entry->id);
-						//vlog("MpegTS::read_pmt: >>> length: %d", ds_entry->length);
+						//Util::vlog("MpegTS::read_pmt: >>> offset: %d", ds_data_offset);
+						//Util::vlog("MpegTS::read_pmt: >>> descriptor id: %x", ds_entry->id);
+						//Util::vlog("MpegTS::read_pmt: >>> length: %d", ds_entry->length);
 
 						switch(ds_entry->id)
 						{
 							case(pmt_desc_language):
 						{
 								ds_a = (const pmt_ds_a_t *)&ds_entry->data;
-								//vlog("MpegTS::read_pmt: >>>> lang: %c%c%c [%d]", ds_a->lang[0],
+								//Util::vlog("MpegTS::read_pmt: >>>> lang: %c%c%c [%d]", ds_a->lang[0],
 										// ds_a->lang[1], ds_a->lang[2], ds_a->code);
 
 								stream_language.assign((const char *)&ds_a->lang, offsetof(pmt_ds_a_t, code));
@@ -505,26 +505,26 @@ int MpegTS::find_pcr_ms() const throw()
 	{
 		if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
 		{
-			//vlog("MpegTS::find_pcr_ms: read error");
+			//Util::vlog("MpegTS::find_pcr_ms: read error");
 			return(-1);
 		}
 
 		if(packet.header.sync_byte != sync_byte_value)
 		{
-			vlog("MpegTS::find_pcr_ms: no sync byte");
+			Util::vlog("MpegTS::find_pcr_ms: no sync byte");
 			return(-1);
 		}
 
 		pid = (packet.header.pid_high << 8) | packet.header.pid_low;
 
-		//vlog("MpegTS::find_pcr_ms: pid: %d", pid);
+		//Util::vlog("MpegTS::find_pcr_ms: pid: %d", pid);
 
 		if(pid != pcr_pid)
 			continue;
 
 		if(!packet.header.af)
 		{
-			//vlog("MpegTS::find_pcr_ms: no adaptation field");
+			//Util::vlog("MpegTS::find_pcr_ms: no adaptation field");
 			continue;
 		}
 
@@ -532,7 +532,7 @@ int MpegTS::find_pcr_ms() const throw()
 
 		if(!afield->contains_pcr)
 		{
-			//vlog("MpegTS::find_pcr_ms: adaptation field does not have pcr field");
+			//Util::vlog("MpegTS::find_pcr_ms: adaptation field does not have pcr field");
 			continue;
 		}
 
@@ -547,14 +547,14 @@ int MpegTS::find_pcr_ms() const throw()
 
 	if(attempt >= find_pcr_max_probe)
 	{
-		vlog("find_pcr_ms: no pcr found");
+		Util::vlog("find_pcr_ms: no pcr found");
 		return(-1);
 	}
 
 	parse_pts_ms(pcr_ms, h, m, s, ms);
 
-	//vlog("PCR found after %d packets", attempt);
-	//vlog("PCR = %d ms (%02d:%02d:%02d:%03d)", pcr_ms, h, m, s, ms);
+	//Util::vlog("PCR found after %d packets", attempt);
+	//Util::vlog("PCR = %d ms (%02d:%02d:%02d:%03d)", pcr_ms, h, m, s, ms);
 
 	return(pcr_ms);
 }
@@ -577,7 +577,7 @@ int MpegTS::find_last_pcr_ms(loff_t *eof_offs) const throw()
 
 	if((offset = lseek64(fd, find_last_pcr_end_offset, SEEK_END)) < 0)
 	{
-		vlog("MpegTS::find_last_pcr_ms: seek error (1)");
+		Util::vlog("MpegTS::find_last_pcr_ms: seek error (1)");
 		return(-1);
 	}
 
@@ -585,7 +585,7 @@ int MpegTS::find_last_pcr_ms(loff_t *eof_offs) const throw()
 
 	if((offset = lseek64(fd, offset, SEEK_SET)) < 0)
 	{
-		vlog("MpegTS::find_last_pcr_ms: seek error (2)");
+		Util::vlog("MpegTS::find_last_pcr_ms: seek error (2)");
 		return(-1);
 	}
 
@@ -593,22 +593,22 @@ int MpegTS::find_last_pcr_ms(loff_t *eof_offs) const throw()
 	{
 		pts_ms = rv;
 		parse_pts_ms(pts_ms, h, m, s, ms);
-		//vlog("MpegTS::find_last_pcr_ms: attempt: %d, last pcr: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
+		//Util::vlog("MpegTS::find_last_pcr_ms: attempt: %d, last pcr: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
 		attempt++;
 	}
 
 	if(attempt >= find_last_pcr_attempts)
 	{
-		vlog("MpegTS::find_last_pcr_ms: no more attempts left");
+		Util::vlog("MpegTS::find_last_pcr_ms: no more attempts left");
 		return(-1);
 	}
 
 	parse_pts_ms(pts_ms, h, m, s, ms);
-	//vlog("MpegTS::find_last_pcr_ms: last pcr after %d attempt: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
+	//Util::vlog("MpegTS::find_last_pcr_ms: last pcr after %d attempt: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
 
 	if((offset = lseek64(fd, 0, SEEK_CUR)) < 0)
 	{
-		vlog("MpegTS::find_last_pcr_ms: seek error (2)");
+		Util::vlog("MpegTS::find_last_pcr_ms: seek error (2)");
 		return(-1);
 	}
 
@@ -660,13 +660,13 @@ loff_t MpegTS::seek(int pts_ms) const throw(string)
 
 	if(pts_ms < first_pcr_ms)
 	{
-		vlog("MpegTS::seek: seek pts beyond start of file");
+		Util::vlog("MpegTS::seek: seek pts beyond start of file");
 		return(-1);
 	}
 
 	if(pts_ms > last_pcr_ms)
 	{
-		vlog("MpegTS::seek: pts beyond end of file");
+		Util::vlog("MpegTS::seek: pts beyond end of file");
 		return(-1);
 	}
 
@@ -675,40 +675,40 @@ loff_t MpegTS::seek(int pts_ms) const throw(string)
 		disect_offset = (lower_bound_offset + upper_bound_offset) / 2;
 
 		parse_pts_ms(pts_ms, h, m, s, ms);
-		//vlog("MpegTS::seek: seek for [%02d:%02d:%02d.%03d] between ", h, m, s, ms);
+		//Util::vlog("MpegTS::seek: seek for [%02d:%02d:%02d.%03d] between ", h, m, s, ms);
 		parse_pts_ms(lower_bound_pts_ms, h, m, s, ms);
-		//vlog("MpegTS::seek:  [%02d:%02d:%02d.%03d", h, m, s, ms);
+		//Util::vlog("MpegTS::seek:  [%02d:%02d:%02d.%03d", h, m, s, ms);
 		parse_pts_ms(upper_bound_pts_ms, h, m, s, ms);
-		//vlog("MpegTS::seek:  -%02d:%02d:%02d.%03d], ", h, m, s, ms);
-		//vlog("MpegTS::seek:  offset = %lld [%lld-%lld], ", disect_offset, lower_bound_offset, upper_bound_offset);
+		//Util::vlog("MpegTS::seek:  -%02d:%02d:%02d.%03d], ", h, m, s, ms);
+		//Util::vlog("MpegTS::seek:  offset = %lld [%lld-%lld], ", disect_offset, lower_bound_offset, upper_bound_offset);
 
 		if((current_offset = seek(SEEK_SET, disect_offset)) < 0)
 		{
-			vlog("MpegTS::seek: seek fails");
+			Util::vlog("MpegTS::seek: seek fails");
 			return(-1);
 		}
 
-		//vlog("MpegTS::seek: current offset = %lld (%lld%%)", current_offset, (current_offset * 100) / eof_offset);
+		//Util::vlog("MpegTS::seek: current offset = %lld (%lld%%)", current_offset, (current_offset * 100) / eof_offset);
 
 		if((disect_pts_ms = find_pcr_ms()) < 0)
 		{
-			vlog("MpegTS::seek: eof");
+			Util::vlog("MpegTS::seek: eof");
 			return(-1);
 		}
 
 		parse_pts_ms(disect_pts_ms, h, m, s, ms);
-		//vlog("MpegTS::seek: disect=[%02d:%02d:%02d.%03d]", h, m, s, ms);
+		//Util::vlog("MpegTS::seek: disect=[%02d:%02d:%02d.%03d]", h, m, s, ms);
 
 		if(disect_pts_ms < 0)
 		{
-			vlog("MpegTS::seek failed to find pts");
+			Util::vlog("MpegTS::seek failed to find pts");
 			return(-1);
 		}
 
 		if(((disect_pts_ms > pts_ms) && ((disect_pts_ms - pts_ms) < 8000)) || 
 			((pts_ms >= disect_pts_ms) && ((pts_ms - disect_pts_ms) < 8000)))
 		{
-			//vlog("MpegTS::seek: found");
+			//Util::vlog("MpegTS::seek: found");
 			return(current_offset);
 		}
 
@@ -717,14 +717,14 @@ loff_t MpegTS::seek(int pts_ms) const throw(string)
 			lower_bound_offset	= disect_offset;
 			lower_bound_pts_ms	= disect_pts_ms;
 
-			//vlog("MpegTS::seek: not found: change lower bound");
+			//Util::vlog("MpegTS::seek: not found: change lower bound");
 		}
 		else
 		{
 			upper_bound_offset	= disect_offset;
 			upper_bound_pts_ms	= disect_pts_ms;
 
-			//vlog("MpegTS::seek: not found: change upper bound");
+			//Util::vlog("MpegTS::seek: not found: change upper bound");
 		}
 	}
 

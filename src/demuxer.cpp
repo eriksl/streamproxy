@@ -1,5 +1,5 @@
 #include "demuxer.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string>
 using std::string;
@@ -21,7 +21,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 	PidMap::iterator		it2;
 
 	struct		dmx_pes_filter_params dmx_filter;
-	char		demuxer_device[128];
+	string		demuxer_device;
 	uint16_t	pid;
 
 	id = id_in;
@@ -48,9 +48,9 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 			(pids.find("video") == pids.end()) || (pids.find("audio") == pids.end()))
 		throw(string("Demuxer: missing primary pids"));
 
-	snprintf(demuxer_device, sizeof(demuxer_device), "/dev/dvb/adapter0/demux%d", id);
+	demuxer_device = string("/dev/dvb/adapter0/demux") + Util::int_to_string(id);
 
-	if((fd = open(demuxer_device, O_RDWR | O_NONBLOCK)) < 0)
+	if((fd = open(demuxer_device.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 		throw(string("Demuxer: cannot open demuxer device"));
 
 	if(ioctl(fd, DMX_SET_BUFFER_SIZE, buffer_size))
@@ -71,7 +71,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 			continue;
 
 		pid = it->second;
-		vlog("Demuxer: ioctl demuxer ADD PID: %s -> 0x%x", it->first.c_str(), pid);
+		Util::vlog("Demuxer: ioctl demuxer ADD PID: %s -> 0x%x", it->first.c_str(), pid);
 
 		if(ioctl(fd, DMX_ADD_PID, &pid))
 			throw(string("Demuxer: cannot add pid for ") + it->first);
@@ -84,7 +84,7 @@ Demuxer::~Demuxer() throw()
 	static char buffer[4096];
 	ssize_t rv;
 
-	vlog("Demuxer: demuxer STOP, start draining");
+	Util::vlog("Demuxer: demuxer STOP, start draining");
 
 	for(;;)
 	{
@@ -96,14 +96,14 @@ Demuxer::~Demuxer() throw()
 
 		if(rv < 0)
 		{
-			vlog("Demuxer: poll error");
+			Util::vlog("Demuxer: poll error");
 			break;
 		}
 
 		if(pfd.revents & POLLIN)
 		{
 			rv = read(fd, buffer, sizeof(buffer));
-			vlog("Demuxer: drained %d bytes", rv);
+			Util::vlog("Demuxer: drained %d bytes", rv);
 
 			if(rv <= 0)
 				break;
@@ -112,7 +112,7 @@ Demuxer::~Demuxer() throw()
 			break;
 	}
 
-	vlog("Demuxer: demuxer STOP, draining done");
+	Util::vlog("Demuxer: demuxer STOP, draining done");
 }
 
 int Demuxer::getfd() const throw()

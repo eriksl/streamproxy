@@ -16,7 +16,7 @@ streamproxy_SOURCES = \
 	streamproxy.cpp \
 	time_offset.cpp \
 	url.cpp \
-	vlog.cpp \
+	util.cpp \
 	webifrequest.cpp
 
 streamproxy_CXXFLAGS = -Wall -Wextra -Wshadow -Wundef -Wformat=2 -Winit-self -Wunused -Werror -Wpointer-arith -Wcast-qual -Wmultichar

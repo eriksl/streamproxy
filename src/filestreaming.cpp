@@ -1,5 +1,5 @@
 #include "filestreaming.h"
-#include "vlog.h"
+#include "util.h"
 #include "queue.h"
 #include "mpegts.h"
 
@@ -19,7 +19,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
 	
-	vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
+	Util::vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
 
 	MpegTS stream(file);
 
@@ -36,7 +36,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 		{
 			if(!socket_queue.read(stream.get_fd()))
 			{
-				vlog("FileStreaming: eof");
+				Util::vlog("FileStreaming: eof");
 				break;
 			}
 		}
@@ -55,7 +55,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 
 		if(pfd.revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
 		{
-			vlog("FileStreaming: socket error");
+			Util::vlog("FileStreaming: socket error");
 			break;
 		}
 
@@ -63,11 +63,11 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 		{
 			if(!socket_queue.write(socket_fd))
 			{
-				vlog("FileStreaming: write socket error");
+				Util::vlog("FileStreaming: write socket error");
 				break;
 			}
 		}
 	}
 
-	vlog("FileStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("FileStreaming: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }

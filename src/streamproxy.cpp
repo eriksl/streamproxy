@@ -1,6 +1,6 @@
 #include "acceptsocket.h"
 #include "clientsocket.h"
-#include "vlog.h"
+#include "util.h"
 #include "enigma_settings.h"
 
 #include <stdio.h>
@@ -44,10 +44,10 @@ typedef map<string, listen_socket_t> listen_action_t;
 
 static void sigchld(int) // prevent Z)ombie processes
 {
-	//vlog("streamproxy: wait for child");
+	//Util::vlog("streamproxy: wait for child");
 	waitpid(0, 0, 0);
 	signal(SIGCHLD, sigchld);
-	//vlog("streamproxy: wait for child done");
+	//Util::vlog("streamproxy: wait for child done");
 }
 
 int main(int argc, char **argv)
@@ -86,7 +86,7 @@ int main(int argc, char **argv)
 		positional_options.add("listen", -1);
 
 		options.add_options()
-			("foreground,f",	bpo::bool_switch(&foreground)->implicit_value(true),			"run in foreground (don't become a daemon)")
+			("foreground,f",	bpo::bool_switch(&Util::foreground)->implicit_value(true),		"run in foreground (don't become a daemon)")
 			("group,g",			bpo::value<string>(&require_auth_group),						"require streaming users to be member of this group")
 			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters)->composing(),	"listen to tcp port with default action")
 			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p 576p or 720p");
@@ -124,7 +124,7 @@ int main(int argc, char **argv)
 		if(listen_action.size() == 0)
 			throw(string("no listen_port:default_action parameters given"));
 
-		if(!foreground && daemon(0, 0))
+		if(!Util::foreground && daemon(0, 0))
 			throw(string("daemon() gives error"));
 
 		signal(SIGCHLD, sigchld);
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
 
 				new_socket = it2->second.accept_socket->accept();
 
-				vlog("streamproxy: accept new connection on port %s, default action: %s, fd %d",
+				Util::vlog("streamproxy: accept new connection on port %s, default action: %s, fd %d",
 						it2->first.c_str(), action_name[it2->second.default_action], new_socket);
 
 				if(fork()) // parent
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
 	}
 	catch(...)
 	{
-		vlog("streamproxy: default exception");
+		Util::vlog("streamproxy: default exception");
 		exit(1);
 	}
 

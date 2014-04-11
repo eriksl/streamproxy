@@ -1,5 +1,5 @@
 #include "service.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string>
 using std::string;
@@ -26,7 +26,7 @@ Service::Service(string service_in) throw(string)
 
 	if(service.length() == 0)
 	{
-		vlog("Service: invalid service (empty)");
+		Util::vlog("Service: invalid service (empty)");
 		service_field.clear();
 		return;
 	}
@@ -34,7 +34,7 @@ Service::Service(string service_in) throw(string)
 	if(service[service.length() - 1] == ':') // OpenWebIF leaves this in
 		service.erase(service.length() - 1);
 
-	vlog("Service: create service: %s", service.c_str());
+	Util::vlog("Service: create service: %s", service.c_str());
 
 	for(find_it = make_split_iterator(service, first_finder(":", boost::algorithm::is_equal()));
 		find_it != string_split_iterator(); find_it++)
@@ -43,11 +43,11 @@ Service::Service(string service_in) throw(string)
 
 		field = boost::copy_range<string>(*find_it);
 
-		//vlog("Service: field: \"%s\"", field.c_str());
+		//Util::vlog("Service: field: \"%s\"", field.c_str());
 
 		if(field.length() == 0)
 		{
-			vlog("Service: invalid service (empty field)");
+			Util::vlog("Service: invalid service (empty field)");
 			service_field.clear();
 			return;
 		}
@@ -66,7 +66,7 @@ Service::Service(string service_in) throw(string)
 						value += char(*string_it) - 'A' + 10;
 					else
 					{
-						vlog("Service: invalid service");
+						Util::vlog("Service: invalid service");
 						service_field.clear();
 						return;
 					}
@@ -76,11 +76,11 @@ Service::Service(string service_in) throw(string)
 	}
 
 	//for(int_it = service_field.begin(); int_it != service_field.end(); int_it++)
-		//vlog("Service: service field: %x", *int_it);
+		//Util::vlog("Service: service field: %x", *int_it);
 
 	if(service_field.size() != 10)
 	{
-		vlog("Service: invalid service (invalid # of fields");
+		Util::vlog("Service: invalid service (invalid # of fields");
 		service_field.clear();
 		return;
 	}

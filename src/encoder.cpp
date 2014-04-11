@@ -1,7 +1,7 @@
 #include "pidmap.h"
 #include "encoder.h"
 #include "demuxer.h"
-#include "vlog.h"
+#include "util.h"
 
 #include <string>
 using std::string;
@@ -18,6 +18,8 @@ Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
 	PidMap::const_iterator	it;
 	PidMap::iterator		it2;
 	PidMap::const_iterator	pmt, video, audio;
+	string	encoder_device;
+	int		encoder;
 
 	static char	encoder_device[128];
 			int	encoder;
@@ -59,19 +61,19 @@ Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
 
 	for(encoder = 0; encoder < 8; encoder++)
 	{
-		snprintf(encoder_device, sizeof(encoder_device), "/dev/bcm_enc%d", encoder);
+		encoder_device = string("/dev/bcm_enc") + Util::int_to_string(encoder);
 		errno = 0;
-		vlog("Encoder: open encoder %s", encoder_device);
+		Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
 
-		if((fd = open(encoder_device, O_RDWR, 0)) < 0)
+		if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
 		{
 			if(errno == ENOENT)
 			{
-				vlog("Encoder: not found %s", encoder_device);
+				Util::vlog("Encoder: not found %s", encoder_device.c_str());
 				break;
 			}
 
-			vlog("Encoder: encoder %d is busy", encoder);
+			Util::vlog("Encoder: encoder %d is busy", encoder);
 		}
 		else
 			break;
@@ -80,7 +82,7 @@ Encoder::Encoder(const PidMap &pids_in, string default_frame_size) throw(string)
 	if(fd < 0)
 		throw(string("Encoder: cannot open encoder"));
 
-	ordinal = encoder;
+	id = encoder;
 
 	if((default_frame_size == "480p") || (default_frame_size == "576p") ||
 			(default_frame_size == "720p"))
@@ -106,14 +108,14 @@ void* Encoder::start_thread_function(void * arg)
 {
 	Encoder *_this = (Encoder *)arg;
 
-	//vlog("Encoder: start thread: start ioctl");
+	//Util::vlog("Encoder: start thread: start ioctl");
 
 	_this->start_thread_joined	= false;
 	_this->start_thread_running	= true;
 	_this->stopped				= false;
 
 	if(ioctl(_this->fd, IOCTL_VUPLUS_START_TRANSCODING, 0))
-		vlog("Encoder: IOCTL start transcoding");
+		Util::vlog("Encoder: IOCTL start transcoding");
 
 	_this->start_thread_running = false;
 
@@ -122,21 +124,21 @@ void* Encoder::start_thread_function(void * arg)
 
 bool Encoder::start_init() throw()
 {
-	//vlog("Encoder: START TRANSCODING start");
+	//Util::vlog("Encoder: START TRANSCODING start");
 
 	if(start_thread_running || !start_thread_joined)
 	{
-		vlog("Encoder: start thread already running");
+		Util::vlog("Encoder: start thread already running");
 		return(true);
 	}
 
 	if(pthread_create(&start_thread, 0, &start_thread_function, (void *)this))
 	{
-		vlog("Encoder: pthread create failed");
+		Util::vlog("Encoder: pthread create failed");
 		return(false);
 	}
 
-	//vlog("Encoder: START TRANSCODING done");
+	//Util::vlog("Encoder: START TRANSCODING done");
 	return(true);
 }
 
@@ -144,9 +146,9 @@ bool Encoder::start_finish() throw()
 {
 	if(!start_thread_running && !start_thread_joined)
 	{
-		//vlog("Encoder: START detects start thread stopped");
+		//Util::vlog("Encoder: START detects start thread stopped");
 		pthread_join(start_thread, 0);
-		//vlog("Encoder: START joined start thread");
+		//Util::vlog("Encoder: START joined start thread");
 		start_thread_joined = true;
 
 		return(true);
@@ -161,11 +163,11 @@ bool Encoder::stop() throw()
 	static char buffer[4096];
 	ssize_t rv;
 
-	//vlog("Encoder: STOP TRANSCODING begin");
+	//Util::vlog("Encoder: STOP TRANSCODING begin");
 
 	if(stopped)
 	{
-		vlog("Encoder: already stopped");
+		Util::vlog("Encoder: already stopped");
 		return(true);
 	}
 
@@ -179,9 +181,9 @@ bool Encoder::stop() throw()
 		return(false);
 
 	if(ioctl(fd, IOCTL_VUPLUS_STOP_TRANSCODING, 0))
-		vlog("Encoder: IOCTL stop transcoding");
+		Util::vlog("Encoder: IOCTL stop transcoding");
 
-	vlog("Encoder: starting draining");
+	Util::vlog("Encoder: starting draining");
 
 	for(;;)
 	{
@@ -193,14 +195,14 @@ bool Encoder::stop() throw()
 
 		if(rv < 0)
 		{
-			vlog("Encoder: poll error");
+			Util::vlog("Encoder: poll error");
 			break;
 		}
 
 		if(pfd.revents & POLLIN)
 		{
 			rv = read(fd, buffer, sizeof(buffer));
-			vlog("Encoder: STOP, drained %d bytes", rv);
+			Util::vlog("Encoder: STOP, drained %d bytes", rv);
 
 			if(rv <= 0)
 				break;
@@ -211,7 +213,7 @@ bool Encoder::stop() throw()
 
 	stopped = true;
 
-	vlog("Encoder: encoder STOP TRANSCODING done");
+	Util::vlog("Encoder: encoder STOP TRANSCODING done");
 
 	return(true);
 }
@@ -228,14 +230,15 @@ PidMap Encoder::getpids() const throw()
 
 string Encoder::getprop(string property) const throw(string)
 {
-	char	tmp[128];
 	int		procfd;
 	ssize_t	rv;
+	string	path;
+	char	tmp[256];
 
-	snprintf(tmp, sizeof(tmp), "/proc/stb/encoder/%d/%s", ordinal, property.c_str());
+	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
-	if((procfd = open(tmp, O_RDONLY, 0)) < 0)
-		throw(string("Encoder::getprop: cannot open property: ") + tmp);
+	if((procfd = open(path.c_str(), O_RDONLY, 0)) < 0)
+		throw(string("Encoder::getprop: cannot open property: ") + path);
 
 	if((rv = read(procfd, tmp, sizeof(tmp))) <= 0)
 	{
@@ -252,13 +255,13 @@ string Encoder::getprop(string property) const throw(string)
 
 void Encoder::setprop(string property, string value) const throw(string)
 {
-	char	tmp[128];
 	int		procfd;
+	string	path;
 
-	snprintf(tmp, sizeof(tmp), "/proc/stb/encoder/%d/%s", ordinal, property.c_str());
+	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
-	if((procfd = open(tmp, O_WRONLY, 0)) < 0)
-		throw(string("Encoder::setprop: cannot open property: ") + tmp);
+	if((procfd = open(path.c_str(), O_WRONLY, 0)) < 0)
+		throw(string("Encoder::setprop: cannot open property: ") + path);
 
 	if(write(procfd, value.c_str(), value.length()) != (ssize_t)value.length())
 	{
