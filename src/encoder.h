@@ -18,6 +18,14 @@ class Encoder
 			IOCTL_VUPLUS_STOP_TRANSCODING	= 200,
 		};
 
+		typedef enum
+		{
+			model_undef = 0,
+			model_vuplus_solo2,
+			model_vuplus_duo2,
+			model_end
+		} model_t;
+
 		Encoder();
 		Encoder(const Encoder &);
 
@@ -28,6 +36,7 @@ class Encoder
 		int			fd;
 		int			id;
 		PidMap		pids;
+		model_t		model;
 
 		static void* start_thread_function(void *);
 
@@ -48,6 +57,7 @@ class Encoder
 
 		int			getfd()								const	throw();
 		PidMap		getpids()							const	throw();
+		std::string	model_id()							const	throw();
 };
 
 #endif

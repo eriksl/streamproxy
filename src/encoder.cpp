@@ -12,6 +12,8 @@ using std::string;
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
+#include <dirent.h>
+#include <string.h>
 
 Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 		string profile, string level, string bframes) throw(string)
@@ -23,6 +25,8 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	int		encoder;
 	int		tbr;
 	int		bf;
+	DIR				*dir;
+	struct	dirent	*dire;
 
 	start_thread_running	= false;
 	start_thread_joined		= true;
@@ -59,62 +63,112 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	if((pmt == pids.end()) || (video == pids.end()) || (audio == pids.end()))
 		throw(string("Encoder: missing pmt, video or audio pid"));
 
-	for(encoder = 0; encoder < 8; encoder++)
-	{
-		encoder_device = string("/dev/bcm_enc") + Util::int_to_string(encoder);
-		errno = 0;
-		Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
+	model = model_vuplus_solo2;
 
-		if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
+	if((dir = opendir("/dev")))
+	{
+		while((dire = readdir(dir)))
 		{
-			if(errno == ENOENT)
+			if(!strcmp(dire->d_name, "bcm_enc1"))
 			{
-				Util::vlog("Encoder: not found %s", encoder_device.c_str());
+				model = model_vuplus_duo2;
 				break;
 			}
-
-			Util::vlog("Encoder: encoder %d is busy", encoder);
 		}
-		else
-			break;
+
+		closedir(dir);
 	}
 
-	if(fd < 0)
-		throw(string("Encoder: cannot open encoder"));
+	Util::vlog("Encoder: probed model: %s", model_id().c_str());
 
-	id = encoder;
+	switch(model)
+	{
+		case(model_vuplus_solo2):
+		{
+			id = 0;
 
-	if((frame_size == "480p") || (frame_size == "576p") ||
-			(frame_size == "720p"))
-		setprop("display_format", frame_size);
-	else
-		setprop("display_format", "480p");
+			tbr = Util::string_to_int(bitrate);
 
-	tbr = Util::string_to_int(bitrate);
+			if((tbr >= 100) && (tbr <= 10000))
+				tbr *= 1000;
+			else
+				tbr = 1000000;
 
-	if((tbr >= 100) && (tbr <= 10000))
-		tbr *= 1000;
-	else
-		tbr = 1000000;
+			//setprop("bitrate", Util::int_to_string(tbr));
 
-	setprop("bitrate", Util::int_to_string(tbr));
+			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) < 0)
+				throw(string("Encoder: cannot open encoder"));
 
-	if((profile == "baseline") || (profile == "main") || (profile == "high"))
-		setprop("profile", profile);
-	else
-		setprop("profile", "baseline");
+			break;
+		}
 
-	if((level == "3.1") || (level == "3.2") || (level == "4.0"))
-		setprop("level", level);
-	else
-		setprop("level", "3.1");
+		case(model_vuplus_duo2):
+		{
+			for(encoder = 0; encoder < 3; encoder++)
+			{
+				encoder_device = string("/dev/bcm_enc") + Util::int_to_string(encoder);
+				errno = 0;
+				Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
 
-	bf = Util::string_to_int(bframes);
+				if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
+				{
+					if(errno == ENOENT)
+					{
+						Util::vlog("Encoder: not found %s", encoder_device.c_str());
+						break;
+					}
 
-	if((bf >= 0) && (bf <= 2))
-		setprop("gop_frameb", Util::int_to_string(bf));
-	else
-		setprop("gop_frameb", "0");
+					Util::vlog("Encoder: encoder %d is busy", encoder);
+				}
+				else
+					break;
+			}
+
+			if(fd < 0)
+				throw(string("Encoder: cannot open encoder"));
+
+			id = encoder;
+
+			if((frame_size == "480p") || (frame_size == "576p") ||
+					(frame_size == "720p"))
+				setprop("display_format", frame_size);
+			else
+				setprop("display_format", "480p");
+
+			tbr = Util::string_to_int(bitrate);
+
+			if((tbr >= 100) && (tbr <= 10000))
+				tbr *= 1000;
+			else
+				tbr = 1000000;
+
+			setprop("bitrate", Util::int_to_string(tbr));
+
+			if((profile == "baseline") || (profile == "main") || (profile == "high"))
+				setprop("profile", profile);
+			else
+				setprop("profile", "baseline");
+
+			if((level == "3.1") || (level == "3.2") || (level == "4.0"))
+				setprop("level", level);
+			else
+				setprop("level", "3.1");
+
+			bf = Util::string_to_int(bframes);
+
+			if((bf >= 0) && (bf <= 2))
+				setprop("gop_frameb", Util::int_to_string(bf));
+			else
+				setprop("gop_frameb", "0");
+
+			break;
+		}
+
+		default:
+		{
+			throw(string("Encoder: unknown model"));
+		}
+	}
 
 	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt->second) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video->second) ||
@@ -287,6 +341,10 @@ void Encoder::setprop(string property, string value) const throw()
 	int		procfd;
 	string	path;
 
+	Util::vlog("setprop");
+
+	return;
+
 	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
 	if((procfd = open(path.c_str(), O_WRONLY, 0)) < 0)
@@ -299,4 +357,15 @@ void Encoder::setprop(string property, string value) const throw()
 		Util::vlog("Encoder::getprop: cannot write to property %s", property.c_str());
 
 	close(procfd);
+}
+
+string Encoder::model_id() const throw()
+{
+	static const char *models[] = { "undef", "VU+ Solo2", "VU+ Duo2" };
+
+	if((model > model_undef) && (model < model_end))
+		return(models[model]);
+	else
+		return("unknown");
+
 }
