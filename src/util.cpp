@@ -48,6 +48,8 @@ void Util::vlog(const char * format, ...) throw()
 			vsyslog(LOG_WARNING, "system error: %s", strerror(errno));
 	}
 
+	errno = 0;
+
     va_end(ap);
 }
 

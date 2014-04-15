@@ -116,9 +116,9 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	else
 		setprop("gop_frameb", "0");
 
-	Util::vlog("pmt->second: %d", pmt);
-	Util::vlog("video->second: %d", video);
-	Util::vlog("audio->second: %d", audio);
+	Util::vlog("pmt: %d", pmt);
+	Util::vlog("video: %d", video);
+	Util::vlog("audio: %d", audio);
 	Util::vlog("start ioctl");
 
 	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt) ||
