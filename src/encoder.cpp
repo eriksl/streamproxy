@@ -20,7 +20,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 {
 	PidMap::const_iterator	it;
 	PidMap::iterator		it2;
-	PidMap::const_iterator	pmt, video, audio;
+	int						pmt = -1, video = -1, audio = -1;
 	string	encoder_device;
 	int		encoder;
 	int		tbr;
@@ -49,18 +49,18 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 			pids.erase(it2);
 
 		if(it->first == "pmt")
-			pmt = it;
+			pmt = it->second;
 
 		if(it->first == "video")
-			video = it;
+			video = it->second;
 
 		if(it->first == "audio")
-			audio = it;
+			audio = it->second;
 
 		pids[it->first] = it->second;
 	}
 
-	if((pmt == pids.end()) || (video == pids.end()) || (audio == pids.end()))
+	if((pmt == -1) || (video == -1) || (audio == -1))
 		throw(string("Encoder: missing pmt, video or audio pid"));
 
 	model = model_vuplus_solo2;
@@ -94,7 +94,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 			else
 				tbr = 1000000;
 
-			//setprop("bitrate", Util::int_to_string(tbr));
+			setprop("bitrate", Util::int_to_string(tbr));
 
 			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) < 0)
 				throw(string("Encoder: cannot open encoder"));
@@ -170,9 +170,14 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 		}
 	}
 
-	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt->second) ||
-			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video->second) ||
-			ioctl(fd, IOCTL_VUPLUS_SET_APID, audio->second))
+	Util::vlog("pmt->second: %d", pmt);
+	Util::vlog("video->second: %d", video);
+	Util::vlog("audio->second: %d", audio);
+	Util::vlog("start ioctl");
+
+	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt) ||
+			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video) ||
+			ioctl(fd, IOCTL_VUPLUS_SET_APID, audio))
 	{
 			throw(string("Encoder: cannot init encoder"));
 	}
@@ -341,9 +346,7 @@ void Encoder::setprop(string property, string value) const throw()
 	int		procfd;
 	string	path;
 
-	Util::vlog("setprop");
-
-	return;
+	Util::vlog("setprop: %s=%s", property.c_str(), value.c_str());
 
 	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
 
@@ -354,7 +357,7 @@ void Encoder::setprop(string property, string value) const throw()
 	}
 
 	if(write(procfd, value.c_str(), value.length()) != (ssize_t)value.length())
-		Util::vlog("Encoder::getprop: cannot write to property %s", property.c_str());
+		Util::vlog("Encoder::setprop: cannot write to property %s", property.c_str());
 
 	close(procfd);
 }
