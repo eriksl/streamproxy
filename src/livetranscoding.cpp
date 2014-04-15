@@ -45,7 +45,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 
 	WebifRequest webifrequest(service, webauth);
 
-	while((time(0) - timeout) < 30)
+	while((time(0) - timeout) < 15)
 	{
 		sleep(1);
 
