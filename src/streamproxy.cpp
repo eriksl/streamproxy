@@ -14,6 +14,7 @@
 #include <poll.h>
 #include <signal.h>
 #include <sys/wait.h>
+#include <sys/types.h>
 
 #include <sstream>
 using std::ostringstream;
@@ -44,10 +45,26 @@ typedef map<string, listen_socket_t> listen_action_t;
 
 static void sigchld(int) // prevent Z)ombie processes
 {
-	//Util::vlog("streamproxy: wait for child");
-	waitpid(0, 0, 0);
-	signal(SIGCHLD, sigchld);
-	//Util::vlog("streamproxy: wait for child done");
+	siginfo_t infop;
+
+	infop.si_pid = 0;
+
+	waitid(P_ALL, 0, &infop, WEXITED | WNOHANG);
+
+	Util::vlog("streamproxy: pid %d exited", infop.si_pid);
+
+	if(infop.si_pid)
+	{
+		if((infop.si_code == CLD_KILLED) || (infop.si_code == CLD_DUMPED))
+		{
+			if(infop.si_status == SIGSEGV)
+				Util::vlog("streamproxy: child process %d exited with segmentation fault", infop.si_pid);
+			else
+				Util::vlog("streamproxy: child process %d was killed", infop.si_pid);
+		}
+	}
+	else
+		Util::vlog("streamproxy: sigchld called but no childeren to wait for");
 }
 
 int main(int argc, char **argv)
@@ -57,6 +74,7 @@ int main(int argc, char **argv)
 
 	try
 	{
+		struct sigaction						signal_action;
 		multiparameter_t						listen_parameters;
 		string									require_auth_group;
 		multiparameter_t::const_iterator		it;
@@ -135,7 +153,13 @@ int main(int argc, char **argv)
 		if(!Util::foreground && daemon(0, 0))
 			throw(string("daemon() gives error"));
 
-		signal(SIGCHLD, sigchld);
+		signal_action.sa_handler = sigchld;
+		signal_action.sa_flags = SA_NOCLDSTOP | SA_NODEFER | SA_RESTART;
+		signal_action.sa_restorer = 0;
+
+		sigemptyset(&signal_action.sa_mask);
+
+		sigaction(SIGCHLD, &signal_action, 0);
 
 		pfd = new struct pollfd[listen_action.size()];
 
