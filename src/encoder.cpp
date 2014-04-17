@@ -12,6 +12,8 @@ using std::string;
 #include <fcntl.h>
 #include <errno.h>
 #include <poll.h>
+#include <string.h>
+#include <dirent.h>
 
 Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 		string profile, string level, string bframes) throw(string)
@@ -23,6 +25,12 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	int		encoder;
 	int		tbr;
 	int		bf;
+	DIR		*rootdir, *dir;
+	struct dirent *rootdirent, *dirent;
+	string	fdfile;
+	char	linkname[256];
+	ssize_t	rv;
+	bool	encoder_in_use[2];
 
 	start_thread_running	= false;
 	start_thread_joined		= true;
@@ -59,30 +67,55 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	if((pmt == -1) || (video == -1) || (audio == -1))
 		throw(string("Encoder: missing pmt, video or audio pid"));
 
-	for(encoder = 0; encoder < 8; encoder++)
-	{
-		encoder_device = string("/dev/bcm_enc") + Util::int_to_string(encoder);
-		errno = 0;
-		Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
+	encoder_in_use[0] = encoder_in_use[1] = false;
 
-		if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
+	if(!(rootdir = opendir("/proc")))
+		throw(string("Encoder: cannot open /proc"));
+
+	for(rootdirent = readdir(rootdir); rootdirent; rootdirent = readdir(rootdir))
+	{
+		if((dir = opendir((string("/proc/") + rootdirent->d_name + "/fd").c_str())))
 		{
-			if(errno == ENOENT)
+			for(dirent = readdir(dir); dirent; dirent = readdir(dir))
 			{
-				Util::vlog("Encoder: not found %s", encoder_device.c_str());
-				break;
+				if(dirent->d_name[0] == '.')
+					continue;
+
+				fdfile = string("/proc/") + rootdirent->d_name + "/fd/" + dirent->d_name;
+
+				if((rv = readlink(fdfile.c_str(), linkname, sizeof(linkname))) < 0)
+				{
+					Util::vlog("Encoder: cannot read link %s", fdfile.c_str());
+					continue;
+				}
+
+				linkname[rv] = '\0';
+
+				if((rv == 13) && !strncmp(linkname, "/dev/bcm_enc", 12) && ((linkname[12] == '0') || (linkname[12] == '1')))
+				{
+					encoder = linkname[12] - '0';
+					encoder_in_use[encoder] = true;
+				}
 			}
 
-			Util::vlog("Encoder: encoder %d is busy", encoder);
+			closedir(dir);
 		}
-		else
-			break;
 	}
 
-	if(fd < 0)
-		throw(string("Encoder: cannot open encoder"));
+	closedir(rootdir);
 
-	id = encoder;
+	Util::vlog("Encoder: encoder 0 in use: %d", encoder_in_use[0]);
+	Util::vlog("Encoder: encoder 1 in use: %d", encoder_in_use[1]);
+
+	if(encoder_in_use[0])
+	{
+		if(encoder_in_use[1])
+			throw(string("Encoder:: all encoders busy"));
+		else
+			id = 1;
+	}
+	else
+		id = 0;
 
 	if((frame_size == "480p") || (frame_size == "576p") ||
 			(frame_size == "720p"))
@@ -95,7 +128,10 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	if((tbr >= 100) && (tbr <= 10000))
 		tbr *= 1000;
 	else
-		tbr = 1000000;
+		if(tbr != -1)
+			tbr = 1000 * 1000;
+
+	Util::vlog("Encoder: bitrate: %s/%d", bitrate.c_str(), tbr);
 
 	setprop("bitrate", Util::int_to_string(tbr));
 
@@ -115,6 +151,14 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 		setprop("gop_frameb", Util::int_to_string(bf));
 	else
 		setprop("gop_frameb", "0");
+
+	encoder_device = string("/dev/bcm_enc") + Util::int_to_string(id);
+
+	errno = 0;
+	Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
+
+	if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
+		throw(string("Encoder: cannot open encoder %s", encoder_device.c_str()));
 
 	Util::vlog("pmt: %d", pmt);
 	Util::vlog("video: %d", video);
