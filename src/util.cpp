@@ -45,7 +45,7 @@ void Util::vlog(const char * format, ...) throw()
         vsyslog(LOG_WARNING, format, ap);
 
    		if(errno)
-			vsyslog(LOG_WARNING, "system error: %s", strerror(errno));
+			syslog(LOG_WARNING, "system error: %s", strerror(errno));
 	}
 
 	errno = 0;
