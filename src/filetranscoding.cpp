@@ -42,7 +42,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
 
-	if(stream.is_seekable)
+	if(stream.is_seekable && (time_offset_s > 0))
 		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	for(it = pids.begin(); it != pids.end(); it++)

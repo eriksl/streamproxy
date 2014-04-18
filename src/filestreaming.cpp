@@ -25,7 +25,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 
 	MpegTS stream(file);
 
-	if(stream.is_seekable)
+	if(stream.is_seekable && (time_offset_s > 0))
 		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	Queue socket_queue(32 * 1024);

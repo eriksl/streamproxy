@@ -41,6 +41,7 @@ MpegTS::~MpegTS() throw()
 void MpegTS::init() throw(string)
 {
 	mpegts_pat_t::const_iterator it;
+	off_t offset_aligned;
 
 	if(!read_pat())
 		throw(string("MpegTS::init: invalid transport stream (no suitable pat)"));
@@ -56,24 +57,39 @@ void MpegTS::init() throw(string)
 
 	is_seekable = false;
 
-	if(probe_seek())
+	if(lseek(fd, 0, SEEK_SET) != (off_t)-1)
 	{
-		last_pcr_ms = find_last_pcr_ms(&eof_offset);
+		first_pcr_ms = find_pcr_ms(direction_forward);
 
-		if(lseek64(fd, 0, SEEK_SET) >= 0)
+		if((eof_offset = lseek(fd, 0, SEEK_END)) != (off_t)-1)
 		{
-			first_pcr_ms = find_pcr_ms();
+			offset_aligned = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
 
-			if((first_pcr_ms >= 0) && (last_pcr_ms >= 0) && (last_pcr_ms > first_pcr_ms))
-				is_seekable = true;
+			if(eof_offset != offset_aligned)
+			{
+				eof_offset = offset_aligned;
+
+				if(lseek(fd, eof_offset, SEEK_SET) == (off_t)-1)
+					Util::vlog("MpegTS::init: seek to aligned position fails");
+			}
+
+			last_pcr_ms	= find_pcr_ms(direction_backward);
+
+			if(last_pcr_ms < first_pcr_ms)
+				Util::vlog("MpegTS::init: pcr wraparound, cannot seek this stream, first pcr: %d, last pcr: %d", first_pcr_ms / 1000, last_pcr_ms / 1000);
+			else
+				if((first_pcr_ms >= 0) && (last_pcr_ms >= 0))
+					is_seekable = true;
 		}
 	}
 
-	if(!is_seekable)
+	if(is_seekable)
+		lseek(fd, 0, SEEK_SET);
+	else
 	{
+		eof_offset		= -1;
 		first_pcr_ms	= -1;
 		last_pcr_ms		= -1;
-		eof_offset		= -1;
 	}
 
 	//Util::vlog("first_pcr_ms = %d", first_pcr_ms);
@@ -496,18 +512,30 @@ void MpegTS::parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw()
 	ms		 =     pts_ms;
 }
 
-int MpegTS::find_pcr_ms() const throw()
+int MpegTS::find_pcr_ms(seek_direction_t direction) const throw()
 {
 	ts_packet_t				packet;
 	ts_adaptation_field_t	*afield;
 	int						attempt, pcr_ms = -1, pid;
 	int						ms, h, m, s;
+	off_t					offset;
 
 	for(attempt = 0; (pcr_ms < 0) && (attempt < find_pcr_max_probe); attempt++)
 	{
+		if(direction == direction_backward)
+		{
+			offset = (off_t)sizeof(ts_packet_t) * 2 * -1;
+
+			if(lseek(fd, offset, SEEK_CUR) == (off_t)-1)
+			{
+				Util::vlog("MpegTS::find_pcr_ms: lseek failed");
+				return(-1);
+			}
+		}
+
 		if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
 		{
-			//Util::vlog("MpegTS::find_pcr_ms: read error");
+			Util::vlog("MpegTS::find_pcr_ms: read error");
 			return(-1);
 		}
 
@@ -534,7 +562,7 @@ int MpegTS::find_pcr_ms() const throw()
 
 		if(!afield->contains_pcr)
 		{
-			//Util::vlog("MpegTS::find_pcr_ms: adaptation field does not have pcr field");
+			//Util::vlog("MpegTS::find_pcr_ms: attempt: %d, adaptation field does not have pcr field", attempt);
 			continue;
 		}
 
@@ -549,7 +577,7 @@ int MpegTS::find_pcr_ms() const throw()
 
 	if(attempt >= find_pcr_max_probe)
 	{
-		Util::vlog("find_pcr_ms: no pcr found");
+		Util::vlog("MpegTS::find_pcr_ms: no pcr found");
 		return(-1);
 	}
 
@@ -561,77 +589,19 @@ int MpegTS::find_pcr_ms() const throw()
 	return(pcr_ms);
 }
 
-bool MpegTS::probe_seek() const throw()
-{
-	if(lseek64(fd, 0, SEEK_CUR) == (loff_t)-1)
-		return(false);
-
-	return(true);
-}
-
-int MpegTS::find_last_pcr_ms(loff_t *eof_offs) const throw()
-{
-	loff_t	offset;
-	int		rv;
-	int		pts_ms = -1;
-	int		h, m, s, ms;
-	int		attempt = 0;
-
-	if((offset = lseek64(fd, find_last_pcr_end_offset, SEEK_END)) < 0)
-	{
-		Util::vlog("MpegTS::find_last_pcr_ms: seek error (1)");
-		return(-1);
-	}
-
-	offset = (offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
-
-	if((offset = lseek64(fd, offset, SEEK_SET)) < 0)
-	{
-		Util::vlog("MpegTS::find_last_pcr_ms: seek error (2)");
-		return(-1);
-	}
-
-	while((attempt < find_last_pcr_attempts) && (rv = find_pcr_ms()) >= 0)
-	{
-		pts_ms = rv;
-		parse_pts_ms(pts_ms, h, m, s, ms);
-		//Util::vlog("MpegTS::find_last_pcr_ms: attempt: %d, last pcr: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
-		attempt++;
-	}
-
-	if(attempt >= find_last_pcr_attempts)
-	{
-		Util::vlog("MpegTS::find_last_pcr_ms: no more attempts left");
-		return(-1);
-	}
-
-	parse_pts_ms(pts_ms, h, m, s, ms);
-	//Util::vlog("MpegTS::find_last_pcr_ms: last pcr after %d attempt: %02d:%02d:%02d:%03d", attempt, h, m, s, ms);
-
-	if((offset = lseek64(fd, 0, SEEK_CUR)) < 0)
-	{
-		Util::vlog("MpegTS::find_last_pcr_ms: seek error (2)");
-		return(-1);
-	}
-
-	if(eof_offs)
-		*eof_offs = offset;
-
-	return(pts_ms);
-}
-
-loff_t MpegTS::seek(int whence, loff_t offset) const throw(string)
+off_t MpegTS::seek(int whence, off_t offset) const throw(string)
 {
 	ts_packet_t	packet;
-	loff_t		actual_offset;
+	off_t		actual_offset;
+	off_t		new_offset;
 
 	if(!is_seekable)
 		throw(string("MpegTS::seek: stream is not seekable"));
 
-	offset = ((offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t));
+	offset = ((offset / (off_t)sizeof(ts_packet_t)) * (off_t)sizeof(ts_packet_t));
 
-	if(lseek64(fd, offset, whence) < 0)
-		throw(string("MpegTS::seek: lseek64 (1)"));
+	if(lseek(fd, offset, whence) < 0)
+		throw(string("MpegTS::seek: lseek (1)"));
 
 	if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
 		throw(string("MpegTS::seek: read error"));
@@ -639,23 +609,25 @@ loff_t MpegTS::seek(int whence, loff_t offset) const throw(string)
 	if(packet.header.sync_byte != sync_byte_value)
 		throw(string("MpegTS::seek: no sync byte"));
 
-	if((actual_offset = lseek64(fd, 0 - loff_t(sizeof(packet)), SEEK_CUR)) < 0)
-		throw(string("MpegTS::seek: lseek64 (2)"));
+	new_offset = (off_t)0 - (off_t)sizeof(packet);
+
+	if((actual_offset = lseek(fd, new_offset, SEEK_CUR)) < 0)
+		throw(string("MpegTS::seek: lseek (2)"));
 
 	return(actual_offset);
 }
 
-loff_t MpegTS::seek(int pts_ms) const throw(string)
+off_t MpegTS::seek(int pts_ms) const throw(string)
 {
 	int		h, m, s, ms;
 	int		attempt;
-	loff_t	lower_bound_offset	= 0;
+	off_t	lower_bound_offset	= 0;
 	int		lower_bound_pts_ms	= first_pcr_ms;
-	loff_t	upper_bound_offset	= eof_offset;
+	off_t	upper_bound_offset	= eof_offset;
 	int		upper_bound_pts_ms	= last_pcr_ms;
-	loff_t	disect_offset;
+	off_t	disect_offset;
 	int		disect_pts_ms;
-	loff_t	current_offset;
+	off_t	current_offset;
 
 	if(!is_seekable)
 		throw(string("MpegTS::seek: stream is not seekable"));
@@ -692,7 +664,7 @@ loff_t MpegTS::seek(int pts_ms) const throw(string)
 
 		//Util::vlog("MpegTS::seek: current offset = %lld (%lld%%)", current_offset, (current_offset * 100) / eof_offset);
 
-		if((disect_pts_ms = find_pcr_ms()) < 0)
+		if((disect_pts_ms = find_pcr_ms(direction_forward)) < 0)
 		{
 			Util::vlog("MpegTS::seek: eof");
 			return(-1);

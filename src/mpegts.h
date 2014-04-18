@@ -28,10 +28,8 @@ class MpegTS
 
 		enum
 		{
-			find_pcr_max_probe			= 2000,
-			find_last_pcr_end_offset	= -1000 * 188,
-			find_last_pcr_attempts		= 32,
-			seek_max_attempts			= 32,
+			find_pcr_max_probe	= 1000000,
+			seek_max_attempts	= 32,
 		};
 
 		enum
@@ -163,6 +161,12 @@ class MpegTS
 			uint8_t	code;
 		} pmt_ds_a_t;
 
+		typedef enum
+		{
+			direction_forward,
+			direction_backward,
+		} seek_direction_t;
+
 		typedef std::map<int, int> mpegts_pat_t;
 
 		MpegTS();
@@ -180,9 +184,7 @@ class MpegTS
 		bool	read_table(int filter_pid, int filter_table)	throw(std::string);
 		bool	read_pat()										throw(std::string);
 		bool	read_pmt(int filter_pid)						throw(std::string);
-		int		find_pcr_ms()							const	throw();
-		int		find_last_pcr_ms(loff_t *eof_offs)		const	throw();
-		bool	probe_seek()							const	throw();
+		int		find_pcr_ms(seek_direction_t direction)	const	throw();
 
 	public:
 
@@ -195,14 +197,14 @@ class MpegTS
 
 		int		first_pcr_ms;
 		int		last_pcr_ms;
-		loff_t	eof_offset;
+		off_t	eof_offset;
 
 		MpegTS(int fd)				throw(std::string);
 		MpegTS(std::string file)	throw(std::string);
 		~MpegTS()					throw();
 
 		int		get_fd()							const	throw();
-		loff_t	seek(int whence, loff_t offset)		const	throw(std::string);
-		loff_t	seek(int pts_ms)					const	throw(std::string);
+		off_t	seek(int whence, off_t offset)		const	throw(std::string);
+		off_t	seek(int pts_ms)					const	throw(std::string);
 };
 #endif
