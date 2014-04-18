@@ -1,6 +1,8 @@
 #ifndef _filestreaming_h_
 #define _filestreaming_h_
 
+#include "config.h"
+
 #include <string>
 
 class FileStreaming

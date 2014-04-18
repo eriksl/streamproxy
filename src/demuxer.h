@@ -1,10 +1,9 @@
 #ifndef _demuxer_h_
 #define _demuxer_h_
 
+#include "config.h"
+
 #include "pidmap.h"
-
-#include <stdlib.h>
-
 #include <string>
 
 class Demuxer

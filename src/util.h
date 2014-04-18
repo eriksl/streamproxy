@@ -1,6 +1,8 @@
 #ifndef _util_h_
 #define _util_h_
 
+#include "config.h"
+
 #include <string>
 
 class Util

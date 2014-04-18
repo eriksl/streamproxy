@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "service.h"
 #include "util.h"
 

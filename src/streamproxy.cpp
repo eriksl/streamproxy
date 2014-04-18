@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "acceptsocket.h"
 #include "clientsocket.h"
 #include "util.h"

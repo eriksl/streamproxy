@@ -1,11 +1,13 @@
 #ifndef _clientsocket_h_
 #define _clientsocket_h_
 
+#include "config.h"
+
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 #include <map>
-
-#include <stdint.h>
 
 class ClientSocket
 {

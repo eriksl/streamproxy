@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "filestreaming.h"
 #include "util.h"
 #include "queue.h"

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "mpegts.h"
 #include "util.h"
 

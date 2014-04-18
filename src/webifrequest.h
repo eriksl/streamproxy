@@ -1,6 +1,8 @@
 #ifndef _webifrequest_h_
 #define _webifrequest_h_
 
+#include "config.h"
+
 #include "service.h"
 #include "pidmap.h"
 

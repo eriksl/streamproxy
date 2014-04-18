@@ -1,6 +1,8 @@
 #ifndef _mpegts_h_
 #define _mpegts_h_
 
+#include "config.h"
+
 #include <map>
 #include <string>
 

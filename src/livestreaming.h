@@ -1,6 +1,8 @@
 #ifndef _livestreaming_h_
 #define _livestreaming_h_
 
+#include "config.h"
+
 #include "service.h"
 #include <string>
 

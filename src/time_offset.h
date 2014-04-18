@@ -1,6 +1,8 @@
 #ifndef _time_offset_h_
 #define _time_offset_h_
 
+#include "config.h"
+
 #include <string>
 
 class TimeOffset

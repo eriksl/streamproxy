@@ -1,7 +1,9 @@
 #ifndef _queue_h_
 #define	_queue_h_
 
-#include <stdlib.h>
+#include "config.h"
+
+#include <sys/types.h>
 
 #include <string>
 using std::string;

@@ -1,9 +1,12 @@
+#include "config.h"
+
 #include "queue.h"
 #include "util.h"
 
 #include <string.h>
 #include <errno.h>
 #include <unistd.h>
+#include <stdlib.h>
 
 Queue::Queue(int size_in) throw(string)
 {

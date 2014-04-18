@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "filetranscoding.h"
 #include "util.h"
 #include "queue.h"

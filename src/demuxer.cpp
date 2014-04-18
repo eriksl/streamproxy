@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "demuxer.h"
 #include "util.h"
 

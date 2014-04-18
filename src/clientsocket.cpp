@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "clientsocket.h"
 #include "service.h"
 #include "livestreaming.h"
@@ -8,6 +10,7 @@
 #include "url.h"
 #include "time_offset.h"
 
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>

@@ -1,6 +1,11 @@
 AC_PREREQ([2.69])
 AC_INIT([streamproxy], [0.0], [erik@openpli.org])
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+
+AC_USE_SYSTEM_EXTENSIONS
+AC_SYS_LARGEFILE
+AC_GNU_SOURCE
+
 AC_PROG_CXX
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([Makefile src/Makefile])
@@ -15,7 +20,6 @@ AC_TYPE_UINT32_T
 AC_TYPE_UINT8_T
 
 AC_FUNC_FORK
-AC_FUNC_MALLOC
 AC_CHECK_FUNCS([socket strerror strtoul])
 AC_CHECK_FUNCS([getspnam socket strchr strerror strtol strtoul])
 

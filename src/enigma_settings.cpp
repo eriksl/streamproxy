@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "enigma_settings.h"
 #include "util.h"
 

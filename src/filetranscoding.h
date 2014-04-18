@@ -1,6 +1,8 @@
 #ifndef _filetranscoding_h_
 #define _filetranscoding_h_
 
+#include "config.h"
+
 #include <string>
 
 class FileTranscoding

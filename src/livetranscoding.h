@@ -1,6 +1,8 @@
 #ifndef _livetranscoding_h_
 #define _livetranscoding_h_
 
+#include "config.h"
+
 #include "service.h"
 #include <string>
 

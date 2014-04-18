@@ -1,6 +1,8 @@
 #ifndef _encoder_h_
 #define _encoder_h_
 
+#include "config.h"
+
 #include "pidmap.h"
 #include <string>
 #include <pthread.h>

@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "pidmap.h"
 #include "encoder.h"
 #include "demuxer.h"

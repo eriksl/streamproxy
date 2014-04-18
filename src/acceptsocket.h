@@ -1,6 +1,8 @@
 #ifndef _acceptsocket_h_
 #define _acceptsocket_h_
 
+#include "config.h"
+
 #include <string>
 using std::string;
 

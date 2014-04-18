@@ -1,6 +1,8 @@
 #ifndef _enigma_settings_h_
 #define _enigma_settings_h_
 
+#include "config.h"
+
 #include <string>
 #include <map>
 

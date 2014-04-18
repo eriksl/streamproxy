@@ -1,6 +1,8 @@
 #ifndef _url_h_
 #define _url_h_
 
+#include "config.h"
+
 #include <string>
 using std::string;
 

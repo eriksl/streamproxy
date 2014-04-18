@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include "pidmap.h"
 #include "webifrequest.h"
 #include "util.h"

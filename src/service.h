@@ -1,6 +1,8 @@
 #ifndef _service_h_
 #define _service_h_
 
+#include "config.h"
+
 #include <string>
 #include <vector>
 
