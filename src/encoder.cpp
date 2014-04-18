@@ -106,6 +106,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 
 	closedir(rootdir);
 
+	errno = 0;
 	Util::vlog("Encoder: encoder 0 in use: %d", encoder_in_use[0]);
 	Util::vlog("Encoder: encoder 1 in use: %d", encoder_in_use[1]);
 
