@@ -1,6 +1,7 @@
 #include "config.h"
 
 #include "demuxer.h"
+#include "types.h"
 #include "util.h"
 
 #include <string>

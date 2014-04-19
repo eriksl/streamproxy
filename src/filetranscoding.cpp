@@ -4,7 +4,7 @@
 #include "util.h"
 #include "queue.h"
 #include "encoder.h"
-#include "pidmap.h"
+#include "types.h"
 #include "mpegts.h"
 
 #include <string>

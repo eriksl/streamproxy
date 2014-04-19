@@ -1,5 +1,5 @@
-#ifndef _pidmap_h_
-#define _pidmap_h_
+#ifndef _types_h_
+#define _types_h_
 
 #include "config.h"
 

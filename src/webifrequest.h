@@ -4,7 +4,7 @@
 #include "config.h"
 
 #include "service.h"
-#include "pidmap.h"
+#include "types.h"
 
 #include <string>
 

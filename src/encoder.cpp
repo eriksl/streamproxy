@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "pidmap.h"
+#include "types.h"
 #include "encoder.h"
 #include "demuxer.h"
 #include "util.h"
