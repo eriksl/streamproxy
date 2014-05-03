@@ -17,6 +17,7 @@
 #include <signal.h>
 #include <sys/wait.h>
 #include <sys/types.h>
+#include <sys/inotify.h>
 
 #include <sstream>
 using std::ostringstream;
@@ -45,6 +46,29 @@ typedef struct
 typedef vector<string> multiparameter_t;
 typedef map<string, listen_socket_t> listen_action_t;
 
+static char	*const *global_argv;
+static char	*const *global_arge;
+
+static void reexec(void)
+{
+	char path[256];
+	ssize_t length;
+
+	if((length = readlink("/proc/self/exe", path, sizeof(path))) <= 0)
+	{
+		Util::vlog("streamproxy: re-exec failed (readlink), quitting");
+		exit(1);
+	}
+
+	path[length] = '\0';
+
+	if(execve(path, global_argv, global_arge))
+	{
+		Util::vlog("streamproxy: re-exec failed (execve), quitting");
+		exit(1);
+	}
+}
+
 static void sigchld(int) // prevent Z)ombie processes
 {
 	siginfo_t infop;
@@ -69,10 +93,14 @@ static void sigchld(int) // prevent Z)ombie processes
 		Util::vlog("streamproxy: sigchld called but no childeren to wait for");
 }
 
-int main(int argc, char **argv)
+int main(int argc, char *const argv[], char *const arge[])
 {
 	bpo::options_description	options("Use single or multiple pairs of port_number:default_action either with --listen or positional");
 	ostringstream				convert;
+	int							inotify_fd = -1;
+
+	global_argv = argv;
+	global_arge = arge;
 
 	try
 	{
@@ -88,6 +116,7 @@ int main(int argc, char **argv)
 		string									action_str;
 		ClientSocket::default_streaming_action	action;
 		struct pollfd							*pfd;
+		size_t									pfds;
 		int										new_socket;
 		static const char						*action_name[2] = { "stream", "transcode" };
 		EnigmaSettings							settings;
@@ -151,7 +180,7 @@ int main(int argc, char **argv)
 			listen_action[port].default_action = action;
 		}
 
-		if(listen_action.size() == 0)
+		if((pfds = listen_action.size() + 1) < 2)
 			throw(string("no listen_port:default_action parameters given"));
 
 		if(!Util::foreground && daemon(0, 0))
@@ -165,21 +194,30 @@ int main(int argc, char **argv)
 
 		sigaction(SIGCHLD, &signal_action, 0);
 
-		pfd = new struct pollfd[listen_action.size()];
+		if((inotify_fd = inotify_init1(IN_CLOEXEC)) < 0)
+			throw(string("inotify_init error"));
 
-		for(it2 = listen_action.begin(), ix = 0; it2 != listen_action.end(); it2++, ix++)
+		if(inotify_add_watch(inotify_fd, "/etc/enigma2/streamproxy.conf", IN_MODIFY | IN_CREATE | IN_MOVE_SELF | IN_ATTRIB) < 0)
+			throw(string("inotify_add_watch error"));
+
+		pfd = new struct pollfd[pfds];
+
+		pfd[0].fd		= inotify_fd;
+		pfd[0].events	= POLLIN;
+
+		for(it2 = listen_action.begin(), ix = 1; it2 != listen_action.end(); it2++, ix++)
 		{
 			it2->second.accept_socket = new AcceptSocket(it2->first);
 			pfd[ix].fd		= it2->second.accept_socket->get_fd();
 			pfd[ix].events	= POLLIN;
-			fprintf(stderr, "> %s -> %s,%d\n", it2->first.c_str(), action_name[it2->second.default_action], it2->second.accept_socket->get_fd());
+			//Util::vlog("> %s -> %s,%d\n", it2->first.c_str(), action_name[it2->second.default_action], it2->second.accept_socket->get_fd());
 		}
 
 		for(;;)
 		{
 			errno = 0;
 
-			if((rv = poll(pfd, listen_action.size(), -1)) < 0)
+			if((rv = poll(pfd, pfds, -1)) < 0)
 			{
 				if(errno == EINTR)
 					errno = 0;
@@ -187,7 +225,13 @@ int main(int argc, char **argv)
 					throw(string("poll error"));
 			}
 
-			for(ix = 0; ix < listen_action.size(); ix++)
+			if(pfd[0].revents & POLLIN)
+			{
+				Util::vlog("streamproxy: config file change detected, restarting");
+				reexec();
+			}
+
+			for(ix = 1; ix < pfds; ix++)
 			{
 				if(pfd[ix].revents & (POLLERR | POLLNVAL | POLLHUP))
 					throw(string("poll error on fd"));
@@ -241,6 +285,9 @@ int main(int argc, char **argv)
 		Util::vlog("streamproxy: default exception");
 		exit(1);
 	}
+
+	if(inotify_fd >= 0)
+		close(inotify_fd);
 
 	return(0);
 }
