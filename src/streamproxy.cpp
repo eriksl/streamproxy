@@ -128,6 +128,8 @@ int main(int argc, char **argv)
 		bpo::store(bpo::command_line_parser(argc, argv).options(options).positional(positional_options).run(), vm);
 		bpo::notify(vm);
 
+		config_file.close();
+
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
 			ix = it->find(':');

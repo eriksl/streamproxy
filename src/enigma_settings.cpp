@@ -42,6 +42,8 @@ EnigmaSettings::EnigmaSettings() throw(string)
 
 	//for(it = key_values.begin(); it != key_values.end(); it++)
 		//Util::vlog("> \"%s\"=\"%s\"", it->first.c_str(), it->second.c_str());
+
+	fclose(fp);
 }
 
 bool EnigmaSettings::exists(string key) const throw()
