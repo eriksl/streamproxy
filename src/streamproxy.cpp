@@ -123,7 +123,6 @@ int main(int argc, char *const argv[], char *const arge[])
 		bpo::positional_options_description		positional_options;
 		bpo::variables_map						vm;
 		bool									use_web_authentication;
-		time_t									start;
 		ifstream								config_file("/etc/enigma2/streamproxy.conf");
 		string									option_default_size;
 		string									option_default_bitrate;
@@ -261,9 +260,7 @@ int main(int argc, char *const argv[], char *const arge[])
 					_exit(0);
 				}
 
-				start = time(0);
-				while((time(0) - start) < 2) // primitive connection rate limiting
-					sleep(2);
+				usleep(100000); // runaway protection
 			}
 		}
 	}
