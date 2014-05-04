@@ -19,7 +19,10 @@ EnigmaSettings::EnigmaSettings() throw(string)
 	key_value_t::const_iterator it;
 
 	if(!(fp = fopen("/etc/enigma2/settings", "r")))
-		throw(string("cannot open enigma2 settings file"));
+	{
+		Util::vlog("cannot open enigma2 settings file");
+		return;
+	}
 
 	while(fgets(buffer, sizeof(buffer), fp))
 	{

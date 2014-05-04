@@ -161,7 +161,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
 
 	if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
-		throw(string("Encoder: cannot open encoder %s", encoder_device.c_str()));
+		throw(string("Encoder: cannot open encoder ") +  encoder_device);
 
 	Util::vlog("pmt: %d", pmt);
 	Util::vlog("video: %d", video);
