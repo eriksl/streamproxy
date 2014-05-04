@@ -44,7 +44,6 @@ typedef struct
 	AcceptSocket							*accept_socket;
 } listen_socket_t;
 
-typedef vector<string> multiparameter_t;
 typedef map<string, listen_socket_t> listen_action_t;
 
 static char	*const *global_argv;
@@ -106,9 +105,9 @@ int main(int argc, char *const argv[], char *const arge[])
 	try
 	{
 		struct sigaction						signal_action;
-		multiparameter_t						listen_parameters;
+		StringVector							listen_parameters;
 		string									require_auth_group;
-		multiparameter_t::const_iterator		it;
+		StringVector::const_iterator			it;
 		listen_action_t							listen_action;
 		listen_action_t::iterator				it2;
 		size_t									ix;
@@ -136,7 +135,7 @@ int main(int argc, char *const argv[], char *const arge[])
 		options.add_options()
 			("foreground,f",	bpo::bool_switch(&Util::foreground)->implicit_value(true),		"run in foreground (don't become a daemon)")
 			("group,g",			bpo::value<string>(&require_auth_group),						"require streaming users to be member of this group")
-			("listen,l",		bpo::value<multiparameter_t>(&listen_parameters),				"listen to tcp port with default action")
+			("listen,l",		bpo::value<StringVector>(&listen_parameters),					"listen to tcp port with default action")
 			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p (default), 576p or 720p)")
 			("bitrate,b",		bpo::value<string>(&option_default_bitrate),					"default transcoding bit rate (100 - 10000 kbps)(default 500)")
 			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile (baseline (default), main, high)")
