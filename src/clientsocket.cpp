@@ -26,10 +26,11 @@
 
 #include <boost/algorithm/string.hpp>
 
-ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
-		string require_auth_group, default_streaming_action default_action,
-		string frame_size, string bitrate, string profile,
-		string level, string bframes) throw()
+ClientSocket::ClientSocket(int fd_in,
+		default_streaming_action default_action,
+		const ConfigMap &config_map_in) throw()
+	:
+		fd(fd_in), config_map(config_map_in)
 {
 	string	reply;
 
@@ -43,6 +44,12 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		time_t		start;
 		string		webauth, user, password;
 		int			time_offset;
+		string		frame_size;
+		string		bitrate;
+		string		profile;
+		string		level;
+		string		bframes;
+		string		mimetype;
 
 		stringvector lines;
 		stringvector tokens;
@@ -52,8 +59,6 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		HeaderMap::const_iterator headit;
 		CookieMap::const_iterator cookit;
 		UrlParameterMap::const_iterator param_it;
-
-		fd = fd_in;
 
 		int arg1;
 
@@ -191,7 +196,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		if(lines.size() < 1)
 			throw(string("ClientSocket: invalid request"));
 
-		if(use_web_authentication)
+		if(config_map.at("auth").int_value)
 		{
 			if(!headers.count("authorization"))
 			{
@@ -221,7 +226,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 			Util::vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
 
-			if(!validate_user(user, password, require_auth_group))
+			if(!validate_user(user, password, config_map.at("group").string_value))
 				throw(string("Invalid authentication"));
 		}
 
@@ -243,17 +248,27 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		else
 			time_offset = 0;
 
+		frame_size = config_map.at("size").string_value;
+
 		if(urlparams.count("size"))
 			frame_size = urlparams["size"];
+
+		bitrate = config_map.at("bitrate").string_value;
 
 		if(urlparams.count("bitrate"))
 			bitrate = urlparams["bitrate"];
 
+		profile = config_map.at("profile").string_value;
+
 		if(urlparams.count("profile"))
 			profile = urlparams["profile"];
 
+		level = config_map.at("level").string_value;
+
 		if(urlparams.count("level"))
 			level = urlparams["level"];
+
+		bframes = config_map.at("bframes").string_value;
 
 		if(urlparams.count("bframes"))
 			bframes = urlparams["bframes"];
@@ -349,7 +364,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 			}
 		}
 
-		throw(string("ClientSocket: unknown request: ") + urlparams[""]);
+		throw(string("unknown url: ") + urlparams[""]);
 	}
 	catch(const string &e)
 	{

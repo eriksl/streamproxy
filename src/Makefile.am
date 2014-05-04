@@ -3,6 +3,7 @@ bin_PROGRAMS = streamproxy
 streamproxy_SOURCES = \
 	acceptsocket.cpp \
 	clientsocket.cpp \
+	configmap.cpp \
 	demuxer.cpp \
 	enigma_settings.cpp \
 	encoder.cpp \

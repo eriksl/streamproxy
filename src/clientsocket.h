@@ -4,6 +4,7 @@
 #include "config.h"
 
 #include "types.h"
+#include "configmap.h"
 
 #include <stdint.h>
 #include <string>
@@ -16,12 +17,13 @@ class ClientSocket
 
 		typedef std::vector<std::string> stringvector;
 
-		int				fd;
-		std::string		request;
-		std::string		url;
-		HeaderMap		headers;
-		CookieMap		cookies;
-		UrlParameterMap	urlparams;
+		int					fd;
+		std::string			request;
+		std::string			url;
+		HeaderMap			headers;
+		CookieMap			cookies;
+		UrlParameterMap		urlparams;
+		const ConfigMap&	config_map;
 
 		ClientSocket();
 		ClientSocket(const ClientSocket &);
@@ -40,12 +42,9 @@ class ClientSocket
 			action_transcode,
 		} default_streaming_action;
 
-		ClientSocket(int fd, bool use_web_authentication,
-				std::string require_auth_group,
+		ClientSocket(int fd,
 				default_streaming_action default_action,
-				std::string frame_size, std::string bitrate,
-				std::string profile, std::string level,
-				std::string bframes) throw();
+				const ConfigMap &config_map) throw();
 		~ClientSocket()	throw();
 };
 

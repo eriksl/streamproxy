@@ -3,6 +3,7 @@
 #include "acceptsocket.h"
 #include "clientsocket.h"
 #include "util.h"
+#include "configmap.h"
 #include "enigma_settings.h"
 
 #include <stdio.h>
@@ -122,18 +123,13 @@ int main(int argc, char *const argv[], char *const arge[])
 		EnigmaSettings							settings;
 		bpo::positional_options_description		positional_options;
 		bpo::variables_map						vm;
-		bool									use_web_authentication;
 		ifstream								config_file("/etc/enigma2/streamproxy.conf");
 		string									option_default_size;
 		string									option_default_bitrate;
 		string									option_default_profile;
 		string									option_default_level;
 		string									option_default_bframes;
-
-		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth") == "true")
-			use_web_authentication = true;
-		else
-			use_web_authentication = false;
+		ConfigMap								config_map;
 
 		positional_options.add("listen", -1);
 
@@ -158,6 +154,19 @@ int main(int argc, char *const argv[], char *const arge[])
 
 		config_file.close();
 
+		config_map["foreground"]	= ConfigValue(Util::foreground);
+		config_map["group"]			= ConfigValue(require_auth_group);
+		config_map["size"]			= ConfigValue(option_default_size);
+		config_map["bitrate"]		= ConfigValue(option_default_bitrate);
+		config_map["profile"]		= ConfigValue(option_default_profile);
+		config_map["level"]			= ConfigValue(option_default_level);
+		config_map["bframes"]		= ConfigValue(option_default_bframes);
+
+		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth") == "true")
+			config_map["auth"] = ConfigValue(true);
+		else
+			config_map["auth"] = ConfigValue(false);
+
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
 			ix = it->find(':');
@@ -177,7 +186,14 @@ int main(int argc, char *const argv[], char *const arge[])
 					throw(string("default action should be either stream or transcode"));
 
 			listen_action[port].default_action = action;
+
+			config_map[string("listen:") + port] = action;
 		}
+
+		ConfigMap::const_iterator it3;
+
+		for(it3 = config_map.begin(); it3 != config_map.end(); it3++)
+			Util::vlog("streamproxy: config_map: %s = %s/%d", it3->first.c_str(), it3->second.string_value.c_str(), it3->second.int_value);
 
 		if((pfds = listen_action.size() + 1) < 2)
 			throw(string("no listen_port:default_action parameters given"));
@@ -254,9 +270,7 @@ int main(int argc, char *const argv[], char *const arge[])
 					close(new_socket);
 				else
 				{
-					(void)ClientSocket(new_socket, use_web_authentication, require_auth_group,
-							it2->second.default_action, option_default_size, option_default_bitrate,
-							option_default_profile, option_default_level, option_default_bframes);
+					(void)ClientSocket(new_socket, it2->second.default_action, config_map);
 					_exit(0);
 				}
 
