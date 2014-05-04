@@ -2,6 +2,7 @@
 
 #include "url.h"
 #include "util.h"
+#include "types.h"
 
 #include <string>
 using std::string;
@@ -57,9 +58,9 @@ string Url::percent_expand(const string &param) const throw()
 	return(rv);
 }
 
-Url::urlparam Url::split() const throw()
+UrlParameterMap Url::split() const throw()
 {
-	urlparam		rv;
+	UrlParameterMap	rv;
 	size_t			needle;
 	string 			request;
 	stringvector	params;

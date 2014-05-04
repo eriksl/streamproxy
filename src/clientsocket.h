@@ -3,8 +3,9 @@
 
 #include "config.h"
 
-#include <stdint.h>
+#include "types.h"
 
+#include <stdint.h>
 #include <string>
 #include <vector>
 #include <map>
@@ -13,13 +14,14 @@ class ClientSocket
 {
 	private:
 
-		typedef std::vector<std::string>			stringvector;
-		typedef std::map<std::string, std::string>	stringmap;
+		typedef std::vector<std::string> stringvector;
 
 		int				fd;
 		std::string		request;
 		std::string		url;
-		stringmap		headers;
+		HeaderMap		headers;
+		CookieMap		cookies;
+		UrlParameterMap	urlparams;
 
 		ClientSocket();
 		ClientSocket(const ClientSocket &);

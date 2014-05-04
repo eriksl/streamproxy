@@ -38,7 +38,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		static		char read_buffer[1024];
 		ssize_t		bytes_read;
 		size_t		idx = string::npos;
-		string		header;
+		string		header, cookie, value;
 		struct		pollfd pfd;
 		time_t		start;
 		string		webauth, user, password;
@@ -48,10 +48,10 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 		stringvector tokens;
 		stringvector::iterator it1;
 		stringvector::const_iterator it2;
-		stringmap::const_iterator headit;
 
-		Url::urlparam urlparams;
-		Url::urlparam::const_iterator param_it;
+		HeaderMap::const_iterator headit;
+		CookieMap::const_iterator cookit;
+		UrlParameterMap::const_iterator param_it;
 
 		fd = fd_in;
 
@@ -151,9 +151,36 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 			if((idx = it1->find(':')) != string::npos)
 			{
 				header = it1->substr(0, idx);
+				boost::algorithm::to_lower(header);
 
 				if((idx = it1->find_first_not_of(": ", idx)) != string::npos)
-					headers[header] = it1->substr(idx);
+				{
+					value = it1->substr(idx);
+
+					if(header == "cookie")
+					{
+						//Util::vlog("cookie: \"%s\", value: \"%s\"", header.c_str(), value.c_str());
+
+						split(tokens, value, boost::is_any_of(";"));
+
+						for(it2 = tokens.begin(); it2 != tokens.end(); it2++)
+						{
+							if((idx = it2->find('=')) != string::npos)
+							{
+								cookie	= it2->substr(0, idx);
+								value	= it2->substr(idx + 1);
+
+								boost::trim(cookie);
+								boost::trim(value);
+
+								//Util::vlog("cookie \"%s\"=\"%s\"", cookie.c_str(), value.c_str());
+								cookies[cookie] = value;
+							}
+						}
+					}
+					else
+						headers[header] = it1->substr(idx);
+				}
 
 				continue;
 			}
@@ -166,7 +193,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		if(use_web_authentication)
 		{
-			if(!headers.count("Authorization"))
+			if(!headers.count("authorization"))
 			{
 				Util::vlog("ClientSocket: no authorisation received from client");
 				reply = string("HTTP/1.0 401 Unauthorized\r\n") +
@@ -178,7 +205,7 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 				return;
 			}
 
-			webauth = headers.at("Authorization");
+			webauth = headers["authorization"];
 
 			if((idx = webauth.find(' ')) == string::npos)
 				throw(string("ClientSocket: web authentication: invalid syntax (1)"));
@@ -200,6 +227,9 @@ ClientSocket::ClientSocket(int fd_in, bool use_web_authentication,
 
 		for(headit = headers.begin(); headit != headers.end(); headit++)
 			Util::vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
+
+		for(cookit = cookies.begin(); cookit != cookies.end(); cookit++)
+			Util::vlog("ClientSocket: cookie[%s]: \"%s\"", cookit->first.c_str(), cookit->second.c_str());
 
 		Util::vlog("ClientSocket: url: %s", url.c_str());
 
