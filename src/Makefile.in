@@ -92,7 +92,7 @@ am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-clientsocket.$(OBJEXT) \
-	streamproxy-demuxer.$(OBJEXT) \
+	streamproxy-configmap.$(OBJEXT) streamproxy-demuxer.$(OBJEXT) \
 	streamproxy-enigma_settings.$(OBJEXT) \
 	streamproxy-encoder.$(OBJEXT) \
 	streamproxy-filestreaming.$(OBJEXT) \
@@ -103,7 +103,8 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-service.$(OBJEXT) \
 	streamproxy-streamproxy.$(OBJEXT) \
 	streamproxy-time_offset.$(OBJEXT) streamproxy-url.$(OBJEXT) \
-	streamproxy-util.$(OBJEXT) streamproxy-webifrequest.$(OBJEXT)
+	streamproxy-util.$(OBJEXT) streamproxy-webifrequest.$(OBJEXT) \
+	streamproxy-webrequest.$(OBJEXT)
 streamproxy_OBJECTS = $(am_streamproxy_OBJECTS)
 streamproxy_DEPENDENCIES =
 streamproxy_LINK = $(CXXLD) $(streamproxy_CXXFLAGS) $(CXXFLAGS) \
@@ -262,6 +263,7 @@ top_srcdir = @top_srcdir@
 streamproxy_SOURCES = \
 	acceptsocket.cpp \
 	clientsocket.cpp \
+	configmap.cpp \
 	demuxer.cpp \
 	enigma_settings.cpp \
 	encoder.cpp \
@@ -276,7 +278,8 @@ streamproxy_SOURCES = \
 	time_offset.cpp \
 	url.cpp \
 	util.cpp \
-	webifrequest.cpp
+	webifrequest.cpp \
+	webrequest.cpp
 
 streamproxy_CXXFLAGS = -Wall -Wextra -Wshadow -Wundef -Wformat=2 -Winit-self -Wunused -Werror -Wpointer-arith -Wcast-qual -Wmultichar
 streamproxy_LDADD = -lpthread -lboost_program_options -lcrypt
@@ -369,6 +372,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-acceptsocket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-clientsocket.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-configmap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-demuxer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-encoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-enigma_settings.Po@am__quote@
@@ -384,6 +388,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-url.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-webifrequest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-webrequest.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -426,6 +431,20 @@ streamproxy-clientsocket.obj: clientsocket.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='clientsocket.cpp' object='streamproxy-clientsocket.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-clientsocket.obj `if test -f 'clientsocket.cpp'; then $(CYGPATH_W) 'clientsocket.cpp'; else $(CYGPATH_W) '$(srcdir)/clientsocket.cpp'; fi`
+
+streamproxy-configmap.o: configmap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-configmap.o -MD -MP -MF $(DEPDIR)/streamproxy-configmap.Tpo -c -o streamproxy-configmap.o `test -f 'configmap.cpp' || echo '$(srcdir)/'`configmap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-configmap.Tpo $(DEPDIR)/streamproxy-configmap.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='configmap.cpp' object='streamproxy-configmap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-configmap.o `test -f 'configmap.cpp' || echo '$(srcdir)/'`configmap.cpp
+
+streamproxy-configmap.obj: configmap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-configmap.obj -MD -MP -MF $(DEPDIR)/streamproxy-configmap.Tpo -c -o streamproxy-configmap.obj `if test -f 'configmap.cpp'; then $(CYGPATH_W) 'configmap.cpp'; else $(CYGPATH_W) '$(srcdir)/configmap.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-configmap.Tpo $(DEPDIR)/streamproxy-configmap.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='configmap.cpp' object='streamproxy-configmap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-configmap.obj `if test -f 'configmap.cpp'; then $(CYGPATH_W) 'configmap.cpp'; else $(CYGPATH_W) '$(srcdir)/configmap.cpp'; fi`
 
 streamproxy-demuxer.o: demuxer.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-demuxer.o -MD -MP -MF $(DEPDIR)/streamproxy-demuxer.Tpo -c -o streamproxy-demuxer.o `test -f 'demuxer.cpp' || echo '$(srcdir)/'`demuxer.cpp
@@ -636,6 +655,20 @@ streamproxy-webifrequest.obj: webifrequest.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='webifrequest.cpp' object='streamproxy-webifrequest.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-webifrequest.obj `if test -f 'webifrequest.cpp'; then $(CYGPATH_W) 'webifrequest.cpp'; else $(CYGPATH_W) '$(srcdir)/webifrequest.cpp'; fi`
+
+streamproxy-webrequest.o: webrequest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-webrequest.o -MD -MP -MF $(DEPDIR)/streamproxy-webrequest.Tpo -c -o streamproxy-webrequest.o `test -f 'webrequest.cpp' || echo '$(srcdir)/'`webrequest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-webrequest.Tpo $(DEPDIR)/streamproxy-webrequest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='webrequest.cpp' object='streamproxy-webrequest.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-webrequest.o `test -f 'webrequest.cpp' || echo '$(srcdir)/'`webrequest.cpp
+
+streamproxy-webrequest.obj: webrequest.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-webrequest.obj -MD -MP -MF $(DEPDIR)/streamproxy-webrequest.Tpo -c -o streamproxy-webrequest.obj `if test -f 'webrequest.cpp'; then $(CYGPATH_W) 'webrequest.cpp'; else $(CYGPATH_W) '$(srcdir)/webrequest.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-webrequest.Tpo $(DEPDIR)/streamproxy-webrequest.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='webrequest.cpp' object='streamproxy-webrequest.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-webrequest.obj `if test -f 'webrequest.cpp'; then $(CYGPATH_W) 'webrequest.cpp'; else $(CYGPATH_W) '$(srcdir)/webrequest.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

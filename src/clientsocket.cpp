@@ -9,6 +9,8 @@
 #include "util.h"
 #include "url.h"
 #include "time_offset.h"
+#include "types.h"
+#include "webrequest.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -24,7 +26,10 @@
 #include <grp.h>
 #include <shadow.h>
 
+#include <string>
+using std::string;
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
 
 ClientSocket::ClientSocket(int fd_in,
 		default_streaming_action default_action,
@@ -311,6 +316,40 @@ ClientSocket::ClientSocket(int fd_in,
 			(void)FileTranscoding(urlparams["file"], fd, time_offset, frame_size,
 					bitrate, profile, level, bframes);
 			Util::vlog("ClientSocket: file transcoding ends");
+
+			return;
+		}
+
+		if(urlparams[""] == "/")
+		{
+			urlparams[""] = "/web";
+			urlparams["request"] = "info";
+		}
+
+		if(urlparams[""] == "/web")
+		{
+			Util::vlog("ClientSocket: request for web");
+
+			string data;
+			WebRequest webrequest(config_map, headers, cookies, urlparams);
+
+			data = webrequest.get(mimetype);
+
+			if(data.length())
+			{
+				reply =	"HTTP/1.1 200 OK\r\n";
+				reply += "Content-type: " + mimetype + "; charset=utf8\r\n";
+			}
+			else
+			{
+				reply =	"HTTP/1.1 400 Bad Request\r\n";
+				reply += "Content-type: text/plain; charset=utf8\r\n";
+			}
+
+			reply += "Connection: close\r\n\r\n";
+			reply += data;
+
+			write(fd, reply.c_str(), reply.length());
 
 			return;
 		}

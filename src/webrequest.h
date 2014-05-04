@@ -1,0 +1,30 @@
+#ifndef _webrequest_h_
+#define _webrequest_h_
+
+#include "config.h"
+#include "types.h"
+#include "configmap.h"
+
+#include <string>
+
+class WebRequest
+{
+	private:
+
+		const ConfigMap			&config_map;
+		const HeaderMap			&headers;
+		const CookieMap			&cookies;
+		const UrlParameterMap	&parameters;
+
+		std::string page_info(std::string &mimetype)				const	throw();
+		std::string page_test_cookie(std::string &mimetype)			const	throw();
+
+	public:
+
+		WebRequest(const ConfigMap &config_map, const HeaderMap &headers,
+				const CookieMap &cookies,
+				const UrlParameterMap &parameters)							throw();
+		std::string get(std::string &mimetype)						const	throw();
+};
+
+#endif
