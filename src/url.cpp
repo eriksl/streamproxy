@@ -20,6 +20,11 @@ Url::Url(const string &url_in) throw() : url(url_in)
 {
 }
 
+string Url::plus_expand(const string &param) const throw()
+{
+	return(boost::replace_all_copy(param, "+", " "));
+}
+
 string Url::percent_expand(const string &param) const throw()
 {
 	size_t	current = 0;
@@ -85,7 +90,7 @@ UrlParameterMap Url::split() const throw()
 				rv[*it] = "";
 			else
 				if(needle > 0)
-					rv[it->substr(0, needle)] = percent_expand(it->substr(needle + 1));
+					rv[it->substr(0, needle)] = percent_expand(plus_expand(it->substr(needle + 1)));
 		}
 	}
 

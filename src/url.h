@@ -25,7 +25,8 @@ class Url
 		Url();
 		Url(const Url &);
 
-		std::string percent_expand(const std::string &param) const throw();
+		std::string plus_expand(const std::string &param)		const throw();
+		std::string percent_expand(const std::string &param)	const throw();
 };
 
 #endif
