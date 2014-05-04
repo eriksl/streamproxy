@@ -57,8 +57,12 @@ void MpegTS::init() throw(string)
 
 	is_seekable = false;
 
+	Util::vlog("MpegTS: start find pcr");
+
 	if(lseek(fd, 0, SEEK_SET) != (off_t)-1)
 	{
+		Util::vlog("MpegTS: start find first pcr");
+
 		first_pcr_ms = find_pcr_ms(direction_forward);
 
 		if((eof_offset = lseek(fd, 0, SEEK_END)) != (off_t)-1)
@@ -73,6 +77,7 @@ void MpegTS::init() throw(string)
 					Util::vlog("MpegTS::init: seek to aligned position fails");
 			}
 
+			Util::vlog("MpegTS: start find last pcr");
 			last_pcr_ms	= find_pcr_ms(direction_backward);
 
 			if(last_pcr_ms < first_pcr_ms)
@@ -82,6 +87,8 @@ void MpegTS::init() throw(string)
 					is_seekable = true;
 		}
 	}
+
+	Util::vlog("MpegTS: find pcr done");
 
 	if(is_seekable)
 		lseek(fd, 0, SEEK_SET);
