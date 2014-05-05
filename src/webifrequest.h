@@ -5,6 +5,7 @@
 
 #include "service.h"
 #include "types.h"
+#include "configmap.h"
 
 #include <string>
 
@@ -12,18 +13,20 @@ class WebifRequest
 {
 	private:
 
-		int				fd;
-		const Service	&service;
-		std::string		reply;
-		PidMap			pids;
-		int				demuxer_id;
+		int					fd;
+		const Service		&service;
+		const ConfigMap		&config_map;
+		std::string			reply;
+		PidMap				pids;
+		int					demuxer_id;
 
 		WebifRequest();
 		WebifRequest(const WebifRequest &);
 
 	public:
 
-		WebifRequest(const Service &service, std::string webauth) throw(std::string);
+		WebifRequest(const Service &service, std::string webauth,
+					const ConfigMap &config_map) throw(std::string);
 		~WebifRequest();
 
 		void	poll()							throw(std::string);

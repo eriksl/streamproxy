@@ -3,6 +3,7 @@
 #include "types.h"
 #include "webifrequest.h"
 #include "util.h"
+#include "configmap.h"
 
 #include <string>
 using std::string;
@@ -23,8 +24,8 @@ using std::vector;
 
 static const struct addrinfo gai_webif_hints =
 {
-	.ai_flags       = AI_NUMERICHOST | AI_NUMERICSERV,
-	.ai_family      = AF_INET,
+	.ai_flags       = AI_NUMERICHOST,
+	.ai_family      = AF_INET6,
 	.ai_socktype    = SOCK_STREAM,
 	.ai_protocol    = 0,
 	.ai_addrlen     = 0,
@@ -33,8 +34,10 @@ static const struct addrinfo gai_webif_hints =
 	.ai_next        = 0,
 };
 
-WebifRequest::WebifRequest(const Service &service_in, string webauth) throw(string) :
-		service(service_in)
+WebifRequest::WebifRequest(const Service &service_in,
+			string webauth, const ConfigMap &config_map_in) throw(string)
+	:
+		service(service_in), config_map(config_map_in)
 {
 	struct addrinfo *gai_webif_address;
 	struct linger so_linger;
@@ -44,13 +47,14 @@ WebifRequest::WebifRequest(const Service &service_in, string webauth) throw(stri
 	fd			= -1;
 	demuxer_id	= -1;
 
-	if((rv = getaddrinfo("127.0.0.1", "80", &gai_webif_hints, &gai_webif_address)))
+	if((rv = getaddrinfo("::", config_map.at("webifport").string_value.c_str(),
+					&gai_webif_hints, &gai_webif_address)))
 		throw(string("WebifRequest: cannot get address for localhost") + gai_strerror(rv));
 
 	if(!gai_webif_address)
 		throw(string("WebifRequest: cannot get address for localhost"));
 
-	if((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+	if((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
 	{
 		freeaddrinfo(gai_webif_address);
 		throw(string("WebifRequest: cannot create socket"));

@@ -7,6 +7,7 @@
 #include "service.h"
 #include "demuxer.h"
 #include "livestreaming.h"
+#include "configmap.h"
 
 #include <string>
 using std::string;
@@ -16,7 +17,8 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth) throw(string)
+LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth,
+		const ConfigMap &config_map) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -36,7 +38,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 	if(!service.is_valid())
 		throw(string("LiveStreaming: invalid service"));
 
-	WebifRequest webifrequest(service, webauth);
+	WebifRequest webifrequest(service, webauth, config_map);
 
 	while((time(0) - timeout) < 30)
 	{

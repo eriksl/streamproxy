@@ -166,6 +166,11 @@ int main(int argc, char *const argv[], char *const arge[])
 		else
 			config_map["auth"] = ConfigValue(false);
 
+		if(settings.exists("config.OpenWebif.port"))
+			config_map["webifport"] = ConfigValue(settings.as_string("config.OpenWebif.port"));
+		else
+			config_map["webifport"] = ConfigValue(80);
+
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
 			ix = it->find(':');

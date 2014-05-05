@@ -7,6 +7,7 @@
 #include "service.h"
 #include "demuxer.h"
 #include "encoder.h"
+#include "configmap.h"
 #include "livetranscoding.h"
 
 #include <string>
@@ -19,8 +20,8 @@ using std::string;
 
 LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		string webauth, string frame_size, string bitrate,
-		string profile, string level, string bframes)
-		throw(string)
+		string profile, string level, string bframes,
+		const ConfigMap &config_map) throw(string)
 {
 	PidMap::const_iterator it;
 	time_t			timeout = time(0);
@@ -45,7 +46,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	if(!service.is_valid())
 		throw(string("LiveTranscoding: invalid service"));
 
-	WebifRequest webifrequest(service, webauth);
+	WebifRequest webifrequest(service, webauth, config_map);
 
 	while((time(0) - timeout) < 15)
 	{

@@ -283,7 +283,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live streaming request");
-			(void)LiveStreaming(service, fd, webauth);
+			(void)LiveStreaming(service, fd, webauth, config_map);
 			Util::vlog("ClientSocket: live streaming ends");
 
 			return;
@@ -295,7 +295,7 @@ ClientSocket::ClientSocket(int fd_in,
 
 			Util::vlog("ClientSocket: live transcoding request");
 			(void)LiveTranscoding(service, fd, webauth, frame_size,
-					bitrate, profile, level, bframes);
+					bitrate, profile, level, bframes, config_map);
 			Util::vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -387,13 +387,13 @@ ClientSocket::ClientSocket(int fd_in,
 					if(default_action == action_stream)
 					{
 						Util::vlog("ClientSocket: streaming service");
-						(void)LiveStreaming(service, fd, webauth);
+						(void)LiveStreaming(service, fd, webauth, config_map);
 					}
 					else
 					{
 						Util::vlog("ClientSocket: transcoding service");
 						(void)LiveTranscoding(service, fd, webauth, frame_size,
-							bitrate, profile, level, bframes);
+							bitrate, profile, level, bframes, config_map);
 					}
 
 					Util::vlog("ClientSocket: default live ends");

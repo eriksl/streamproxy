@@ -4,6 +4,8 @@
 #include "config.h"
 
 #include "service.h"
+#include "configmap.h"
+
 #include <string>
 
 class LiveTranscoding
@@ -30,7 +32,8 @@ class LiveTranscoding
 		LiveTranscoding(const Service &service, int socketfd,
 				std::string webauth, std::string frame_size,
 				std::string bitrate, std::string profile,
-				std::string level, std::string bframes)
+				std::string level, std::string bframes,
+				const ConfigMap &config_map)
 			throw(std::string);
 };
 

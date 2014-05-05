@@ -4,6 +4,8 @@
 #include "config.h"
 
 #include "service.h"
+#include "configmap.h"
+
 #include <string>
 
 class LiveStreaming
@@ -15,8 +17,8 @@ class LiveStreaming
 
 	public:
 
-		LiveStreaming(const Service &service, int socketfd,
-				std::string webauth) throw(std::string);
+		LiveStreaming(const Service &service, int socketfd, std::string webauth,
+				const ConfigMap &config_map) throw(std::string);
 };
 
 #endif
