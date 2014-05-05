@@ -128,6 +128,8 @@ int main(int argc, char *const argv[], char *const arge[])
 		string									option_default_profile;
 		string									option_default_level;
 		string									option_default_bframes;
+		string									option_webifport = "80";
+		bool									option_webifauth = false;
 		ConfigMap								config_map;
 
 		positional_options.add("listen", -1);
@@ -140,7 +142,9 @@ int main(int argc, char *const argv[], char *const arge[])
 			("bitrate,b",		bpo::value<string>(&option_default_bitrate),					"default transcoding bit rate (100 - 10000 kbps)(default 500)")
 			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile (baseline (default), main, high)")
 			("level,L",			bpo::value<string>(&option_default_level),						"default transcoding h264 level (3.1 (default), 3.2, 4.0)")
-			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames (0 (default), 1 or 2)");
+			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames (0 (default), 1 or 2)")
+			("webifport,a",		bpo::value<string>(&option_webifport),							"tcp port OpenWebIf is listening on (default, if not in enigma settings)")
+			("webifauth,c",		bpo::bool_switch(&option_webifauth)->implicit_value(true),		"whether OpenWebIf requires basic http authentication (default, if not in enigma settings)");
 
 		if(config_file)
 		{
@@ -161,15 +165,18 @@ int main(int argc, char *const argv[], char *const arge[])
 		config_map["level"]			= ConfigValue(option_default_level);
 		config_map["bframes"]		= ConfigValue(option_default_bframes);
 
-		if(settings.exists("config.OpenWebif.auth") && settings.as_string("config.OpenWebif.auth_for_streaming") == "true")
-			config_map["auth"] = ConfigValue(true);
+		if(settings.exists("config.OpenWebif.auth"))
+			if(settings.as_string("config.OpenWebif.auth_for_streaming") == "true")
+				config_map["auth"] = ConfigValue(true);
+			else
+				config_map["auth"] = ConfigValue(option_webifauth);
 		else
-			config_map["auth"] = ConfigValue(false);
+			config_map["auth"] = ConfigValue(option_webifauth);
 
 		if(settings.exists("config.OpenWebif.port"))
 			config_map["webifport"] = ConfigValue(settings.as_string("config.OpenWebif.port"));
 		else
-			config_map["webifport"] = ConfigValue(80);
+			config_map["webifport"] = ConfigValue(option_webifport);
 
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
