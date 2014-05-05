@@ -217,7 +217,10 @@ int main(int argc, char *const argv[], char *const arge[])
 			throw(string("inotify_init error"));
 
 		if(inotify_add_watch(inotify_fd, "/etc/enigma2/streamproxy.conf", IN_MODIFY | IN_CREATE | IN_MOVE_SELF | IN_ATTRIB) < 0)
-			throw(string("inotify_add_watch error"));
+			throw(string("inotify_add_watch error (streamproxy config file)"));
+
+		if(inotify_add_watch(inotify_fd, "/etc/enigma2/settings", IN_MODIFY | IN_CREATE | IN_MOVE_SELF | IN_ATTRIB) < 0)
+			throw(string("inotify_add_watch error (enigma config)"));
 
 		pfd = new struct pollfd[pfds];
 
