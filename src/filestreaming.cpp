@@ -55,7 +55,13 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 		if(poll(&pfd, 1, -1) <= 0)
 			throw(string("FileStreaming: poll error"));
 
-		if(pfd.revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
+		if(pfd.revents & (POLLRDHUP | POLLHUP))
+		{
+			Util::vlog("FileStreaming: client hung up");
+			break;
+		}
+
+		if(pfd.revents & (POLLERR | POLLNVAL))
 		{
 			Util::vlog("FileStreaming: socket error");
 			break;

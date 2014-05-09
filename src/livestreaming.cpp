@@ -90,7 +90,13 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 			break;
 		}
 
-		if(pfd[1].revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
+		if(pfd[1].revents & (POLLRDHUP | POLLHUP))
+		{
+			Util::vlog("LiveStreaming: client hung up");
+			break;
+		}
+
+		if(pfd[1].revents & (POLLERR | POLLNVAL))
 		{
 			Util::vlog("LiveStreaming: socket error");
 			break;

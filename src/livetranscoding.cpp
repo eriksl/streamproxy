@@ -152,7 +152,13 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 			break;
 		}
 
-		if(pfd[2].revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
+		if(pfd[2].revents & (POLLRDHUP | POLLHUP))
+		{
+			Util::vlog("LiveTranscoding: client hung up");
+			break;
+		}
+
+		if(pfd[2].revents & (POLLERR | POLLNVAL))
 		{
 			Util::vlog("LiveTranscoding: socket error");
 			break;

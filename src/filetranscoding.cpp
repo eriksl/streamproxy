@@ -114,7 +114,13 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 			break;
 		}
 
-		if(pfd[1].revents & (POLLRDHUP | POLLERR | POLLHUP | POLLNVAL))
+		if(pfd[1].revents & (POLLRDHUP | POLLHUP))
+		{
+			Util::vlog("FileTranscoding: client hung up");
+			break;
+		}
+
+		if(pfd[1].revents & (POLLERR | POLLNVAL))
 		{
 			Util::vlog("FileTranscoding: socket error");
 			break;
