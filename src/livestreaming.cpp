@@ -21,6 +21,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 		const ConfigMap &config_map) throw(string)
 {
 	PidMap::const_iterator it;
+	bool			webifrequest_ok;
 	time_t			timeout = time(0);
 	PidMap			pids, encoder_pids;
 	int				demuxer_id;
@@ -40,9 +41,9 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
-	while((time(0) - timeout) < 30)
+	for(webifrequest_ok = false; (time(0) - timeout) < 60; )
 	{
-		sleep(1);
+		usleep(100000);
 
 		webifrequest.poll();
 
@@ -52,8 +53,14 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 				(pids.find("pcr") != pids.end()) &&
 				(pids.find("pmt") != pids.end()) &&
 				(pids.find("video") != pids.end()))
+		{
+			webifrequest_ok = true;
 			break;
+		}
 	}
+
+	if(!webifrequest_ok)
+		throw(string("LiveStreaming: tuning request to enigma failed (webif timeout)"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 

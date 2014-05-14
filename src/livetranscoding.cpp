@@ -24,6 +24,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		const ConfigMap &config_map) throw(string)
 {
 	PidMap::const_iterator it;
+	bool			webifrequest_ok;
 	time_t			timeout = time(0);
 	PidMap			pids, encoder_pids;
 	int				demuxer_id;
@@ -48,9 +49,9 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
-	while((time(0) - timeout) < 15)
+	for(webifrequest_ok = false; (time(0) - timeout) < 60; )
 	{
-		sleep(1);
+		usleep(100000);
 
 		webifrequest.poll();
 
@@ -60,8 +61,14 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 				(pids.find("pcr") != pids.end()) &&
 				(pids.find("pmt") != pids.end()) &&
 				(pids.find("video") != pids.end()))
+		{
+			webifrequest_ok = true;
 			break;
+		}
 	}
+
+	if(!webifrequest_ok)
+		throw(string("LiveTranscoding: tuning request to enigma failed (webif timeout)"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 
