@@ -73,7 +73,7 @@ UrlParameterMap Url::split() const throw()
 
 	if((needle = url.find('?')) == string::npos)
 	{
-		rv[""] = url;
+		rv[""] = percent_expand(plus_expand(url));
 		return(rv);
 	}
 
