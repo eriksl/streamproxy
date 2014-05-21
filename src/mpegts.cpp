@@ -14,20 +14,20 @@ using std::string;
 
 #include <boost/algorithm/string.hpp>
 
-MpegTS::MpegTS(int fd_in) throw(string)
+MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(string)
+	:	private_fd(false),
+		fd(fd_in),
+		request_time_seek(request_time_seek_in)
 {
-	fd = fd_in;
-	private_fd = false;
-
 	init();
 }
 
-MpegTS::MpegTS(string filename) throw(string)
+MpegTS::MpegTS(string filename, bool request_time_seek_in) throw(string)
+	:	private_fd(true),
+		request_time_seek(request_time_seek_in)
 {
 	if((fd = open(filename.c_str(), O_RDONLY, 0)) < 0)
 		throw(string("MpegTS::MpegTS: cannot open file"));
-
-	private_fd = true;
 
 	init();
 }
@@ -54,43 +54,45 @@ void MpegTS::init() throw(string)
 		throw(string("MpegTS::init: invalid transport stream (no suitable pmt)"));
 
 	pmt_pid = it->second;
+	is_time_seekable = false;
 
-	is_seekable = false;
-
-	Util::vlog("MpegTS: start find pcr");
-
-	if(lseek(fd, 0, SEEK_SET) != (off_t)-1)
+	if(request_time_seek)
 	{
-		Util::vlog("MpegTS: start find first pcr");
+		Util::vlog("MpegTS: start find pcr");
 
-		first_pcr_ms = find_pcr_ms(direction_forward);
-
-		if((eof_offset = lseek(fd, 0, SEEK_END)) != (off_t)-1)
+		if(lseek(fd, 0, SEEK_SET) != (off_t)-1)
 		{
-			offset_aligned = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
+			Util::vlog("MpegTS: start find first pcr");
 
-			if(eof_offset != offset_aligned)
+			first_pcr_ms = find_pcr_ms(direction_forward);
+
+			if((eof_offset = lseek(fd, 0, SEEK_END)) != (off_t)-1)
 			{
-				eof_offset = offset_aligned;
+				offset_aligned = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
 
-				if(lseek(fd, eof_offset, SEEK_SET) == (off_t)-1)
-					Util::vlog("MpegTS::init: seek to aligned position fails");
+				if(eof_offset != offset_aligned)
+				{
+					eof_offset = offset_aligned;
+
+					if(lseek(fd, eof_offset, SEEK_SET) == (off_t)-1)
+						Util::vlog("MpegTS::init: seek to aligned position fails");
+				}
+
+				Util::vlog("MpegTS: start find last pcr");
+				last_pcr_ms	= find_pcr_ms(direction_backward);
+
+				if(last_pcr_ms < first_pcr_ms)
+					Util::vlog("MpegTS::init: pcr wraparound, cannot seek this stream, first pcr: %d, last pcr: %d", first_pcr_ms / 1000, last_pcr_ms / 1000);
+				else
+					if((first_pcr_ms >= 0) && (last_pcr_ms >= 0))
+						is_time_seekable = true;
 			}
-
-			Util::vlog("MpegTS: start find last pcr");
-			last_pcr_ms	= find_pcr_ms(direction_backward);
-
-			if(last_pcr_ms < first_pcr_ms)
-				Util::vlog("MpegTS::init: pcr wraparound, cannot seek this stream, first pcr: %d, last pcr: %d", first_pcr_ms / 1000, last_pcr_ms / 1000);
-			else
-				if((first_pcr_ms >= 0) && (last_pcr_ms >= 0))
-					is_seekable = true;
 		}
+
+		Util::vlog("MpegTS: find pcr done");
 	}
 
-	Util::vlog("MpegTS: find pcr done");
-
-	if(is_seekable)
+	if(is_time_seekable)
 		lseek(fd, 0, SEEK_SET);
 	else
 	{
@@ -602,7 +604,7 @@ off_t MpegTS::seek(int whence, off_t offset) const throw(string)
 	off_t		actual_offset;
 	off_t		new_offset;
 
-	if(!is_seekable)
+	if(!is_time_seekable)
 		throw(string("MpegTS::seek: stream is not seekable"));
 
 	offset = ((offset / (off_t)sizeof(ts_packet_t)) * (off_t)sizeof(ts_packet_t));
@@ -636,7 +638,7 @@ off_t MpegTS::seek(int pts_ms) const throw(string)
 	int		disect_pts_ms;
 	off_t	current_offset;
 
-	if(!is_seekable)
+	if(!is_time_seekable)
 		throw(string("MpegTS::seek: stream is not seekable"));
 
 	if(pts_ms < first_pcr_ms)

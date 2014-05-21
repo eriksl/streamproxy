@@ -193,15 +193,16 @@ class MpegTS
 		int		video_pid;
 		int		audio_pid;
 
-		bool	is_seekable;
+		bool	request_time_seek;
+		bool	is_time_seekable;
 
 		int		first_pcr_ms;
 		int		last_pcr_ms;
 		off_t	eof_offset;
 
-		MpegTS(int fd)				throw(std::string);
-		MpegTS(std::string file)	throw(std::string);
-		~MpegTS()					throw();
+		MpegTS(int fd, bool request_time_seek)				throw(std::string);
+		MpegTS(std::string file, bool request_time_seek)	throw(std::string);
+		~MpegTS()											throw();
 
 		int		get_fd()							const	throw();
 		off_t	seek(int whence, off_t offset)		const	throw(std::string);

@@ -23,9 +23,9 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 	
 	Util::vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
 
-	MpegTS stream(file);
+	MpegTS stream(file, time_offset_s > 0);
 
-	if(stream.is_seekable && (time_offset_s > 0))
+	if(stream.is_time_seekable && (time_offset_s > 0))
 		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	Queue socket_queue(32 * 1024);
