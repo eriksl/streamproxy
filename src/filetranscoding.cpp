@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "filetranscoding.h"
 #include "util.h"
@@ -17,7 +18,7 @@ using std::string;
 FileTranscoding::FileTranscoding(string file, int socket_fd,
 		int time_offset_s, string frame_size, string bitrate,
 		string profile, string level, string bframes)
-		throw(string)
+		throw(trap)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -55,7 +56,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 		Util::vlog("FileTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	if((encoder_fd = encoder.getfd()) < 0)
-		throw(string("FileTranscoding: transcoding: encoder: fd not open"));
+		throw(trap("FileTranscoding: transcoding: encoder: fd not open"));
 
 	encoder_state = state_initial;
 
@@ -106,7 +107,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 		timeout = (encoder_state == state_starting) ? 100 : -1;
 
 		if(poll(pfd, 2, timeout) <= 0)
-			throw(string("FileTranscoding: poll error"));
+			throw(trap("FileTranscoding: poll error"));
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{

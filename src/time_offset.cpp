@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "time_offset.h"
 
@@ -9,14 +10,14 @@ using::std::string;
 
 #include <stdlib.h>
 
-TimeOffset::TimeOffset(string timestring) throw(string)
+TimeOffset::TimeOffset(string timestring) throw(trap)
 {
 	int c;
 	size_t ix;
 	string part;
 
 	if(timestring.length() < 1)
-		throw(string("TimeOffset: invalid timestring, empty"));
+		throw(trap("TimeOffset: invalid timestring, empty"));
 
 	c = boost::count(timestring, ':');
 	seconds = 0;
@@ -54,7 +55,7 @@ TimeOffset::TimeOffset(string timestring) throw(string)
 
 		default:
 		{
-			throw(string("TimeOffset: invalid timestring, to many colons"));
+			throw(trap("TimeOffset: invalid timestring, to many colons"));
 		}
 	}
 }

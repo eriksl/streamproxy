@@ -2,6 +2,7 @@
 #define _time_offset_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <string>
 
@@ -16,7 +17,7 @@ class TimeOffset
 
 	public:
 
-		TimeOffset(std::string timestring) throw(std::string);
+		TimeOffset(std::string timestring) throw(trap);
 		int as_seconds() const throw();
 };
 

@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include "encoder.h"
@@ -18,7 +19,7 @@ using std::string;
 #include <dirent.h>
 
 Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
-		string profile, string level, string bframes) throw(string)
+		string profile, string level, string bframes) throw(trap)
 {
 	PidMap::const_iterator	it;
 	PidMap::iterator		it2;
@@ -67,12 +68,12 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	}
 
 	if((pmt == -1) || (video == -1) || (audio == -1))
-		throw(string("Encoder: missing pmt, video or audio pid"));
+		throw(trap("Encoder: missing pmt, video or audio pid"));
 
 	encoder_in_use[0] = encoder_in_use[1] = false;
 
 	if(!(rootdir = opendir("/proc")))
-		throw(string("Encoder: cannot open /proc"));
+		throw(trap("Encoder: cannot open /proc"));
 
 	for(rootdirent = readdir(rootdir); rootdirent; rootdirent = readdir(rootdir))
 	{
@@ -113,7 +114,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	if(encoder_in_use[0])
 	{
 		if(encoder_in_use[1])
-			throw(string("Encoder:: all encoders busy"));
+			throw(trap("Encoder:: all encoders busy"));
 		else
 			id = 1;
 	}
@@ -161,7 +162,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
 
 	if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
-		throw(string("Encoder: cannot open encoder ") +  encoder_device);
+		throw(trap(string("Encoder: cannot open encoder ") +  encoder_device));
 
 	Util::vlog("pmt: %d", pmt);
 	Util::vlog("video: %d", video);
@@ -172,7 +173,7 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video) ||
 			ioctl(fd, IOCTL_VUPLUS_SET_APID, audio))
 	{
-			throw(string("Encoder: cannot init encoder"));
+			throw(trap("Encoder: cannot init encoder"));
 	}
 }
 

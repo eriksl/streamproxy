@@ -2,6 +2,7 @@
 #define _demuxer_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include <string>
@@ -24,7 +25,7 @@ class Demuxer
 
 	public:
 
-		Demuxer(int id, const PidMap &)	throw(std::string);
+		Demuxer(int id, const PidMap &)	throw(trap);
 		~Demuxer()						throw();
 
 		int getfd()				const	throw();

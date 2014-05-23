@@ -2,6 +2,7 @@
 #define _mpegts_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <map>
 #include <string>
@@ -180,10 +181,10 @@ class MpegTS
 
 		static void	parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw();
 
-		void	init()											throw(std::string);
-		bool	read_table(int filter_pid, int filter_table)	throw(std::string);
-		bool	read_pat()										throw(std::string);
-		bool	read_pmt(int filter_pid)						throw(std::string);
+		void	init()											throw(trap);
+		bool	read_table(int filter_pid, int filter_table)	throw(trap);
+		bool	read_pat()										throw(trap);
+		bool	read_pmt(int filter_pid)						throw(trap);
 		int		find_pcr_ms(seek_direction_t direction)	const	throw();
 
 	public:
@@ -200,12 +201,12 @@ class MpegTS
 		int		last_pcr_ms;
 		off_t	eof_offset;
 
-		MpegTS(int fd, bool request_time_seek)				throw(std::string);
-		MpegTS(std::string file, bool request_time_seek)	throw(std::string);
+		MpegTS(int fd, bool request_time_seek)				throw(trap);
+		MpegTS(std::string file, bool request_time_seek)	throw(trap);
 		~MpegTS()											throw();
 
 		int		get_fd()							const	throw();
-		off_t	seek(int whence, off_t offset)		const	throw(std::string);
-		off_t	seek(int pts_ms)					const	throw(std::string);
+		off_t	seek(int whence, off_t offset)		const	throw(trap);
+		off_t	seek(int pts_ms)					const	throw(trap);
 };
 #endif

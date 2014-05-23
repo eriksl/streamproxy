@@ -2,6 +2,7 @@
 #define _acceptsocket_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <string>
 using std::string;
@@ -17,9 +18,9 @@ class AcceptSocket
 		AcceptSocket(const AcceptSocket &);
 
 	public:
-			AcceptSocket(string port)	throw(string);
+			AcceptSocket(string port)	throw(trap);
 			~AcceptSocket()				throw();
-		int	accept()			const	throw(string);
+		int	accept()			const	throw(trap);
 		int	get_fd()			const	throw();
 };
 

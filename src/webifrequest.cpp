@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include "webifrequest.h"
@@ -35,7 +36,7 @@ static const struct addrinfo gai_webif_hints =
 };
 
 WebifRequest::WebifRequest(const Service &service_in,
-			string webauth, const ConfigMap &config_map_in) throw(string)
+			string webauth, const ConfigMap &config_map_in) throw(trap)
 	:
 		service(service_in), config_map(config_map_in)
 {
@@ -49,27 +50,27 @@ WebifRequest::WebifRequest(const Service &service_in,
 
 	if((rv = getaddrinfo("::", config_map.at("webifport").string_value.c_str(),
 					&gai_webif_hints, &gai_webif_address)))
-		throw(string("WebifRequest: cannot get address for localhost") + gai_strerror(rv));
+		throw(trap(string("WebifRequest: cannot get address for localhost") + gai_strerror(rv)));
 
 	if(!gai_webif_address)
-		throw(string("WebifRequest: cannot get address for localhost"));
+		throw(trap("WebifRequest: cannot get address for localhost"));
 
 	if((fd = socket(AF_INET6, SOCK_STREAM, 0)) < 0)
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("WebifRequest: cannot create socket"));
+		throw(trap("WebifRequest: cannot create socket"));
 	}
 
 	if(setsockopt(fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)))
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("WebifRequest: cannot set linger"));
+		throw(trap("WebifRequest: cannot set linger"));
 	}
 
 	if(connect(fd, gai_webif_address->ai_addr, gai_webif_address->ai_addrlen))
 	{
 		freeaddrinfo(gai_webif_address);
-		throw(string("WebifRequest: cannot connect"));
+		throw(trap("WebifRequest: cannot connect"));
 	}
 
 	freeaddrinfo(gai_webif_address);
@@ -84,7 +85,7 @@ WebifRequest::WebifRequest(const Service &service_in,
 	Util::vlog("WebifRequest: send request to webif: \"%s\"", request.c_str());
 
 	if(write(fd, request.c_str(), request.length()) != (ssize_t)request.length())
-		throw(string("WebifRequest: cannot send request"));
+		throw(trap("WebifRequest: cannot send request"));
 }
 
 WebifRequest::~WebifRequest()
@@ -92,7 +93,7 @@ WebifRequest::~WebifRequest()
 	close(fd);
 }
 
-void WebifRequest::poll() throw(string)
+void WebifRequest::poll() throw(trap)
 {
 	typedef vector<string> stringvector;
 
@@ -111,7 +112,7 @@ void WebifRequest::poll() throw(string)
 	stringvector::const_iterator it;
 
 	if(ioctl(fd, SIOCINQ, &bytes))
-		throw(string("WebifRequest: ioctl SIOCINQ"));
+		throw(trap("WebifRequest: ioctl SIOCINQ"));
 
 	if(bytes == 0)
 		return;

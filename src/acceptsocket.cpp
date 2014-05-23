@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "acceptsocket.h"
 
@@ -29,34 +30,34 @@ static const struct linger so_linger =
 	.l_linger	= 0,
 };
 
-AcceptSocket::AcceptSocket(string port) throw(string)
+AcceptSocket::AcceptSocket(string port) throw(trap)
 {
 	int rv;
 
 	gai_accept_address = 0;
 
 	if((fd = socket(AF_INET6, SOCK_STREAM | SOCK_CLOEXEC, 0)) < 0)
-		throw(string("AcceptSocket: cannot create accept socket"));
+		throw(trap("AcceptSocket: cannot create accept socket"));
 
 	if(setsockopt(fd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)))
-		throw(string("AcceptSocket: cannot set linger on accept socket"));
+		throw(trap("AcceptSocket: cannot set linger on accept socket"));
 
 	rv = 1;
 
 	if(setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &rv, sizeof(rv)))
-		throw(string("AcceptSocket: cannot set reuseaddr on accept socket"));
+		throw(trap("AcceptSocket: cannot set reuseaddr on accept socket"));
 
 	if((rv = getaddrinfo(0, port.c_str(), &gai_accept_hints, &gai_accept_address)))
-		throw(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv));
+		throw(trap(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv)));
 
 	if(!gai_accept_address)
-		throw(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv));
+		throw(trap(string("AcceptSocket: cannot get address info: ") + gai_strerror(rv)));
 
 	if(bind(fd, gai_accept_address->ai_addr, gai_accept_address->ai_addrlen))
-		throw(string("AcceptSocket: cannot bind accept socket"));
+		throw(trap("AcceptSocket: cannot bind accept socket"));
 
 	if(listen(fd, 4))
-		throw(string("AcceptSocket: cannot listen on accept socket"));
+		throw(trap("AcceptSocket: cannot listen on accept socket"));
 }
 
 AcceptSocket::~AcceptSocket() throw()
@@ -68,12 +69,12 @@ AcceptSocket::~AcceptSocket() throw()
 		close(fd);
 }
 
-int AcceptSocket::accept() const throw(string)
+int AcceptSocket::accept() const throw(trap)
 {
 	int new_fd;
 
 	if((new_fd = ::accept(fd, 0, 0)) < 0)
-		throw(string("AcceptSocket: error in accept"));
+		throw(trap("AcceptSocket: error in accept"));
 
 	return(new_fd);
 }

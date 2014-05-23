@@ -2,6 +2,7 @@
 #define _enigma_settings_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <string>
 #include <map>
@@ -18,10 +19,10 @@ class EnigmaSettings
 
 	public:
 
-		EnigmaSettings() throw(std::string);
+		EnigmaSettings() throw(trap);
 		bool exists(std::string key) const throw();
-		std::string as_string(std::string key) const throw(std::string);
-		int as_int(std::string key) const throw(std::string);
+		std::string as_string(std::string key) const throw(trap);
+		int as_int(std::string key) const throw(trap);
 };
 
 #endif

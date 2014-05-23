@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "clientsocket.h"
 #include "service.h"
@@ -30,6 +31,8 @@
 using std::string;
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
+#include <boost/range/algorithm/remove_if.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 ClientSocket::ClientSocket(int fd_in,
 		default_streaming_action default_action,
@@ -69,13 +72,13 @@ ClientSocket::ClientSocket(int fd_in,
 
 		arg1 = fcntl(fd, F_GETFL, 0);
 		if(fcntl(fd, F_SETFL, arg1 | O_NONBLOCK))
-			throw(string("ClientSocket: F_SETFL"));
+			throw(trap("ClientSocket: F_SETFL"));
 
 #if 0
 		arg1 = 1;
 
 		if(setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void *)&arg1, sizeof(arg1)))
-			throw(string("ClientSocket: cannot set NODELAY"));
+			throw(trap("ClientSocket: cannot set NODELAY"));
 #endif
 
 #if 0
@@ -85,17 +88,17 @@ ClientSocket::ClientSocket(int fd_in,
 		arg2 = sizeof(arg1);
 
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
-			throw(string("ClientSocket: getsockopt 1"));
+			throw(trap("ClientSocket: getsockopt 1"));
 
 		Util::vlog("ClientSocket: current buffer size: %d", arg1);
 
 		arg1 = 256 * 1024;
 
 		if(setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, sizeof(arg1)))
-			throw(string("ClientSocket: setsockopt"));
+			throw(trap("ClientSocket: setsockopt"));
 
 		if(getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (void *)&arg1, (size_t *)&arg2))
-			throw(string("ClientSocket: getsockopt 2"));
+			throw(trap("ClientSocket: getsockopt 2"));
 
 		Util::vlog("ClientSocket: new buffer size: %d", arg1);
 #endif
@@ -108,15 +111,15 @@ ClientSocket::ClientSocket(int fd_in,
 			pfd.events = POLLIN | POLLRDHUP;
 
 			if(poll(&pfd, 1, 1000) < 0)
-				throw(string("ClientSocket: poll error"));
+				throw(trap("ClientSocket: poll error"));
 
 			if(pfd.revents & (POLLHUP | POLLRDHUP | POLLERR | POLLNVAL))
-				throw(string("ClientSocket: peer disconnects"));
+				throw(trap("ClientSocket: peer disconnects"));
 
 			if(pfd.revents & POLLIN)
 			{
 				if((bytes_read = read(fd, read_buffer, sizeof(read_buffer))) <= 0)
-					throw(string("ClientSocket: peer disconnected"));
+					throw(trap("ClientSocket: peer disconnected"));
 
 				request.append(read_buffer, bytes_read);
 
@@ -125,11 +128,11 @@ ClientSocket::ClientSocket(int fd_in,
 			}
 
 			if((time(0) - start) > 5)
-				throw(string("ClientSocket: peer connection timeout"));
+				throw(trap("ClientSocket: peer connection timeout"));
 		}
 
 		if(idx == string::npos)
-			throw(string("ClientSocket: no request"));
+			throw(http_trap("ClientSocket: no request", 400, "Bad request 1"));
 
 		split(lines, request, boost::is_any_of("\r\n"));
 
@@ -199,32 +202,26 @@ ClientSocket::ClientSocket(int fd_in,
 		}
 
 		if(lines.size() < 1)
-			throw(string("ClientSocket: invalid request"));
+			throw(http_trap("ClientSocket: invalid request", 400, "Bad request 2"));
 
 		if(config_map.at("auth").int_value)
 		{
 			if(!headers.count("authorization"))
 			{
-				Util::vlog("ClientSocket: no authorisation received from client");
-				reply = string("HTTP/1.0 401 Unauthorized\r\n") +
-					"WWW-Authenticate: Basic realm=\"OpenWebif\"\r\n" +
-					"Content-Type: text/html\r\n" +
-					"Connection: close\r\n\r\n";
-				write(fd, reply.c_str(), reply.length());
-
-				return;
+				reply = string("Unauthorized\r\nWWW-Authenticate: Basic realm=\"OpenWebif\"\r\n");
+				throw(http_trap("ClientSocket: no authorisation received from client", 401, reply));
 			}
 
 			webauth = headers["authorization"];
 
 			if((idx = webauth.find(' ')) == string::npos)
-				throw(string("ClientSocket: web authentication: invalid syntax (1)"));
+				throw(http_trap("ClientSocket: web authentication: invalid syntax (1)", 400, "Bad request: invalid auth syntax 1"));
 
 			webauth = webauth.substr(idx + 1);
 			user = base64_decode(webauth);
 
 			if((idx = user.find(':')) == string::npos)
-				throw(string("ClientSocket: web authentication: invalid syntax (2)"));
+				throw(http_trap("ClientSocket: web authentication: invalid syntax (2)", 400, "Bad request: invalid auth syntax 2"));
 
 			password = user.substr(idx + 1);
 			user = user.substr(0, idx);
@@ -232,7 +229,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Util::vlog("ClientSocket: authentication: %s,%s", user.c_str(), password.c_str());
 
 			if(!validate_user(user, password, config_map.at("group").string_value))
-				throw(string("Invalid authentication"));
+				throw(http_trap("Invalid authentication", 403, "Forbidden, invalid authentication"));
 		}
 
 		for(headit = headers.begin(); headit != headers.end(); headit++)
@@ -335,17 +332,11 @@ ClientSocket::ClientSocket(int fd_in,
 
 			data = webrequest.get(mimetype);
 
-			if(data.length())
-			{
-				reply =	"HTTP/1.1 200 OK\r\n";
-				reply += "Content-type: " + mimetype + "; charset=utf8\r\n";
-			}
-			else
-			{
-				reply =	"HTTP/1.1 400 Bad Request\r\n";
-				reply += "Content-type: text/plain; charset=utf8\r\n";
-			}
+			if(!data.length())
+				throw(http_trap("ClientSocket: web request failed", 500, "Internal server error (handler failed)"));
 
+			reply =	"HTTP/1.1 200 OK\r\n";
+			reply += "Content-type: " + mimetype + "; charset=utf8\r\n";
 			reply += "Connection: close\r\n\r\n";
 			reply += data;
 
@@ -403,24 +394,29 @@ ClientSocket::ClientSocket(int fd_in,
 			}
 		}
 
-		throw(string("unknown url: ") + urlparams[""]);
+		throw(http_trap(string("unknown url: ") + urlparams[""], 404, "Not found"));
 	}
-	catch(const string &e)
+	catch(const http_trap &e)
 	{
-		Util::vlog("ClientSocket: exception: %s", e.c_str());
-		reply = string("HTTP/1.0 400 Bad request: ") + e + "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+		reply = e.http_header;
+		reply.erase(boost::remove_if(reply, boost::is_any_of("\r\n")), reply.end());
+		Util::vlog("ClientSocket: http_trap: %s (%d: %s)", e.what(), e.http_error, reply.c_str());
+		reply = string("HTTP/1.1 ") + Util::int_to_string(e.http_error) + " " + e.http_header;
+		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
-	catch(const std::exception &e)
+	catch(const trap &e)
 	{
-		Util::vlog("ClientSocket: unknown std exception: %s", typeid(e).name());
-		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+		Util::vlog("ClientSocket: trap: %s", e.what());
+		reply = string("HTTP/1.1 400 Bad request: ") + e.what();
+		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(...)
 	{
 		Util::vlog("ClientSocket: unknown exception");
-		reply = "HTTP/1.0 400 Bad request\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+		reply = string("HTTP/1.1 400 Bad request");
+		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 }

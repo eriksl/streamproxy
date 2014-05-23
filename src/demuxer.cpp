@@ -17,7 +17,7 @@ using std::string;
 #include <linux/dvb/dmx.h>
 #include <poll.h>
 
-Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
+Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(trap)
 {
 	PidMap::const_iterator	demux_it;
 	PidMap::const_iterator	it;
@@ -49,15 +49,15 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 
 	if((pids.find("pat") == pids.end()) || (pids.find("pmt") == pids.end()) ||
 			(pids.find("video") == pids.end()) || (pids.find("audio") == pids.end()))
-		throw(string("Demuxer: missing primary pids"));
+		throw(trap("Demuxer: missing primary pids"));
 
 	demuxer_device = string("/dev/dvb/adapter0/demux") + Util::int_to_string(id);
 
 	if((fd = open(demuxer_device.c_str(), O_RDWR | O_NONBLOCK)) < 0)
-		throw(string("Demuxer: cannot open demuxer device"));
+		throw(trap("Demuxer: cannot open demuxer device"));
 
 	if(ioctl(fd, DMX_SET_BUFFER_SIZE, buffer_size))
-		throw(string("Demuxer: cannot set buffer size"));
+		throw(trap("Demuxer: cannot set buffer size"));
 
 	dmx_filter.pid		= pids["pat"];
 	dmx_filter.input	= DMX_IN_FRONTEND;
@@ -66,7 +66,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 	dmx_filter.flags	= DMX_IMMEDIATE_START;
 
 	if(ioctl(fd, DMX_SET_PES_FILTER, &dmx_filter))
-		throw(string("Demuxer: cannot set pes filter"));
+		throw(trap("Demuxer: cannot set pes filter"));
 
 	for(it = pids.begin(); it != pids.end(); it++)
 	{
@@ -77,7 +77,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(string)
 		Util::vlog("Demuxer: ioctl demuxer ADD PID: %s -> 0x%x", it->first.c_str(), pid);
 
 		if(ioctl(fd, DMX_ADD_PID, &pid))
-			throw(string("Demuxer: cannot add pid for ") + it->first);
+			throw(trap(string("Demuxer: cannot add pid for ") + it->first));
 	}
 }
 

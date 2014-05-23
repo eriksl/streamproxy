@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "acceptsocket.h"
 #include "clientsocket.h"
@@ -183,7 +184,7 @@ int main(int argc, char *const argv[], char *const arge[])
 			ix = it->find(':');
 
 			if((ix == string::npos) || (ix == 0))
-				throw(string("positional parameter should consist of <port>:<default action>"));
+				throw(trap("positional parameter should consist of <port>:<default action>"));
 
 			port		= it->substr(0, ix);
 			action_str	= it->substr(ix + 1);
@@ -194,7 +195,7 @@ int main(int argc, char *const argv[], char *const arge[])
 				if(action_str == "transcode")
 					action = ClientSocket::action_transcode;
 				else
-					throw(string("default action should be either stream or transcode"));
+					throw(trap("default action should be either stream or transcode"));
 
 			listen_action[port].default_action = action;
 
@@ -207,10 +208,10 @@ int main(int argc, char *const argv[], char *const arge[])
 			Util::vlog("streamproxy: config_map: %s = %s/%d", it3->first.c_str(), it3->second.string_value.c_str(), it3->second.int_value);
 
 		if((pfds = listen_action.size() + 1) < 2)
-			throw(string("no listen_port:default_action parameters given"));
+			throw(trap("no listen_port:default_action parameters given"));
 
 		if(!Util::foreground && daemon(0, 0))
-			throw(string("daemon() gives error"));
+			throw(trap("daemon() gives error"));
 
 		signal_action.sa_handler = sigchld;
 		signal_action.sa_flags = SA_NOCLDSTOP | SA_NODEFER | SA_RESTART;
@@ -221,13 +222,13 @@ int main(int argc, char *const argv[], char *const arge[])
 		sigaction(SIGCHLD, &signal_action, 0);
 
 		if((inotify_fd = inotify_init1(IN_CLOEXEC)) < 0)
-			throw(string("inotify_init error"));
+			throw(trap("inotify_init error"));
 
 		if(inotify_add_watch(inotify_fd, "/etc/enigma2/streamproxy.conf", IN_MODIFY | IN_CREATE | IN_MOVE_SELF | IN_ATTRIB) < 0)
-			throw(string("inotify_add_watch error (streamproxy config file)"));
+			throw(trap("inotify_add_watch error (streamproxy config file)"));
 
 		if(inotify_add_watch(inotify_fd, "/etc/enigma2/settings", IN_MODIFY | IN_CREATE | IN_MOVE_SELF | IN_ATTRIB) < 0)
-			throw(string("inotify_add_watch error (enigma config)"));
+			throw(trap("inotify_add_watch error (enigma config)"));
 
 		pfd = new struct pollfd[pfds];
 
@@ -251,7 +252,7 @@ int main(int argc, char *const argv[], char *const arge[])
 				if(errno == EINTR)
 					errno = 0;
 				else
-					throw(string("poll error"));
+					throw(trap("poll error"));
 			}
 
 			if(pfd[0].revents & POLLIN)
@@ -263,7 +264,7 @@ int main(int argc, char *const argv[], char *const arge[])
 			for(ix = 1; ix < pfds; ix++)
 			{
 				if(pfd[ix].revents & (POLLERR | POLLNVAL | POLLHUP))
-					throw(string("poll error on fd"));
+					throw(trap("poll error on fd"));
 
 				if(!(pfd[ix].revents & POLLIN))
 					continue;
@@ -273,7 +274,7 @@ int main(int argc, char *const argv[], char *const arge[])
 						break;
 
 				if(it2 == listen_action.end())
-					throw(string("poll success on non-existent fd"));
+					throw(trap("poll success on non-existent fd"));
 
 				new_socket = it2->second.accept_socket->accept();
 

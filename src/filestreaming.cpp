@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "filestreaming.h"
 #include "util.h"
@@ -12,7 +13,7 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) throw(string)
+FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) throw(trap)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -53,7 +54,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 			pfd.events |= POLLOUT;
 
 		if(poll(&pfd, 1, -1) <= 0)
-			throw(string("FileStreaming: poll error"));
+			throw(trap("FileStreaming: poll error"));
 
 		if(pfd.revents & (POLLRDHUP | POLLHUP))
 		{

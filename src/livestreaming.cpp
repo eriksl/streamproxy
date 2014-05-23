@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include "webifrequest.h"
@@ -18,7 +19,7 @@ using std::string;
 #include <time.h>
 
 LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth,
-		const ConfigMap &config_map) throw(string)
+		const ConfigMap &config_map) throw(trap)
 {
 	PidMap::const_iterator it;
 	bool			webifrequest_ok;
@@ -37,7 +38,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 	Util::vlog("LiveStreaming: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
-		throw(string("LiveStreaming: invalid service"));
+		throw(http_trap("LiveStreaming: invalid service", 404, "Not found, service not found"));
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
@@ -60,7 +61,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 	}
 
 	if(!webifrequest_ok)
-		throw(string("LiveStreaming: tuning request to enigma failed (webif timeout)"));
+		throw(http_trap("LiveStreaming: tuning request to enigma failed (webif timeout)", 404, "Not found, service cannot be tuned"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 
@@ -70,7 +71,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 	Demuxer demuxer(demuxer_id, pids);
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
-		throw(string("LiveStreaming: demuxer: fd not open"));
+		throw(trap("LiveStreaming: demuxer: fd not open"));
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -89,7 +90,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 			pfd[1].events |= POLLOUT;
 
 		if(poll(pfd, 2, -1) <= 0)
-			throw(string("LiveStreaming: poll error"));
+			throw(trap("LiveStreaming: poll error"));
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{

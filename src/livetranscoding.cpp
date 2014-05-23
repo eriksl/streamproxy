@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include "webifrequest.h"
@@ -21,7 +22,7 @@ using std::string;
 LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		string webauth, string frame_size, string bitrate,
 		string profile, string level, string bframes,
-		const ConfigMap &config_map) throw(string)
+		const ConfigMap &config_map) throw(trap)
 {
 	PidMap::const_iterator it;
 	bool			webifrequest_ok;
@@ -45,7 +46,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	Util::vlog("LiveTranscoding: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
-		throw(string("LiveTranscoding: invalid service"));
+		throw(http_trap("LiveTranscoding: invalid service", 404, "Not found, unknown service"));
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
@@ -68,7 +69,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	}
 
 	if(!webifrequest_ok)
-		throw(string("LiveTranscoding: tuning request to enigma failed (webif timeout)"));
+		throw(http_trap("LiveTranscoding: tuning request to enigma failed (webif timeout)", 404, "Not found, cannot tune to service"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 
@@ -84,10 +85,10 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
 	if((encoder_fd = encoder.getfd()) < 0)
-		throw(string("LiveTranscoding: encoder: fd not open"));
+		throw(trap("LiveTranscoding: encoder: fd not open"));
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
-		throw(string("LiveTranscoding: demuxer: fd not open"));
+		throw(trap("LiveTranscoding: demuxer: fd not open"));
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -145,7 +146,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 			pfd[2].events |= POLLOUT;
 
 		if(poll(pfd, 3, -1) <= 0)
-			throw(string("LiveTranscoding: streaming: poll error"));
+			throw(trap("LiveTranscoding: streaming: poll error"));
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{

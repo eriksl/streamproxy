@@ -2,6 +2,7 @@
 #define	_queue_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <sys/types.h>
 
@@ -22,7 +23,7 @@ class Queue
 
 	public:
 
-		Queue(int size)		throw(string);
+		Queue(int size)		throw(trap);
 		~Queue()			throw();
 
 		void	reset()											throw();

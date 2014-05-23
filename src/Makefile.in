@@ -102,8 +102,9 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-mpegts.$(OBJEXT) streamproxy-queue.$(OBJEXT) \
 	streamproxy-service.$(OBJEXT) \
 	streamproxy-streamproxy.$(OBJEXT) \
-	streamproxy-time_offset.$(OBJEXT) streamproxy-url.$(OBJEXT) \
-	streamproxy-util.$(OBJEXT) streamproxy-webifrequest.$(OBJEXT) \
+	streamproxy-time_offset.$(OBJEXT) streamproxy-trap.$(OBJEXT) \
+	streamproxy-url.$(OBJEXT) streamproxy-util.$(OBJEXT) \
+	streamproxy-webifrequest.$(OBJEXT) \
 	streamproxy-webrequest.$(OBJEXT)
 streamproxy_OBJECTS = $(am_streamproxy_OBJECTS)
 streamproxy_DEPENDENCIES =
@@ -276,6 +277,7 @@ streamproxy_SOURCES = \
 	service.cpp \
 	streamproxy.cpp \
 	time_offset.cpp \
+	trap.cpp \
 	url.cpp \
 	util.cpp \
 	webifrequest.cpp \
@@ -385,6 +387,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-service.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-streamproxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-time_offset.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-trap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-url.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-util.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-webifrequest.Po@am__quote@
@@ -613,6 +616,20 @@ streamproxy-time_offset.obj: time_offset.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='time_offset.cpp' object='streamproxy-time_offset.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-time_offset.obj `if test -f 'time_offset.cpp'; then $(CYGPATH_W) 'time_offset.cpp'; else $(CYGPATH_W) '$(srcdir)/time_offset.cpp'; fi`
+
+streamproxy-trap.o: trap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-trap.o -MD -MP -MF $(DEPDIR)/streamproxy-trap.Tpo -c -o streamproxy-trap.o `test -f 'trap.cpp' || echo '$(srcdir)/'`trap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-trap.Tpo $(DEPDIR)/streamproxy-trap.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='trap.cpp' object='streamproxy-trap.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-trap.o `test -f 'trap.cpp' || echo '$(srcdir)/'`trap.cpp
+
+streamproxy-trap.obj: trap.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-trap.obj -MD -MP -MF $(DEPDIR)/streamproxy-trap.Tpo -c -o streamproxy-trap.obj `if test -f 'trap.cpp'; then $(CYGPATH_W) 'trap.cpp'; else $(CYGPATH_W) '$(srcdir)/trap.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-trap.Tpo $(DEPDIR)/streamproxy-trap.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='trap.cpp' object='streamproxy-trap.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-trap.obj `if test -f 'trap.cpp'; then $(CYGPATH_W) 'trap.cpp'; else $(CYGPATH_W) '$(srcdir)/trap.cpp'; fi`
 
 streamproxy-url.o: url.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-url.o -MD -MP -MF $(DEPDIR)/streamproxy-url.Tpo -c -o streamproxy-url.o `test -f 'url.cpp' || echo '$(srcdir)/'`url.cpp

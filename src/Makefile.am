@@ -16,6 +16,7 @@ streamproxy_SOURCES = \
 	service.cpp \
 	streamproxy.cpp \
 	time_offset.cpp \
+	trap.cpp \
 	url.cpp \
 	util.cpp \
 	webifrequest.cpp \

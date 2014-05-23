@@ -2,6 +2,7 @@
 #define _encoder_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include "types.h"
 #include <string>
@@ -38,7 +39,7 @@ class Encoder
 		Encoder(const PidMap &, std::string frame_size,
 				std::string bitrate, std::string profile,
 				std::string level, std::string bframes)
-				throw(std::string);
+				throw(trap);
 		~Encoder()												throw();
 
 		std::string	getprop(std::string)				const	throw();

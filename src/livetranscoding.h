@@ -2,6 +2,7 @@
 #define _livetranscoding_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include "service.h"
 #include "configmap.h"
@@ -34,7 +35,7 @@ class LiveTranscoding
 				std::string bitrate, std::string profile,
 				std::string level, std::string bframes,
 				const ConfigMap &config_map)
-			throw(std::string);
+			throw(trap);
 };
 
 #endif

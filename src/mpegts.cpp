@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "mpegts.h"
 #include "util.h"
@@ -14,7 +15,7 @@ using std::string;
 
 #include <boost/algorithm/string.hpp>
 
-MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(string)
+MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(trap)
 	:	private_fd(false),
 		fd(fd_in),
 		request_time_seek(request_time_seek_in)
@@ -22,12 +23,12 @@ MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(string)
 	init();
 }
 
-MpegTS::MpegTS(string filename, bool request_time_seek_in) throw(string)
+MpegTS::MpegTS(string filename, bool request_time_seek_in) throw(trap)
 	:	private_fd(true),
 		request_time_seek(request_time_seek_in)
 {
 	if((fd = open(filename.c_str(), O_RDONLY, 0)) < 0)
-		throw(string("MpegTS::MpegTS: cannot open file"));
+		throw(trap("MpegTS::MpegTS: cannot open file"));
 
 	init();
 }
@@ -38,20 +39,20 @@ MpegTS::~MpegTS() throw()
 		close(fd);
 }
 
-void MpegTS::init() throw(string)
+void MpegTS::init() throw(trap)
 {
 	mpegts_pat_t::const_iterator it;
 	off_t offset_aligned;
 
 	if(!read_pat())
-		throw(string("MpegTS::init: invalid transport stream (no suitable pat)"));
+		throw(trap("MpegTS::init: invalid transport stream (no suitable pat)"));
 
 	for(it = pat.begin(); it != pat.end(); it++)
 		if(read_pmt(it->second))
 			break;
 
 	if(it == pat.end())
-		throw(string("MpegTS::init: invalid transport stream (no suitable pmt)"));
+		throw(trap("MpegTS::init: invalid transport stream (no suitable pmt)"));
 
 	pmt_pid = it->second;
 	is_time_seekable = false;
@@ -106,7 +107,7 @@ void MpegTS::init() throw(string)
 	//Util::vlog("eof_offset is at %lld", eof_offset);
 }
 
-bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
+bool MpegTS::read_table(int filter_pid, int filter_table) throw(trap)
 {
 	typedef boost::crc_optimal<32, 0x04c11db7, 0xffffffff, 0x0, false, false> boost_mpeg_crc_t;
 
@@ -133,10 +134,10 @@ bool MpegTS::read_table(int filter_pid, int filter_table) throw(string)
 	for(timeout = 0; timeout < 2000; timeout++)
 	{
 		if(read(fd, (void *)&packet, sizeof(packet)) != sizeof(packet))
-			throw(string("MpegTS::read_table: read error"));
+			throw(trap("MpegTS::read_table: read error"));
 
 		if(packet.header.sync_byte != MpegTS::sync_byte_value)
-			throw(string("MpegTS::read_table: no sync byte found"));
+			throw(trap("MpegTS::read_table: no sync byte found"));
 
 		pid = (packet.header.pid_high << 8) | (packet.header.pid_low);
 
@@ -320,7 +321,7 @@ retry:
 	return(true);
 }
 
-bool MpegTS::read_pat() throw(string)
+bool MpegTS::read_pat() throw(trap)
 {
 	int		attempt;
 	int		current, entries, program, pid;
@@ -358,7 +359,7 @@ next_pat_entry:
 	return(false);
 }
 
-bool MpegTS::read_pmt(int filter_pid) throw(string)
+bool MpegTS::read_pmt(int filter_pid) throw(trap)
 {
 	int		attempt, programinfo_length, esinfo_length;
 	int		es_pid, es_data_length, es_data_skip, es_data_offset;
@@ -598,35 +599,35 @@ int MpegTS::find_pcr_ms(seek_direction_t direction) const throw()
 	return(pcr_ms);
 }
 
-off_t MpegTS::seek(int whence, off_t offset) const throw(string)
+off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
 {
 	ts_packet_t	packet;
 	off_t		actual_offset;
 	off_t		new_offset;
 
 	if(!is_time_seekable)
-		throw(string("MpegTS::seek: stream is not seekable"));
+		throw(trap("MpegTS::seek: stream is not seekable"));
 
 	offset = ((offset / (off_t)sizeof(ts_packet_t)) * (off_t)sizeof(ts_packet_t));
 
 	if(lseek(fd, offset, whence) < 0)
-		throw(string("MpegTS::seek: lseek (1)"));
+		throw(trap("MpegTS::seek: lseek (1)"));
 
 	if(read(fd, &packet, sizeof(packet)) != sizeof(packet))
-		throw(string("MpegTS::seek: read error"));
+		throw(trap("MpegTS::seek: read error"));
 
 	if(packet.header.sync_byte != sync_byte_value)
-		throw(string("MpegTS::seek: no sync byte"));
+		throw(trap("MpegTS::seek: no sync byte"));
 
 	new_offset = (off_t)0 - (off_t)sizeof(packet);
 
 	if((actual_offset = lseek(fd, new_offset, SEEK_CUR)) < 0)
-		throw(string("MpegTS::seek: lseek (2)"));
+		throw(trap("MpegTS::seek: lseek (2)"));
 
 	return(actual_offset);
 }
 
-off_t MpegTS::seek(int pts_ms) const throw(string)
+off_t MpegTS::seek(int pts_ms) const throw(trap)
 {
 	int		h, m, s, ms;
 	int		attempt;
@@ -639,7 +640,7 @@ off_t MpegTS::seek(int pts_ms) const throw(string)
 	off_t	current_offset;
 
 	if(!is_time_seekable)
-		throw(string("MpegTS::seek: stream is not seekable"));
+		throw(trap("MpegTS::seek: stream is not seekable"));
 
 	if(pts_ms < first_pcr_ms)
 	{

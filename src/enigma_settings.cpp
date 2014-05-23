@@ -1,4 +1,5 @@
 #include "config.h"
+#include "trap.h"
 
 #include "enigma_settings.h"
 #include "util.h"
@@ -10,7 +11,7 @@ using std::string;
 #include <string.h>
 #include <stdlib.h>
 
-EnigmaSettings::EnigmaSettings() throw(string)
+EnigmaSettings::EnigmaSettings() throw(trap)
 {
 	FILE *fp;
 	char buffer[1024];
@@ -54,15 +55,15 @@ bool EnigmaSettings::exists(string key) const throw()
 	return(!!key_values.count(key));
 }
 
-string EnigmaSettings::as_string(string key) const throw(string)
+string EnigmaSettings::as_string(string key) const throw(trap)
 {
 	if(!exists(key))
-		throw(string("key does not exist"));
+		throw(trap("key does not exist"));
 
 	return(key_values.at(key));
 }
 
-int EnigmaSettings::as_int(string key) const throw(string)
+int EnigmaSettings::as_int(string key) const throw(trap)
 {
 	string value = as_string(key);
 

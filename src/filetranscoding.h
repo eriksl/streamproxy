@@ -2,6 +2,7 @@
 #define _filetranscoding_h_
 
 #include "config.h"
+#include "trap.h"
 
 #include <string>
 
@@ -32,7 +33,7 @@ class FileTranscoding
 				int time_offset, std::string frame_size,
 				std::string bitrate, std::string profile,
 				std::string level, std::string bframes)
-											throw(std::string);
+											throw(trap);
 		~FileTranscoding()					throw();
 };
 
