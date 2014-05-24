@@ -31,8 +31,6 @@
 using std::string;
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/trim.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
-#include <boost/algorithm/string/classification.hpp>
 
 ClientSocket::ClientSocket(int fd_in,
 		default_streaming_action default_action,
@@ -40,7 +38,13 @@ ClientSocket::ClientSocket(int fd_in,
 	:
 		fd(fd_in), config_map(config_map_in)
 {
-	string	reply;
+	const char *http_error_headers =
+		"Content-Type: text/html\r\n"
+		"Connection: close\r\n"
+		"Accept-Ranges: bytes\r\n"
+		"\r\n";
+
+	string	reply, message;
 
 	try
 	{
@@ -52,6 +56,8 @@ ClientSocket::ClientSocket(int fd_in,
 		time_t		start;
 		string		webauth, user, password;
 		int			time_offset, pct_offset;
+		string		range_header;
+		off_t		byte_offset;
 		string		frame_size;
 		string		bitrate;
 		string		profile;
@@ -232,6 +238,24 @@ ClientSocket::ClientSocket(int fd_in,
 				throw(http_trap("Invalid authentication", 403, "Forbidden, invalid authentication"));
 		}
 
+		byte_offset = -1;
+
+		if(headers.count("range"))
+		{
+			range_header = headers.at("range");
+
+			if((range_header.length() > 7) && (range_header.substr(0, 6) == "bytes="))
+			{
+				range_header = range_header.substr(6);
+
+				if(range_header.find('-') == (range_header.length() - 1))
+					byte_offset = Util::string_to_int(range_header);
+			}
+		}
+
+		if(byte_offset >= 0)
+			Util::vlog("ClientSocket: range requested from: %lld", byte_offset);
+
 		for(headit = headers.begin(); headit != headers.end(); headit++)
 			Util::vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
 
@@ -307,7 +331,7 @@ ClientSocket::ClientSocket(int fd_in,
 		{
 			Util::vlog("ClientSocket: file streaming request");
 			(void)FileStreaming(urlparams["file"], fd,
-					pct_offset, time_offset);
+					byte_offset, pct_offset, time_offset);
 			Util::vlog("ClientSocket: file streaming ends");
 
 			return;
@@ -362,7 +386,7 @@ ClientSocket::ClientSocket(int fd_in,
 				{
 					Util::vlog("ClientSocket: streaming file");
 					(void)FileStreaming(urlparams["file"], fd,
-							pct_offset, time_offset);
+							byte_offset, pct_offset, time_offset);
 				}
 				else
 				{
@@ -407,25 +431,27 @@ ClientSocket::ClientSocket(int fd_in,
 	}
 	catch(const http_trap &e)
 	{
-		reply = e.http_header;
-		reply.erase(boost::remove_if(reply, boost::is_any_of("\r\n")), reply.end());
-		Util::vlog("ClientSocket: http_trap: %s (%d: %s)", e.what(), e.http_error, reply.c_str());
 		reply = string("HTTP/1.1 ") + Util::int_to_string(e.http_error) + " " + e.http_header;
-		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
+		reply += http_error_headers;
+
+		message = reply;
+		boost::replace_all(message, "\r\n", "@");
+		Util::vlog("ClientSocket: http_trap: %s (%d: %s)", e.what(), e.http_error, message.c_str());
+
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(const trap &e)
 	{
+		reply = string("HTTP/1.1 400 Bad request: ") + e.what() + "\r\n";
+		reply += http_error_headers;
 		Util::vlog("ClientSocket: trap: %s", e.what());
-		reply = string("HTTP/1.1 400 Bad request: ") + e.what();
-		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 	catch(...)
 	{
+		reply = string("HTTP/1.1 400 Bad request") + "\r\n";
+		reply += http_error_headers;
 		Util::vlog("ClientSocket: unknown exception");
-		reply = string("HTTP/1.1 400 Bad request");
-		reply += "\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n";
 		write(fd, reply.c_str(), reply.length());
 	}
 }

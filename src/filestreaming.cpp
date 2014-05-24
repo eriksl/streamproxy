@@ -9,33 +9,66 @@
 #include <unistd.h>
 #include <poll.h>
 #include <fcntl.h>
+#include <sys/types.h>
 
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd, int pct_offset, int time_offset_s) throw(trap)
+FileStreaming::FileStreaming(string file, int socket_fd,
+		off_t byte_offset, int pct_offset, int time_offset_s) throw(trap)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
-	string			http_reply = "HTTP/1.1 200 OK\r\n"
-						"Content-type: video/mpeg\r\n"
-						"Connection: Close\r\n"
-						"Server: Streamproxy\r\n"
-						"Accept-Ranges: bytes\r\n";
-	
-	Util::vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
+	off_t			file_offset = 0;
+	const char *	http_ok			=	"HTTP/1.1 200 OK\r\n";
+	const char *	http_partial	=	"HTTP/1.1 206 Partial Content\r\n";
+	const char *	http_headers	=	"Connection: Close\r\n"
+										"Content-Type: video/mpeg\r\n"
+										"Server: Streamproxy\r\n"
+										"Accept-Ranges: bytes\r\n";
+	string			http_reply;
+	Queue			socket_queue(32 * 1024);
 
 	MpegTS stream(file, time_offset_s > 0);
+	
+	Util::vlog("FileStreaming: streaming file: %sd", file.c_str());
+	Util::vlog("FileStreaming: byte_offset: %llu / %llu (%llu %%)", byte_offset, stream.stream_length,
+			(byte_offset * 100) / stream.stream_length);
+	Util::vlog("FileStreaming: pct_offset: %d", pct_offset);
+	Util::vlog("FileStreaming: time_offset: %d", time_offset_s);
 
-	if(pct_offset > 0)
-		stream.seek_pct(pct_offset);
+	if(byte_offset > 0)
+	{
+		stream.seek_absolute(byte_offset);
+
+		// Lie to the client because it will never get the exact position it requests due to ts packet alignment.
+		// E.g. wget will refuse range operation this way. It won't hurt for viewing anyway.
+
+		file_offset = byte_offset;
+	}
 	else
-		if(stream.is_time_seekable && (time_offset_s > 0))
-			stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
+		if(pct_offset > 0)
+			file_offset = stream.seek_relative(pct_offset, 100);
+		else
+			if(stream.is_time_seekable && (time_offset_s > 0))
+				file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
 
-	Queue socket_queue(32 * 1024);
+	Util::vlog("FileStreaming: file_offset: %lld", file_offset);
 
+	if(file_offset > 0)
+		http_reply = http_partial;
+	else
+		http_reply = http_ok;
+
+	http_reply += http_headers;
 	http_reply += "Content-Length: " + Util::uint_to_string(stream.stream_length) + "\r\n";
+
+	if(file_offset > 0)
+		http_reply += string("Content-Range: bytes ") +
+			Util::uint_to_string(file_offset) + "-" +
+			Util::uint_to_string(stream.stream_length - 1) + "/" +
+			Util::uint_to_string(stream.stream_length) + "\r\n";
+
 	http_reply += "\r\n";
 
 	socket_queue.append(http_reply.length(), http_reply.c_str());

@@ -627,14 +627,19 @@ off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
 	return(actual_offset);
 }
 
-off_t MpegTS::seek_pct(int pct) const throw(trap)
+off_t MpegTS::seek_absolute(off_t offset) const throw(trap)
+{
+	return(seek(SEEK_SET, offset));
+}
+
+off_t MpegTS::seek_relative(off_t roffset, off_t limit) const throw(trap)
 {
 	off_t offset;
 
-	if((pct < 0) || (pct > 100))
-		throw(trap("MpegTS::seek_pct: value out of range"));
+	if((roffset < 0) || (roffset > limit))
+		throw(trap("MpegTS::seek_relative: value out of range"));
 
-	offset = (eof_offset / 100) * pct;
+	offset = (eof_offset / limit) * roffset;
 
 	return(seek(SEEK_SET, offset));
 }
@@ -678,7 +683,7 @@ off_t MpegTS::seek_time(int pts_ms) const throw(trap)
 		//Util::vlog("MpegTS::seek:  -%02d:%02d:%02d.%03d], ", h, m, s, ms);
 		//Util::vlog("MpegTS::seek:  offset = %lld [%lld-%lld], ", disect_offset, lower_bound_offset, upper_bound_offset);
 
-		if((current_offset = seek(SEEK_SET, disect_offset)) < 0)
+		if((current_offset = seek(SEEK_SET, disect_offset)) == 1)
 		{
 			Util::vlog("MpegTS::seek: seek fails");
 			return(-1);

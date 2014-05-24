@@ -186,6 +186,7 @@ class MpegTS
 		bool	read_pat()										throw(trap);
 		bool	read_pmt(int filter_pid)						throw(trap);
 		int		find_pcr_ms(seek_direction_t direction)	const	throw();
+		off_t	seek(int whence, off_t offset)			const	throw(trap);
 
 	public:
 
@@ -202,13 +203,13 @@ class MpegTS
 		off_t	eof_offset;
 		off_t	stream_length;
 
-		MpegTS(int fd, bool request_time_seek)				throw(trap);
-		MpegTS(std::string file, bool request_time_seek)	throw(trap);
-		~MpegTS()											throw();
+		MpegTS(int fd, bool request_time_seek)						throw(trap);
+		MpegTS(std::string file, bool request_time_seek)			throw(trap);
+		~MpegTS()													throw();
 
-		int		get_fd()							const	throw();
-		off_t	seek(int whence, off_t offset)		const	throw(trap);
-		off_t	seek_time(int pts_ms)				const	throw(trap);
-		off_t	seek_pct(int pct)					const	throw(trap);
+		int		get_fd()									const	throw();
+		off_t	seek_absolute(off_t offset)					const	throw(trap);
+		off_t	seek_relative(off_t offset, off_t limit)	const	throw(trap);
+		off_t	seek_time(int pts_ms)						const	throw(trap);
 };
 #endif

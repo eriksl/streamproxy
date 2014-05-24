@@ -5,6 +5,7 @@
 #include "trap.h"
 
 #include <string>
+#include <sys/types.h>
 
 class FileStreaming
 {
@@ -16,7 +17,8 @@ class FileStreaming
 	public:
 
 		FileStreaming(std::string file, int socketfd,
-				int pct_offset, int time_offset_s) throw(trap);
+				off_t byte_offset, int pct_offset, int time_offset_s)
+										throw(trap);
 };
 
 #endif
