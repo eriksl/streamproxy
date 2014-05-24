@@ -50,7 +50,7 @@ void MpegTS::init() throw(trap)
 
 	Util::vlog("MpegTS::init: file length: %lld Mb", filestat.st_size  >> 20);
 
-	eof_offset = filestat.st_size;
+	eof_offset = stream_length = filestat.st_size;
 	eof_offset = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
 
 	if(!read_pat())

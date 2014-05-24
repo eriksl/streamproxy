@@ -7,6 +7,7 @@
 #include <syslog.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <string>
 using std::string;
@@ -55,13 +56,19 @@ void Util::vlog(const char * format, ...) throw()
     va_end(ap);
 }
 
-string Util::int_to_string(int in) throw()
+string Util::int_to_string(int64_t in) throw()
 {
 	stringstream conv;
 	conv << in;
 	return(conv.str());
 }
 
+string Util::uint_to_string(uint64_t in) throw()
+{
+	stringstream conv;
+	conv << in;
+	return(conv.str());
+}
 string Util::hex_to_string(int in, int width) throw()
 {
 	stringstream conv;

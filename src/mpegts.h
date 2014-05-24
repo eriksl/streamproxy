@@ -200,6 +200,7 @@ class MpegTS
 		int		first_pcr_ms;
 		int		last_pcr_ms;
 		off_t	eof_offset;
+		off_t	stream_length;
 
 		MpegTS(int fd, bool request_time_seek)				throw(trap);
 		MpegTS(std::string file, bool request_time_seek)	throw(trap);

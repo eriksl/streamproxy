@@ -3,6 +3,7 @@
 
 #include "config.h"
 
+#include <stdint.h>
 #include <string>
 
 class Util
@@ -12,7 +13,8 @@ class Util
 		static	bool		foreground;
 
 		static void			vlog(const char * format, ...)		throw();
-		static std::string	int_to_string(int)					throw();
+		static std::string	int_to_string(int64_t)				throw();
+		static std::string	uint_to_string(uint64_t)			throw();
 		static std::string	hex_to_string(int, int width = 4)	throw();
 		static int			string_to_int(std::string)			throw();
 		static std::string	float_to_string(double, int)		throw();

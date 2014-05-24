@@ -17,10 +17,11 @@ FileStreaming::FileStreaming(string file, int socket_fd, int pct_offset, int tim
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
-	string			httpok = "HTTP/1.0 200 OK\r\n"
+	string			http_reply = "HTTP/1.1 200 OK\r\n"
+						"Content-type: video/mpeg\r\n"
 						"Connection: Close\r\n"
-						"Content-Type: video/mpeg\r\n"
-						"\r\n";
+						"Server: Streamproxy\r\n"
+						"Accept-Ranges: bytes\r\n";
 	
 	Util::vlog("FileStreaming: streaming file: %s from %d", file.c_str(), time_offset_s);
 
@@ -34,7 +35,10 @@ FileStreaming::FileStreaming(string file, int socket_fd, int pct_offset, int tim
 
 	Queue socket_queue(32 * 1024);
 
-	socket_queue.append(httpok.length(), httpok.c_str());
+	http_reply += "Content-Length: " + Util::uint_to_string(stream.stream_length) + "\r\n";
+	http_reply += "\r\n";
+
+	socket_queue.append(http_reply.length(), http_reply.c_str());
 
 	for(;;)
 	{
