@@ -207,6 +207,7 @@ class MpegTS
 
 		int		get_fd()							const	throw();
 		off_t	seek(int whence, off_t offset)		const	throw(trap);
-		off_t	seek(int pts_ms)					const	throw(trap);
+		off_t	seek_time(int pts_ms)				const	throw(trap);
+		off_t	seek_pct(int pct)					const	throw(trap);
 };
 #endif

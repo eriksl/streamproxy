@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <stddef.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 
 #include <boost/crc.hpp>
 
@@ -42,7 +43,15 @@ MpegTS::~MpegTS() throw()
 void MpegTS::init() throw(trap)
 {
 	mpegts_pat_t::const_iterator it;
-	off_t offset_aligned;
+	struct stat filestat;
+
+	if(fstat(fd, &filestat))
+		throw(trap("MpegTS::init: cannot stat"));
+
+	Util::vlog("MpegTS::init: file length: %lld Mb", filestat.st_size  >> 20);
+
+	eof_offset = filestat.st_size;
+	eof_offset = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
 
 	if(!read_pat())
 		throw(trap("MpegTS::init: invalid transport stream (no suitable pat)"));
@@ -61,24 +70,18 @@ void MpegTS::init() throw(trap)
 	{
 		Util::vlog("MpegTS: start find pcr");
 
-		if(lseek(fd, 0, SEEK_SET) != (off_t)-1)
+		if(lseek(fd, 0, SEEK_SET) == (off_t)-1)
+			Util::vlog("MpegTS::init seek to sof fails");
+		else
 		{
 			Util::vlog("MpegTS: start find first pcr");
 
 			first_pcr_ms = find_pcr_ms(direction_forward);
 
-			if((eof_offset = lseek(fd, 0, SEEK_END)) != (off_t)-1)
+			if(lseek(fd, eof_offset, SEEK_SET) == (off_t)-1)
+				Util::vlog("MpegTS::init: seek to eof fails");
+			else
 			{
-				offset_aligned = (eof_offset / sizeof(ts_packet_t)) * sizeof(ts_packet_t);
-
-				if(eof_offset != offset_aligned)
-				{
-					eof_offset = offset_aligned;
-
-					if(lseek(fd, eof_offset, SEEK_SET) == (off_t)-1)
-						Util::vlog("MpegTS::init: seek to aligned position fails");
-				}
-
 				Util::vlog("MpegTS: start find last pcr");
 				last_pcr_ms	= find_pcr_ms(direction_backward);
 
@@ -93,14 +96,14 @@ void MpegTS::init() throw(trap)
 		Util::vlog("MpegTS: find pcr done");
 	}
 
-	if(is_time_seekable)
-		lseek(fd, 0, SEEK_SET);
-	else
+	if(!is_time_seekable)
 	{
-		eof_offset		= -1;
 		first_pcr_ms	= -1;
 		last_pcr_ms		= -1;
 	}
+
+	if(lseek(fd, 0, SEEK_SET) == (off_t)-1)
+		Util::vlog("MpegTS::init: seek to sof fails");
 
 	//Util::vlog("first_pcr_ms = %d", first_pcr_ms);
 	//Util::vlog("last_pcr_ms = %d", last_pcr_ms);
@@ -605,9 +608,6 @@ off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
 	off_t		actual_offset;
 	off_t		new_offset;
 
-	if(!is_time_seekable)
-		throw(trap("MpegTS::seek: stream is not seekable"));
-
 	offset = ((offset / (off_t)sizeof(ts_packet_t)) * (off_t)sizeof(ts_packet_t));
 
 	if(lseek(fd, offset, whence) < 0)
@@ -627,7 +627,19 @@ off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
 	return(actual_offset);
 }
 
-off_t MpegTS::seek(int pts_ms) const throw(trap)
+off_t MpegTS::seek_pct(int pct) const throw(trap)
+{
+	off_t offset;
+
+	if((pct < 0) || (pct > 100))
+		throw(trap("MpegTS::seek_pct: value out of range"));
+
+	offset = (eof_offset / 100) * pct;
+
+	return(seek(SEEK_SET, offset));
+}
+
+off_t MpegTS::seek_time(int pts_ms) const throw(trap)
 {
 	int		h, m, s, ms;
 	int		attempt;

@@ -13,7 +13,7 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) throw(trap)
+FileStreaming::FileStreaming(string file, int socket_fd, int pct_offset, int time_offset_s) throw(trap)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -26,8 +26,11 @@ FileStreaming::FileStreaming(string file, int socket_fd, int time_offset_s) thro
 
 	MpegTS stream(file, time_offset_s > 0);
 
-	if(stream.is_time_seekable && (time_offset_s > 0))
-		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
+	if(pct_offset > 0)
+		stream.seek_pct(pct_offset);
+	else
+		if(stream.is_time_seekable && (time_offset_s > 0))
+			stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	Queue socket_queue(32 * 1024);
 

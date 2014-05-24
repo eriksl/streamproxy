@@ -16,7 +16,8 @@ using std::string;
 #include <poll.h>
 
 FileTranscoding::FileTranscoding(string file, int socket_fd,
-		int time_offset_s, string frame_size, string bitrate,
+		int pct_offset, int time_offset_s,
+		string frame_size, string bitrate,
 		string profile, string level, string bframes)
 		throw(trap)
 {
@@ -43,8 +44,11 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
 
-	if(stream.is_time_seekable && (time_offset_s > 0))
-		stream.seek((time_offset_s * 1000) + stream.first_pcr_ms);
+	if(pct_offset > 0)
+		stream.seek_pct(pct_offset);
+	else
+		if(stream.is_time_seekable && (time_offset_s > 0))
+			stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
 
 	for(it = pids.begin(); it != pids.end(); it++)
 		Util::vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);

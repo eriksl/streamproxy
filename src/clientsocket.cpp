@@ -51,7 +51,7 @@ ClientSocket::ClientSocket(int fd_in,
 		struct		pollfd pfd;
 		time_t		start;
 		string		webauth, user, password;
-		int			time_offset;
+		int			time_offset, pct_offset;
 		string		frame_size;
 		string		bitrate;
 		string		profile;
@@ -245,6 +245,11 @@ ClientSocket::ClientSocket(int fd_in,
 		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
 			Util::vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
 
+		if(urlparams.count("startpct"))
+			pct_offset = Util::string_to_int(urlparams["startpct"]);
+		else
+			pct_offset = 0;
+
 		if(urlparams.count("startfrom"))
 			time_offset = TimeOffset(urlparams["startfrom"]).as_seconds();
 		else
@@ -301,7 +306,8 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/filestream") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file streaming request");
-			(void)FileStreaming(urlparams["file"], fd, time_offset);
+			(void)FileStreaming(urlparams["file"], fd,
+					pct_offset, time_offset);
 			Util::vlog("ClientSocket: file streaming ends");
 
 			return;
@@ -310,7 +316,8 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd, time_offset, frame_size,
+			(void)FileTranscoding(urlparams["file"], fd,
+					pct_offset, time_offset, frame_size,
 					bitrate, profile, level, bframes);
 			Util::vlog("ClientSocket: file transcoding ends");
 
@@ -354,12 +361,14 @@ ClientSocket::ClientSocket(int fd_in,
 				if(default_action == action_stream)
 				{
 					Util::vlog("ClientSocket: streaming file");
-					(void)FileStreaming(urlparams["file"], fd, time_offset);
+					(void)FileStreaming(urlparams["file"], fd,
+							pct_offset, time_offset);
 				}
 				else
 				{
 					Util::vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd, time_offset, frame_size,
+					(void)FileTranscoding(urlparams["file"], fd,
+							pct_offset, time_offset, frame_size,
 							bitrate, profile, level, bframes);
 				}
 
