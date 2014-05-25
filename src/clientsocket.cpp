@@ -341,7 +341,7 @@ ClientSocket::ClientSocket(int fd_in,
 		{
 			Util::vlog("ClientSocket: file transcoding request");
 			(void)FileTranscoding(urlparams["file"], fd,
-					pct_offset, time_offset, frame_size,
+					byte_offset, pct_offset, time_offset, frame_size,
 					bitrate, profile, level, bframes);
 			Util::vlog("ClientSocket: file transcoding ends");
 
@@ -392,7 +392,7 @@ ClientSocket::ClientSocket(int fd_in,
 				{
 					Util::vlog("ClientSocket: transcoding file");
 					(void)FileTranscoding(urlparams["file"], fd,
-							pct_offset, time_offset, frame_size,
+							byte_offset, pct_offset, time_offset, frame_size,
 							bitrate, profile, level, bframes);
 				}
 

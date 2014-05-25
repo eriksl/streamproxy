@@ -16,7 +16,7 @@ using std::string;
 #include <poll.h>
 
 FileTranscoding::FileTranscoding(string file, int socket_fd,
-		int pct_offset, int time_offset_s,
+		off_t byte_offset, int pct_offset, int time_offset_s,
 		string frame_size, string bitrate,
 		string profile, string level, string bframes)
 		throw(trap)
@@ -27,31 +27,69 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	size_t			max_fill_socket = 0;
 	ssize_t			bytes_read;
 	struct pollfd	pfd[2];
+	off_t			file_offset = 0;
 	encoder_state_t	encoder_state;
-	string			httpok = "HTTP/1.0 200 OK\r\n"
-						"Connection: Close\r\n"
-						"Content-Type: video/mpeg\r\n"
-						"\r\n";
 	Queue			socket_queue(1024 * 1024);
-
-	Util::vlog("FileTranscoding: transcoding %s from %d", file.c_str(), time_offset_s);
-
-	encoder_buffer = new char[vuplus_magic_buffer_size];
+	const char *	http_ok			=	"HTTP/1.1 200 OK\r\n";
+	const char *	http_partial	=	"HTTP/1.1 206 Partial Content\r\n";
+	const char *	http_headers	=	"Connection: Close\r\n"
+										"Content-Type: video/mpeg\r\n"
+										"Server: Streamproxy\r\n"
+										"Accept-Ranges: bytes\r\n";
+	string			http_reply;
 
 	MpegTS stream(file, time_offset_s > 0);
+
+	Util::vlog("FileTrancoding: streaming file: %s", file.c_str());
+	Util::vlog("FileTrancoding: byte_offset: %llu / %llu (%llu %%)", byte_offset, stream.stream_length,
+			(byte_offset * 100) / stream.stream_length);
+	Util::vlog("FileTrancoding: pct_offset: %d", pct_offset);
+	Util::vlog("FileTrancoding: time_offset: %d", time_offset_s);
+
+	if(byte_offset > 0)
+	{
+		stream.seek_absolute(byte_offset);
+
+		// Lie to the client because it will never get the exact position it requests due to ts packet alignment.
+		// E.g. wget will refuse range operation this way. It won't hurt for viewing anyway.
+
+		file_offset = byte_offset;
+	}
+	else
+		if(pct_offset > 0)
+			file_offset = stream.seek_relative(pct_offset, 100);
+		else
+			if(stream.is_time_seekable && (time_offset_s > 0))
+				file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
+
+	Util::vlog("FileTranscoding: file_offset: %llu", file_offset);
+
+	if(file_offset > 0)
+		http_reply = http_partial;
+	else
+		http_reply = http_ok;
+
+	http_reply += http_headers;
+	http_reply += "Content-Length: " + Util::uint_to_string(stream.stream_length) + "\r\n";
+
+	if(file_offset > 0)
+		http_reply += string("Content-Range: bytes ") +
+			Util::uint_to_string(file_offset) + "-" +
+			Util::uint_to_string(stream.stream_length - 1) + "/" +
+			Util::uint_to_string(stream.stream_length) + "\r\n";
+
+	http_reply += "\r\n";
+
+	socket_queue.append(http_reply.length(), http_reply.c_str());
+
+	for(it = pids.begin(); it != pids.end(); it++)
+		Util::vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
+
+	encoder_buffer = new char[vuplus_magic_buffer_size];
 
 	pids["pmt"]		= stream.pmt_pid;
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
-
-	if(pct_offset > 0)
-		stream.seek_pct(pct_offset);
-	else
-		if(stream.is_time_seekable && (time_offset_s > 0))
-			stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
-
-	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
 	Encoder encoder(pids, frame_size, bitrate, profile, level, bframes);
 	encoder_pids = encoder.getpids();
@@ -63,8 +101,6 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 		throw(trap("FileTranscoding: transcoding: encoder: fd not open"));
 
 	encoder_state = state_initial;
-
-	socket_queue.append(httpok.length(), httpok.c_str());
 
 	for(;;)
 	{

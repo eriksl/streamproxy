@@ -5,6 +5,7 @@
 #include "trap.h"
 
 #include <string>
+#include <sys/types.h>
 
 class FileTranscoding
 {
@@ -30,7 +31,7 @@ class FileTranscoding
 	public:
 
 		FileTranscoding(std::string file, int socketfd,
-				int pct_offset, int time_offset_s,
+				off_t byte_offset, int pct_offset, int time_offset_s,
 				std::string frame_size,
 				std::string bitrate, std::string profile,
 				std::string level, std::string bframes)
