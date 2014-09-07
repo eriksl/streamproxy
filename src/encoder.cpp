@@ -28,7 +28,7 @@ Encoder::Encoder(const PidMap &pids_in,
 		stb_traits(stb_traits_in)
 {
 	size_t					feature_index;
-	const stb_feature_t		*feature;
+	const stb_feature_t		*feature = 0;
 	string					value;
 	int						int_value;
 	int						pmt = -1, video = -1, audio = -1;
