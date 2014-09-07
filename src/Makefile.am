@@ -14,6 +14,7 @@ streamproxy_SOURCES = \
 	mpegts.cpp \
 	queue.cpp \
 	service.cpp \
+	stbtraits.cpp \
 	streamproxy.cpp \
 	time_offset.cpp \
 	trap.cpp \

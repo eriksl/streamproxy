@@ -6,6 +6,8 @@
 
 #include "service.h"
 #include "configmap.h"
+#include "types.h"
+#include "stbtraits.h"
 
 #include <string>
 
@@ -31,9 +33,8 @@ class LiveTranscoding
 	public:
 
 		LiveTranscoding(const Service &service, int socketfd,
-				std::string webauth, std::string frame_size,
-				std::string bitrate, std::string profile,
-				std::string level, std::string bframes,
+				std::string webauth, const stb_traits_t &stb_traits,
+				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map)
 			throw(trap);
 };

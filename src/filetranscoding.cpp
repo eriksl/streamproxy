@@ -7,6 +7,9 @@
 #include "encoder.h"
 #include "types.h"
 #include "mpegts.h"
+#include "configmap.h"
+#include "time_offset.h"
+#include "stbtraits.h"
 
 #include <string>
 using std::string;
@@ -15,11 +18,9 @@ using std::string;
 #include <fcntl.h>
 #include <poll.h>
 
-FileTranscoding::FileTranscoding(string file, int socket_fd,
-		off_t byte_offset, int pct_offset, int time_offset_s,
-		string frame_size, string bitrate,
-		string profile, string level, string bframes)
-		throw(trap)
+FileTranscoding::FileTranscoding(string file, int socket_fd, string,
+		const stb_traits_t &stb_traits, const StreamingParameters &streaming_parameters,
+		const ConfigMap &) throw(trap)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -28,6 +29,9 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	ssize_t			bytes_read;
 	struct pollfd	pfd[2];
 	off_t			file_offset = 0;
+	int				time_offset_s = 0;
+	off_t			byte_offset = 0;
+	int				pct_offset = 0;
 	encoder_state_t	encoder_state;
 	Queue			socket_queue(1024 * 1024);
 	const char *	http_ok			=	"HTTP/1.1 200 OK\r\n";
@@ -37,6 +41,15 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 										"Server: Streamproxy\r\n"
 										"Accept-Ranges: bytes\r\n";
 	string			http_reply;
+
+	if(streaming_parameters.count("startfrom"))
+		time_offset_s = TimeOffset(streaming_parameters.at("startfrom")).as_seconds();
+
+	if(streaming_parameters.count("byte_offset"))
+		byte_offset = Util::string_to_uint(streaming_parameters.at("byte_offset"));
+
+	if(streaming_parameters.count("pct_offset"))
+		pct_offset = Util::string_to_uint(streaming_parameters.at("pct_offset"));
 
 	MpegTS stream(file, time_offset_s > 0);
 
@@ -91,7 +104,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd,
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
 
-	Encoder encoder(pids, frame_size, bitrate, profile, level, bframes);
+	Encoder encoder(pids, stb_traits, streaming_parameters);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)

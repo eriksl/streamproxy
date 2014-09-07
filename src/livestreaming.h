@@ -6,6 +6,7 @@
 
 #include "service.h"
 #include "configmap.h"
+#include "types.h"
 
 #include <string>
 
@@ -19,6 +20,7 @@ class LiveStreaming
 	public:
 
 		LiveStreaming(const Service &service, int socketfd, std::string webauth,
+				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map) throw(trap);
 };
 

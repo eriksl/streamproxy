@@ -6,6 +6,7 @@
 #include "util.h"
 #include "configmap.h"
 #include "enigma_settings.h"
+#include "stbtraits.h"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -17,6 +18,7 @@
 #include <string.h>
 #include <poll.h>
 #include <signal.h>
+#include <fcntl.h>
 #include <sys/wait.h>
 #include <sys/types.h>
 #include <sys/inotify.h>
@@ -99,6 +101,9 @@ int main(int argc, char *const argv[], char *const arge[])
 	bpo::options_description	options("Use single or multiple pairs of port_number:default_action either with --listen or positional");
 	ostringstream				convert;
 	int							inotify_fd = -1;
+	int							idfd;
+	char						idbuf[64];
+	size_t						idlength;
 
 	global_argv = argv;
 	global_arge = arge;
@@ -132,6 +137,9 @@ int main(int argc, char *const argv[], char *const arge[])
 		string									option_webifport = "80";
 		bool									option_webifauth = false;
 		ConfigMap								config_map;
+		size_t									stb, id;
+		const stb_traits_t						*stb_traits;
+		const stb_id_t							*traits_id;
 
 		positional_options.add("listen", -1);
 
@@ -139,13 +147,13 @@ int main(int argc, char *const argv[], char *const arge[])
 			("foreground,f",	bpo::bool_switch(&Util::foreground)->implicit_value(true),		"run in foreground (don't become a daemon)")
 			("group,g",			bpo::value<string>(&require_auth_group),						"require streaming users to be member of this group")
 			("listen,l",		bpo::value<StringVector>(&listen_parameters),					"listen to tcp port with default action")
-			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size (480p (default), 576p or 720p)")
-			("bitrate,b",		bpo::value<string>(&option_default_bitrate),					"default transcoding bit rate (100 - 10000 kbps)(default 500)")
-			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile (baseline (default), main, high)")
-			("level,L",			bpo::value<string>(&option_default_level),						"default transcoding h264 level (3.1 (default), 3.2, 4.0)")
-			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames (0 (default), 1 or 2)")
-			("webifport,a",		bpo::value<string>(&option_webifport),							"tcp port OpenWebIf is listening on (default, if not in enigma settings)")
-			("webifauth,c",		bpo::bool_switch(&option_webifauth)->implicit_value(true),		"whether OpenWebIf requires basic http authentication (default, if not in enigma settings)");
+			("size,s",			bpo::value<string>(&option_default_size),						"default transcoding frame size")
+			("bitrate,b",		bpo::value<string>(&option_default_bitrate),					"default transcoding bit rate")
+			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile")
+			("level,L",			bpo::value<string>(&option_default_level),						"default transcoding h264 level")
+			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames")
+			("webifport,a",		bpo::value<string>(&option_webifport),							"tcp port OpenWebIf is listening on")
+			("webifauth,c",		bpo::bool_switch(&option_webifauth)->implicit_value(true),		"whether OpenWebIf requires basic http authentication");
 
 		if(config_file)
 		{
@@ -178,6 +186,48 @@ int main(int argc, char *const argv[], char *const arge[])
 			config_map["webifport"] = ConfigValue(settings.as_string("config.OpenWebif.port"));
 		else
 			config_map["webifport"] = ConfigValue(option_webifport);
+
+		for(stb = 0; stb < stbs_traits.num_traits; stb++)
+		{
+			stb_traits = &stbs_traits.traits_entry[stb];
+			Util::vlog("Checking manufacturer/model: %s/%s", stb_traits->manufacturer, stb_traits->model);
+
+			for(id = 0; id < stb_traits->num_id; id++)
+			{
+				traits_id = &stb_traits->id[id];
+				Util::vlog("Checking id: %s = %s", traits_id->file, traits_id->content);
+
+				if((idfd = open(traits_id->file, O_RDONLY, 0)) < 0)
+				{
+					errno = 0;
+					break;
+				}
+
+				if((idlength = read(idfd, idbuf, sizeof(idbuf))) <= 0)
+				{
+					close(idfd);
+					break;
+				}
+
+				close(idfd);
+
+				idbuf[idlength] = '\0';
+
+				if((idlength > 0) && (idbuf[idlength - 1] == '\n'))
+					idbuf[idlength - 1] = '\0';
+
+				if(strcmp(idbuf, traits_id->content))
+					break;
+			}
+
+			if(id >= stb_traits->num_id)
+				break;
+		}
+
+		if(stb >= stbs_traits.num_traits)
+			throw(trap("cannot identify this model"));
+
+		Util::vlog("model identified as: %s %s (%s)", stb_traits->manufacturer, stb_traits->model, stb_traits->chipset);
 
 		for(it = listen_parameters.begin(); it != listen_parameters.end(); it++)
 		{
@@ -240,7 +290,6 @@ int main(int argc, char *const argv[], char *const arge[])
 			it2->second.accept_socket = new AcceptSocket(it2->first);
 			pfd[ix].fd		= it2->second.accept_socket->get_fd();
 			pfd[ix].events	= POLLIN;
-			//Util::vlog("> %s -> %s,%d\n", it2->first.c_str(), action_name[it2->second.default_action], it2->second.accept_socket->get_fd());
 		}
 
 		for(;;)
@@ -285,7 +334,7 @@ int main(int argc, char *const argv[], char *const arge[])
 					close(new_socket);
 				else
 				{
-					(void)ClientSocket(new_socket, it2->second.default_action, config_map);
+					(void)ClientSocket(new_socket, it2->second.default_action, config_map, *stb_traits);
 					_exit(0);
 				}
 
@@ -293,9 +342,9 @@ int main(int argc, char *const argv[], char *const arge[])
 			}
 		}
 	}
-	catch(const string &e)
+	catch(const trap &e)
 	{
-		fprintf(stderr, "streamproxy: %s\n", e.c_str());
+		fprintf(stderr, "streamproxy: %s\n", e.what());
 		exit(1);
 	}
 	catch(bpo::error &e)

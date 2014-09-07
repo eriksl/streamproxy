@@ -3,6 +3,8 @@
 
 #include "config.h"
 #include "trap.h"
+#include "types.h"
+#include "configmap.h"
 
 #include <string>
 #include <sys/types.h>
@@ -16,9 +18,9 @@ class FileStreaming
 
 	public:
 
-		FileStreaming(std::string file, int socketfd,
-				off_t byte_offset, int pct_offset, int time_offset_s)
-										throw(trap);
+		FileStreaming(std::string file, int socketfd, std::string webauth,
+				const StreamingParameters &streaming_parameters,
+				const ConfigMap &config_map) throw(trap);
 };
 
 #endif

@@ -4,6 +4,7 @@
 #include "config.h"
 #include "types.h"
 #include "configmap.h"
+#include "stbtraits.h"
 
 #include <string>
 
@@ -15,6 +16,7 @@ class WebRequest
 		const HeaderMap			&headers;
 		const CookieMap			&cookies;
 		const UrlParameterMap	&parameters;
+		const stb_traits_t		&stb_traits;
 
 		std::string page_info(std::string &mimetype)				const	throw();
 		std::string page_test_cookie(std::string &mimetype)			const	throw();
@@ -23,7 +25,8 @@ class WebRequest
 
 		WebRequest(const ConfigMap &config_map, const HeaderMap &headers,
 				const CookieMap &cookies,
-				const UrlParameterMap &parameters)							throw();
+				const UrlParameterMap &parameters,
+				const stb_traits_t &stb_traits)								throw();
 		std::string get(std::string &mimetype)						const	throw();
 };
 

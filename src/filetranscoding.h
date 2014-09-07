@@ -3,6 +3,9 @@
 
 #include "config.h"
 #include "trap.h"
+#include "types.h"
+#include "configmap.h"
+#include "stbtraits.h"
 
 #include <string>
 #include <sys/types.h>
@@ -30,12 +33,10 @@ class FileTranscoding
 
 	public:
 
-		FileTranscoding(std::string file, int socketfd,
-				off_t byte_offset, int pct_offset, int time_offset_s,
-				std::string frame_size,
-				std::string bitrate, std::string profile,
-				std::string level, std::string bframes)
-											throw(trap);
+		FileTranscoding(std::string file, int socketfd, std::string webauth,
+				const stb_traits_t &stb_traits_in,
+				const StreamingParameters &streaming_parameters,
+				const ConfigMap &config_map) throw(trap);
 		~FileTranscoding()					throw();
 };
 

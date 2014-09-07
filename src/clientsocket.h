@@ -5,6 +5,7 @@
 
 #include "types.h"
 #include "configmap.h"
+#include "stbtraits.h"
 
 #include <stdint.h>
 #include <string>
@@ -23,17 +24,24 @@ class ClientSocket
 		HeaderMap			headers;
 		CookieMap			cookies;
 		UrlParameterMap		urlparams;
-		const ConfigMap&	config_map;
+		const ConfigMap		&config_map;
+		const stb_traits_t	&stb_traits;
+		StreamingParameters	streaming_parameters;
 
 		ClientSocket();
 		ClientSocket(const ClientSocket &);
+
+		bool	get_feature_value(std::string, std::string,
+								std::string &, std::string &)	const	throw();
+		void	check_add_defaults_from_config()						throw();
+		void	check_add_urlparams()									throw();
+		void	add_default_params()									throw();
 
 		static const std::string	base64_chars;
 		static bool 				is_base64(uint8_t c);
 		static std::string			base64_decode(const std::string &in) throw();
 		static bool					validate_user(std::string user, std::string password,
 									std::string require_group) throw();
-
 	public:
 
 		typedef enum
@@ -44,7 +52,7 @@ class ClientSocket
 
 		ClientSocket(int fd,
 				default_streaming_action default_action,
-				const ConfigMap &config_map) throw();
+				const ConfigMap &config_map, const stb_traits_t &) throw();
 		~ClientSocket()	throw();
 };
 

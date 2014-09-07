@@ -4,6 +4,7 @@
 #include "types.h"
 #include "configmap.h"
 #include "util.h"
+#include "stbtraits.h"
 
 #include <string>
 using std::string;
@@ -15,9 +16,11 @@ using std::string;
 #include <string.h>
 
 WebRequest::WebRequest(const ConfigMap &config_map_in, const HeaderMap &headers_in,
-		const CookieMap &cookies_in, const UrlParameterMap &parameters_in) throw()
+		const CookieMap &cookies_in, const UrlParameterMap &parameters_in,
+		const stb_traits_t &stb_traits_in) throw()
 	:
-		config_map(config_map_in), headers(headers_in), cookies(cookies_in), parameters(parameters_in)
+		config_map(config_map_in), headers(headers_in), cookies(cookies_in), parameters(parameters_in),
+		stb_traits(stb_traits_in)
 {
 }
 
@@ -102,6 +105,77 @@ string WebRequest::page_info(string &mimetype) const throw()
 			data += "		<urlparameter id=\"" + itpm->first + "\">" + itpm->second + "</urlparameter>\n";
 
 		data += "	</urlparameters>\n";
+		data += "   <traits>\n";
+		data += string("        <manufacturer>") + stb_traits.manufacturer + "</manufacturer>\n";
+		data += string("        <model>") + stb_traits.model + "</model>\n";
+		data += string("        <chipset>") + stb_traits.chipset + "</chipset>\n";
+		data += string("        <encoders>") + Util::int_to_string(stb_traits.encoders) + "</encoders>\n";
+		data += "        <features>\n";
+
+		for(unsigned int feature_index = 0; feature_index < stb_traits.num_features; feature_index++)
+		{
+			const stb_feature_t *feature = &stb_traits.features[feature_index];
+
+			data += string("            <feature_entry id=\"") + feature->id + "\">\n";
+			data += string("<settable>") + (feature->settable ? "yes" : "no") + "</settable>\n";
+			data += string("<description>") + feature->description + "</description>\n";
+			data += string("<proc_entry>") + feature->api_data + "</proc_entry>\n";
+
+			switch(feature->type)
+			{
+				case(stb_traits_type_bool):
+				{
+					data += string("<default>") + (feature->value.bool_type.default_value ? "yes" : "no") + "</default>";
+					break;
+				}
+
+				case(stb_traits_type_int):
+				{
+					data += "<type>integer</type>";
+					data += string("<default>") + Util::int_to_string(feature->value.int_type.default_value) + "</default>";
+					data += string("<min>") + Util::int_to_string(feature->value.int_type.min_value) + "</min>";
+					data += string("<max>") + Util::int_to_string(feature->value.int_type.max_value) + "</max>";
+					break;
+				}
+
+				case(stb_traits_type_string):
+				{
+					data += "<type>string</type>";
+					data += string("<default>") + feature->value.string_type.default_value + "</default>";
+					data += string("<min>") + Util::int_to_string(feature->value.string_type.min_length) + "</min>";
+					data += string("<max>") + Util::int_to_string(feature->value.string_type.max_length) + "</max>";
+					break;
+				}
+
+				case(stb_traits_type_string_enum):
+				{
+					const char * const * enum_values = feature->value.string_enum_type.enum_values;
+
+					data += string("<type>enum</type>");
+					data += string("<default>") + feature->value.string_enum_type.default_value + "</default>";
+					data += "<values>";
+
+					for(int enum_index = 0; (enum_index < 16) && enum_values[enum_index]; enum_index++)
+						data += "<value id=\"" + string(enum_values[enum_index]) + "\"/>";
+
+					data += "</values>";
+
+					break;
+				}
+
+				default:
+				{
+					data += "<type>unknown</type>";
+
+					break;
+				}
+			}
+
+			data += "</feature_entry>\n";
+		}
+
+		data += "        </features>\n";
+		data += "    </traits>\n";
 		data += "</streamproxy>\n";
 	}
 	else
@@ -148,6 +222,75 @@ string WebRequest::page_info(string &mimetype) const throw()
 
 		for(itpm = parameters.begin(); itpm != parameters.end(); itpm++)
 			data += "		<tr><td>" + itpm->first + "</td><td>" + itpm->second + "</td></tr>\n";
+
+		data += "	</table>\n";
+		data += "</div>\n";
+
+		data += "<div style=\"margin: 12px 0px 0px 0px;\">\n";
+		data += "	<table border=\"1\">\n";
+		data += "		<tr><th colspan=\"9\">stb features</th></tr>\n";
+		data += "       <tr><th colspan=\"2\">manufacturer</th><th colspan=\"2\">model</th><th colspan=\"2\">chipset</th><th colspan=\"2\">encoders</th>\n";
+		data += "       ";
+		data += string("<tr><td colspan=\"2\">") + stb_traits.manufacturer + "</td><td colspan=\"2\">" + stb_traits.model + "</td>";
+		data += string("<td colspan=\"2\">") + stb_traits.chipset + "</td><td colspan=\"2\">" + Util::int_to_string(stb_traits.encoders) + "</td></tr>";
+		data += "		<tr><th>name</th><th>settable</th><th>description</th><th>proc entry</th>\n";
+		data += "		    <th>type</th><th>default</th><th>min-max/choices</th></tr>\n";
+
+		for(unsigned int feature_index = 0; feature_index < stb_traits.num_features; feature_index++)
+		{
+			const stb_feature_t *feature = &stb_traits.features[feature_index];
+			data += string("		<tr><td>") + feature->id + "</td><td>" + (feature->settable ? "yes" : "no") + "</td>";
+			data += string("<td>") + feature->description + "</td><td>" + feature->api_data + "</td>";
+
+			switch(feature->type)
+			{
+				case(stb_traits_type_bool):
+				{
+					data += string("<td>bool</td><td>") + (feature->value.bool_type.default_value ? "yes" : "no") + "</td>";
+					break;
+				}
+
+				case(stb_traits_type_int):
+				{
+					data += string("<td>integer</td><td>") + Util::int_to_string(feature->value.int_type.default_value) + "</td>";
+					data += string("<td>") + Util::int_to_string(feature->value.int_type.min_value);
+					data += string("-") + Util::int_to_string(feature->value.int_type.max_value) + "</td>";
+					break;
+				}
+
+				case(stb_traits_type_string):
+				{
+					data += string("<td>string</td><td>") + feature->value.string_type.default_value + "</td>";
+					data += string("<td>") + Util::int_to_string(feature->value.string_type.min_length);
+					data += string("-") + Util::int_to_string(feature->value.string_type.max_length) + "</td>";
+					break;
+				}
+
+				case(stb_traits_type_string_enum):
+				{
+					const char * const * enum_values = feature->value.string_enum_type.enum_values;
+
+					data += string("<td>enum</td><td>") + feature->value.string_enum_type.default_value + "</td>";
+					data += "<td>";
+
+					for(int enum_index = 0; (enum_index < 16) && enum_values[enum_index]; enum_index++)
+						data += string(enum_values[enum_index]) + "&nbsp;";
+
+					data += "</td>";
+
+					break;
+				}
+
+				default:
+				{
+					data += "<td>unknown!</td>";
+
+					break;
+				}
+			}
+
+			data += "</tr>\n";
+		}
 
 		data += "	</table>\n";
 		data += "</div>\n";

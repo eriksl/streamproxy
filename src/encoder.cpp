@@ -5,6 +5,7 @@
 #include "encoder.h"
 #include "demuxer.h"
 #include "util.h"
+#include "stbtraits.h"
 
 #include <string>
 using std::string;
@@ -17,17 +18,22 @@ using std::string;
 #include <poll.h>
 #include <string.h>
 #include <dirent.h>
+#include <stdlib.h>
 
-Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
-		string profile, string level, string bframes) throw(trap)
+Encoder::Encoder(const PidMap &pids_in,
+		const stb_traits_t &stb_traits_in,
+		const StreamingParameters &streaming_parameters_in) throw(trap)
+	:
+		streaming_parameters(streaming_parameters_in),
+		stb_traits(stb_traits_in)
 {
-	PidMap::const_iterator	it;
-	PidMap::iterator		it2;
+	size_t					feature_index;
+	const stb_feature_t		*feature;
+	string					value;
+	int						int_value;
 	int						pmt = -1, video = -1, audio = -1;
 	string	encoder_device;
 	int		encoder;
-	int		tbr;
-	int		bf;
 	DIR		*rootdir, *dir;
 	struct dirent *rootdirent, *dirent;
 	string	fdfile;
@@ -39,11 +45,13 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	start_thread_joined		= true;
 	stopped					= false;
 
-	for(it = pids_in.begin(); it != pids_in.end(); it++)
+	for(PidMap::const_iterator it(pids_in.begin()); it != pids_in.end(); it++)
 	{
 		if((it->first != "pat") && (it->first != "pmt") &&
 				(it->first != "audio") && (it->first != "video"))
 			continue;
+
+		PidMap::iterator it2;
 
 		for(it2 = pids.begin(); it2 != pids.end(); it2++)
 			if(it2->second == it->second)
@@ -121,40 +129,120 @@ Encoder::Encoder(const PidMap &pids_in, string frame_size, string bitrate,
 	else
 		id = 0;
 
-	if((frame_size == "480p") || (frame_size == "576p") ||
-			(frame_size == "720p"))
-		setprop("display_format", frame_size);
-	else
-		setprop("display_format", "480p");
+	for(StreamingParameters::const_iterator it(streaming_parameters.begin()); it != streaming_parameters.end(); it++)
+	{
+		for(feature_index = 0; feature_index < stb_traits.num_features; feature_index++)
+		{
+			feature = &stb_traits.features[feature_index];
 
-	tbr = Util::string_to_int(bitrate);
+			if(it->first == feature->id)
+				break;
+		}
 
-	if((tbr >= 100) && (tbr <= 10000))
-		tbr *= 1000;
-	else
-		if(tbr != -1)
-			tbr = 1000 * 1000;
+		if(feature_index >= stb_traits.num_features)
+		{
+			Util::vlog("Encoder: no stb traits/feature entry for streaming parameter \"%s\"", it->first.c_str());
+			continue;
+		}
 
-	Util::vlog("Encoder: bitrate: %s/%d", bitrate.c_str(), tbr);
+		Util::vlog("Encoder: found streaming parameter == stb_feature: \"%s\" [%s]", it->first.c_str(), it->second.c_str());
 
-	setprop("bitrate", Util::int_to_string(tbr));
+		if(!feature->settable)
+		{
+			Util::vlog("Encoder: feature not settable, skip");
+			continue;
+		}
 
-	if((profile == "baseline") || (profile == "main") || (profile == "high"))
-		setprop("profile", profile);
-	else
-		setprop("profile", "baseline");
+		switch(feature->type)
+		{
+			case(stb_traits_type_bool):
+			{
+				if((it->second == "off") || (it->second == "false") || (it->second == "0"))
+					value = "off";
+				else
+					if((it->second == "on") || (it->second == "true") || (it->second == "1"))
+						value = "on";
+					else
+					{
+						Util::vlog("Encoder: invalid bool value: \"\%s\"", it->second.c_str());
+						continue;
+					}
 
-	if((level == "3.1") || (level == "3.2") || (level == "4.0"))
-		setprop("level", level);
-	else
-		setprop("level", "3.1");
+				break;
+			}
 
-	bf = Util::string_to_int(bframes);
+			case(stb_traits_type_int):
+			{
+				int_value = strtol(it->second.c_str(), 0, 0);
 
-	if((bf >= 0) && (bf <= 2))
-		setprop("gop_frameb", Util::int_to_string(bf));
-	else
-		setprop("gop_frameb", "0");
+				if(int_value < feature->value.int_type.min_value)
+				{
+					Util::vlog("Encoder: integer value %s too small (%d)",
+							it->second.c_str(), feature->value.int_type.min_value);
+					continue;
+				}
+
+				if(int_value > feature->value.int_type.max_value)
+				{
+					Util::vlog("Encoder: integer value %s too large (%d)",
+							it->second.c_str(), feature->value.int_type.max_value);
+					continue;
+				}
+
+				int_value *= feature->value.int_type.scaling_factor;
+				value = Util::int_to_string(int_value);
+
+				break;
+			}
+
+			case(stb_traits_type_string):
+			{
+				if(it->second.length() < feature->value.string_type.min_length)
+				{
+					Util::vlog("Encoder: string value %s too short (%d)",
+							it->second.c_str(), feature->value.string_type.min_length);
+					continue;
+				}
+
+				if(it->second.length() > feature->value.string_type.max_length)
+				{
+					Util::vlog("Encoder: string value %s too long (%d)",
+							it->second.c_str(), feature->value.string_type.max_length);
+					continue;
+				}
+
+				value = it->second;
+
+				break;
+			}
+
+			case(stb_traits_type_string_enum):
+			{
+				const char * const *enum_value;
+
+				for(enum_value = feature->value.string_enum_type.enum_values; *enum_value != 0; enum_value++)
+					if(it->second == *enum_value)
+						break;
+
+				if(!*enum_value)
+				{
+					Util::vlog("Encoder: invalid enum value: \"%s\"", it->second.c_str());
+					continue;
+				}
+
+				value = *enum_value;
+
+				break;
+			}
+
+			default:
+			{
+				throw(trap("Encoder: unknown feature type"));
+			}
+		}
+
+		setprop(feature->api_data, value);
+	}
 
 	encoder_device = string("/dev/bcm_enc") + Util::int_to_string(id);
 
@@ -335,7 +423,7 @@ string Encoder::getprop(string property) const throw()
 	return(tmp);
 }
 
-void Encoder::setprop(string property, string value) const throw()
+void Encoder::setprop(const string &property, const string &value) const throw()
 {
 	int		procfd;
 	string	path;

@@ -3,6 +3,7 @@
 
 #include "config.h"
 #include "trap.h"
+#include "stbtraits.h"
 
 #include "types.h"
 #include <string>
@@ -24,26 +25,28 @@ class Encoder
 		Encoder();
 		Encoder(const Encoder &);
 
-		pthread_t	start_thread;
-		bool		start_thread_running;
-		bool		start_thread_joined;
-		bool		stopped;
-		int			fd;
-		int			id;
-		PidMap		pids;
+		pthread_t					start_thread;
+		bool						start_thread_running;
+		bool						start_thread_joined;
+		bool						stopped;
+		int							fd;
+		int							id;
+		PidMap						pids;
+		const StreamingParameters	&streaming_parameters;
+		const stb_traits_t			&stb_traits;
 
 		static void* start_thread_function(void *);
 
 	public:
 
-		Encoder(const PidMap &, std::string frame_size,
-				std::string bitrate, std::string profile,
-				std::string level, std::string bframes)
-				throw(trap);
+		Encoder(const PidMap &,
+				const stb_traits_t &,
+				const StreamingParameters &)					throw(trap);
 		~Encoder()												throw();
 
 		std::string	getprop(std::string)				const	throw();
-		void		setprop(std::string, std::string)	const	throw();
+		void		setprop(const std::string &,
+							const std::string &)		const	throw();
 
 		bool		start_init()								throw();
 		bool		start_finish()								throw();

@@ -5,6 +5,7 @@
 #include "util.h"
 #include "queue.h"
 #include "mpegts.h"
+#include "time_offset.h"
 
 #include <unistd.h>
 #include <poll.h>
@@ -14,8 +15,9 @@
 #include <string>
 using std::string;
 
-FileStreaming::FileStreaming(string file, int socket_fd,
-		off_t byte_offset, int pct_offset, int time_offset_s) throw(trap)
+FileStreaming::FileStreaming(string file, int socket_fd, string,
+		const StreamingParameters &streaming_parameters,
+		const ConfigMap &) throw(trap)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;
@@ -28,6 +30,18 @@ FileStreaming::FileStreaming(string file, int socket_fd,
 										"Accept-Ranges: bytes\r\n";
 	string			http_reply;
 	Queue			socket_queue(32 * 1024);
+	int				time_offset_s = 0;
+	off_t			byte_offset = 0;
+	int				pct_offset = 0;
+
+	if(streaming_parameters.count("startfrom"))
+		time_offset_s = TimeOffset(streaming_parameters.at("startfrom")).as_seconds();
+
+	if(streaming_parameters.count("byte_offset"))
+		byte_offset = Util::string_to_uint(streaming_parameters.at("byte_offset"));
+
+	if(streaming_parameters.count("pct_offset"))
+		pct_offset = Util::string_to_uint(streaming_parameters.at("pct_offset"));
 
 	MpegTS stream(file, time_offset_s > 0);
 	

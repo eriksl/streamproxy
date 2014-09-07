@@ -101,7 +101,25 @@ double Util::string_to_float(string in) throw()
 	return(rv);
 }
 
-int Util::string_to_int(string in) throw()
+int64_t Util::string_to_int(string in) throw()
+{
+	stringstream	conv;
+	int				rv;
+
+	try
+	{
+		conv.str(in);
+		conv >> rv;
+	}
+	catch(...)
+	{
+		return(-1);
+	}
+
+	return(rv);
+}
+
+uint64_t Util::string_to_uint(string in) throw()
 {
 	stringstream	conv;
 	int				rv;

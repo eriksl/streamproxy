@@ -100,7 +100,7 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-livestreaming.$(OBJEXT) \
 	streamproxy-livetranscoding.$(OBJEXT) \
 	streamproxy-mpegts.$(OBJEXT) streamproxy-queue.$(OBJEXT) \
-	streamproxy-service.$(OBJEXT) \
+	streamproxy-service.$(OBJEXT) streamproxy-stbtraits.$(OBJEXT) \
 	streamproxy-streamproxy.$(OBJEXT) \
 	streamproxy-time_offset.$(OBJEXT) streamproxy-trap.$(OBJEXT) \
 	streamproxy-url.$(OBJEXT) streamproxy-util.$(OBJEXT) \
@@ -275,6 +275,7 @@ streamproxy_SOURCES = \
 	mpegts.cpp \
 	queue.cpp \
 	service.cpp \
+	stbtraits.cpp \
 	streamproxy.cpp \
 	time_offset.cpp \
 	trap.cpp \
@@ -385,6 +386,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-queue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-stbtraits.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-streamproxy.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-time_offset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-trap.Po@am__quote@
@@ -588,6 +590,20 @@ streamproxy-service.obj: service.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='service.cpp' object='streamproxy-service.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-service.obj `if test -f 'service.cpp'; then $(CYGPATH_W) 'service.cpp'; else $(CYGPATH_W) '$(srcdir)/service.cpp'; fi`
+
+streamproxy-stbtraits.o: stbtraits.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-stbtraits.o -MD -MP -MF $(DEPDIR)/streamproxy-stbtraits.Tpo -c -o streamproxy-stbtraits.o `test -f 'stbtraits.cpp' || echo '$(srcdir)/'`stbtraits.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-stbtraits.Tpo $(DEPDIR)/streamproxy-stbtraits.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='stbtraits.cpp' object='streamproxy-stbtraits.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-stbtraits.o `test -f 'stbtraits.cpp' || echo '$(srcdir)/'`stbtraits.cpp
+
+streamproxy-stbtraits.obj: stbtraits.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-stbtraits.obj -MD -MP -MF $(DEPDIR)/streamproxy-stbtraits.Tpo -c -o streamproxy-stbtraits.obj `if test -f 'stbtraits.cpp'; then $(CYGPATH_W) 'stbtraits.cpp'; else $(CYGPATH_W) '$(srcdir)/stbtraits.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-stbtraits.Tpo $(DEPDIR)/streamproxy-stbtraits.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='stbtraits.cpp' object='streamproxy-stbtraits.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-stbtraits.obj `if test -f 'stbtraits.cpp'; then $(CYGPATH_W) 'stbtraits.cpp'; else $(CYGPATH_W) '$(srcdir)/stbtraits.cpp'; fi`
 
 streamproxy-streamproxy.o: streamproxy.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-streamproxy.o -MD -MP -MF $(DEPDIR)/streamproxy-streamproxy.Tpo -c -o streamproxy-streamproxy.o `test -f 'streamproxy.cpp' || echo '$(srcdir)/'`streamproxy.cpp

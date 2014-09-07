@@ -10,6 +10,7 @@
 #include "encoder.h"
 #include "configmap.h"
 #include "livetranscoding.h"
+#include "stbtraits.h"
 
 #include <string>
 using std::string;
@@ -20,8 +21,8 @@ using std::string;
 #include <time.h>
 
 LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
-		string webauth, string frame_size, string bitrate,
-		string profile, string level, string bframes,
+		string webauth, const stb_traits_t &stb_traits,
+		const StreamingParameters &streaming_parameters,
 		const ConfigMap &config_map) throw(trap)
 {
 	PidMap::const_iterator it;
@@ -76,7 +77,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	for(it = pids.begin(); it != pids.end(); it++)
 		Util::vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
-	Encoder encoder(pids, frame_size, bitrate, profile, level, bframes);
+	Encoder encoder(pids, stb_traits, streaming_parameters);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)

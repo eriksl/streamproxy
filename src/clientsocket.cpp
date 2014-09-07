@@ -9,9 +9,9 @@
 #include "filetranscoding.h"
 #include "util.h"
 #include "url.h"
-#include "time_offset.h"
 #include "types.h"
 #include "webrequest.h"
+#include "stbtraits.h"
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -34,9 +34,11 @@ using std::string;
 
 ClientSocket::ClientSocket(int fd_in,
 		default_streaming_action default_action,
-		const ConfigMap &config_map_in) throw()
+		const ConfigMap &config_map_in,
+		const stb_traits_t &stb_traits_in) throw()
 	:
-		fd(fd_in), config_map(config_map_in)
+		fd(fd_in), config_map(config_map_in),
+		stb_traits(stb_traits_in)
 {
 	const char *http_error_headers =
 		"Content-Type: text/html\r\n"
@@ -45,34 +47,25 @@ ClientSocket::ClientSocket(int fd_in,
 		"\r\n";
 
 	string	reply, message;
-
 	try
 	{
-		static		char read_buffer[1024];
-		ssize_t		bytes_read;
-		size_t		idx = string::npos;
-		string		header, cookie, value;
-		struct		pollfd pfd;
-		time_t		start;
-		string		webauth, user, password;
-		int			time_offset, pct_offset;
-		string		range_header;
-		off_t		byte_offset;
-		string		frame_size;
-		string		bitrate;
-		string		profile;
-		string		level;
-		string		bframes;
-		string		mimetype;
+		static char			read_buffer[1024];
+		ssize_t				bytes_read;
+		size_t				idx = string::npos;
+		string				header, cookie, value;
+		struct				pollfd pfd;
+		time_t				start;
+		string				webauth, user, password;
+		string				range_header;
+		string				mimetype;
+		stringvector		lines;
+		stringvector		tokens;
 
-		stringvector lines;
-		stringvector tokens;
 		stringvector::iterator it1;
 		stringvector::const_iterator it2;
-
 		HeaderMap::const_iterator headit;
 		CookieMap::const_iterator cookit;
-		UrlParameterMap::const_iterator param_it;
+		StreamingParameters::const_iterator spit;
 
 		int arg1;
 
@@ -238,8 +231,6 @@ ClientSocket::ClientSocket(int fd_in,
 				throw(http_trap("Invalid authentication", 403, "Forbidden, invalid authentication"));
 		}
 
-		byte_offset = -1;
-
 		if(headers.count("range"))
 		{
 			range_header = headers.at("range");
@@ -249,12 +240,9 @@ ClientSocket::ClientSocket(int fd_in,
 				range_header = range_header.substr(6);
 
 				if(range_header.find('-') == (range_header.length() - 1))
-					byte_offset = Util::string_to_int(range_header);
+					streaming_parameters["byte_offset"] = range_header;
 			}
 		}
-
-		if(byte_offset >= 0)
-			Util::vlog("ClientSocket: range requested from: %lld", byte_offset);
 
 		for(headit = headers.begin(); headit != headers.end(); headit++)
 			Util::vlog("ClientSocket: header[%s]: \"%s\"", headit->first.c_str(), headit->second.c_str());
@@ -266,50 +254,34 @@ ClientSocket::ClientSocket(int fd_in,
 
 		urlparams = Url(url).split();
 
-		for(param_it = urlparams.begin(); param_it != urlparams.end(); param_it++)
-			Util::vlog("ClientSocket: parameter[%s] = \"%s\"", param_it->first.c_str(), param_it->second.c_str());
+		Util::vlog("\nclientsocket: streaming parameters before defaults from config:");
+		for(spit = streaming_parameters.begin(); spit != streaming_parameters.end(); spit++)
+			Util::vlog("    %s = %s\n", spit->first.c_str(), spit->second.c_str());
 
-		if(urlparams.count("startpct"))
-			pct_offset = Util::string_to_int(urlparams["startpct"]);
-		else
-			pct_offset = 0;
+		check_add_defaults_from_config();
 
-		if(urlparams.count("startfrom"))
-			time_offset = TimeOffset(urlparams["startfrom"]).as_seconds();
-		else
-			time_offset = 0;
+		Util::vlog("\nclientsocket: streaming parameters after defaults:");
+		for(spit = streaming_parameters.begin(); spit != streaming_parameters.end(); spit++)
+			Util::vlog("    %s = %s", spit->first.c_str(), spit->second.c_str());
 
-		frame_size = config_map.at("size").string_value;
+		check_add_urlparams();
 
-		if(urlparams.count("size"))
-			frame_size = urlparams["size"];
+		Util::vlog("\nclientsocket: streaming parameters after url params:");
+		for(spit = streaming_parameters.begin(); spit != streaming_parameters.end(); spit++)
+			Util::vlog("    %s = %s", spit->first.c_str(), spit->second.c_str());
 
-		bitrate = config_map.at("bitrate").string_value;
+		add_default_params();
 
-		if(urlparams.count("bitrate"))
-			bitrate = urlparams["bitrate"];
-
-		profile = config_map.at("profile").string_value;
-
-		if(urlparams.count("profile"))
-			profile = urlparams["profile"];
-
-		level = config_map.at("level").string_value;
-
-		if(urlparams.count("level"))
-			level = urlparams["level"];
-
-		bframes = config_map.at("bframes").string_value;
-
-		if(urlparams.count("bframes"))
-			bframes = urlparams["bframes"];
+		Util::vlog("\nclientsocket: streaming parameters after setting default params:");
+		for(spit = streaming_parameters.begin(); spit != streaming_parameters.end(); spit++)
+			Util::vlog("    %s = %s", spit->first.c_str(), spit->second.c_str());
 
 		if((urlparams[""] == "/livestream") && urlparams.count("service"))
 		{
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live streaming request");
-			(void)LiveStreaming(service, fd, webauth, config_map);
+			(void)LiveStreaming(service, fd, webauth, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: live streaming ends");
 
 			return;
@@ -320,8 +292,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscoding(service, fd, webauth, frame_size,
-					bitrate, profile, level, bframes, config_map);
+			(void)LiveTranscoding(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -330,8 +301,7 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/filestream") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file streaming request");
-			(void)FileStreaming(urlparams["file"], fd,
-					byte_offset, pct_offset, time_offset);
+			(void)FileStreaming(urlparams["file"], fd, webauth, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: file streaming ends");
 
 			return;
@@ -340,9 +310,7 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd,
-					byte_offset, pct_offset, time_offset, frame_size,
-					bitrate, profile, level, bframes);
+			(void)FileTranscoding(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: file transcoding ends");
 
 			return;
@@ -359,7 +327,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Util::vlog("ClientSocket: request for web");
 
 			string data;
-			WebRequest webrequest(config_map, headers, cookies, urlparams);
+			WebRequest webrequest(config_map, headers, cookies, urlparams, stb_traits);
 
 			data = webrequest.get(mimetype);
 
@@ -385,15 +353,12 @@ ClientSocket::ClientSocket(int fd_in,
 				if(default_action == action_stream)
 				{
 					Util::vlog("ClientSocket: streaming file");
-					(void)FileStreaming(urlparams["file"], fd,
-							byte_offset, pct_offset, time_offset);
+					(void)FileStreaming(urlparams["file"], fd, webauth, streaming_parameters, config_map);
 				}
 				else
 				{
 					Util::vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd,
-							byte_offset, pct_offset, time_offset, frame_size,
-							bitrate, profile, level, bframes);
+					(void)FileTranscoding(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 				}
 
 				Util::vlog("ClientSocket: default file ends");
@@ -411,13 +376,12 @@ ClientSocket::ClientSocket(int fd_in,
 					if(default_action == action_stream)
 					{
 						Util::vlog("ClientSocket: streaming service");
-						(void)LiveStreaming(service, fd, webauth, config_map);
+						(void)LiveStreaming(service, fd, webauth, streaming_parameters, config_map);
 					}
 					else
 					{
 						Util::vlog("ClientSocket: transcoding service");
-						(void)LiveTranscoding(service, fd, webauth, frame_size,
-							bitrate, profile, level, bframes, config_map);
+						(void)LiveTranscoding(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 					}
 
 					Util::vlog("ClientSocket: default live ends");
@@ -615,4 +579,223 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 	encrypted = crypt(password.c_str(), pw_password.c_str());
 
 	return(encrypted == pw_password);
+}
+
+bool ClientSocket::get_feature_value(string feature_name, string value_in, string &value_out, string &api_data) const throw()
+{
+	const stb_feature_t *feature = 0;
+	size_t				feature_idx;
+
+	for(feature_idx = 0; feature_idx < stb_traits.num_features; feature_idx++)
+	{
+		feature = &stb_traits.features[feature_idx];
+
+		if((feature_name == feature->id) && feature->settable)
+			break;
+	}
+
+	if(feature_idx >= stb_traits.num_features)
+		return(false);
+
+	if(feature->api_data)
+		api_data = feature->api_data;
+
+	switch(feature->type)
+	{
+		case(stb_traits_type_bool):
+		{
+			if((value_in == "false") || (value_in == "off") || (value_in == "0"))
+				value_out = "0";
+			else
+				if((value_in == "true") || (value_in == "on") || (value_in == "1"))
+					value_out = "1";
+				else
+					return(false);
+
+			return(true);
+		}
+
+		case(stb_traits_type_int):
+		{
+			int64_t value = Util::string_to_int(value_in);
+
+			if((feature->value.int_type.min_value <= value) && (value <= feature->value.int_type.max_value))
+			{
+				value_out = Util::int_to_string(value);
+				return(true);
+			}
+
+			return(false);
+		}
+
+		case(stb_traits_type_string):
+		{
+			if((feature->value.string_type.min_length <= value_in.length()) && (value_in.length() <= feature->value.string_type.max_length))
+			{
+				value_out = value_in;
+				return(true);
+			}
+
+			return(false);
+		}
+
+		case(stb_traits_type_string_enum):
+		{
+			int			item_ix;
+			const char	*item;
+
+			for(item_ix = 0; item_ix < 64; item_ix++)
+			{
+				if(!(item = feature->value.string_enum_type.enum_values[item_ix]))
+					break;
+
+				if(value_in == item)
+					break;
+			}
+
+			if(item)
+			{
+				value_out = item;
+				return(true);
+			}
+
+			return(false);
+		}
+	}
+
+	return(false);
+}
+
+void ClientSocket::check_add_defaults_from_config() throw()
+{
+	ConfigMap::const_iterator	it;
+	string						value_out;
+	string						api_data;
+
+	for(it = config_map.begin(); it != config_map.end(); it++)
+	{
+		if(get_feature_value(it->first, it->second.string_value, value_out, api_data))
+		{
+			streaming_parameters[it->first] = value_out;
+			Util::vlog("clientsocket: accept config default %s = %s", it->first.c_str(), it->second.string_value.c_str());
+		}
+		else
+			Util::vlog("clientsocket: reject config default %s = %s", it->first.c_str(), it->second.string_value.c_str());
+	}
+}
+
+void ClientSocket::add_default_params() throw()
+{
+	const stb_feature_t *feature = 0;
+	size_t				feature_idx;
+	string				value;
+
+	for(feature_idx = 0; feature_idx < stb_traits.num_features; feature_idx++)
+	{
+		feature = &stb_traits.features[feature_idx];
+
+		if(!feature->settable)
+			continue;
+
+		if(streaming_parameters.count(feature->id))
+		{
+			Util::vlog("clientsocket: reject default %s, it is already set to %s",
+					feature->id, streaming_parameters.at(feature->id).c_str());
+		}
+		else
+		{
+			switch(feature->type)
+			{
+				case(stb_traits_type_bool):
+				{
+					if(feature->value.bool_type.default_value)
+						value = "on";
+					else
+						value = "off";
+
+					break;
+				}
+
+				case(stb_traits_type_int):
+				{
+					value = Util::int_to_string(feature->value.int_type.default_value);
+
+					break;
+				}
+
+				case(stb_traits_type_string):
+				{
+					value = feature->value.string_type.default_value;
+
+					break;
+				}
+
+				case(stb_traits_type_string_enum):
+				{
+					value = feature->value.string_enum_type.default_value;
+
+					break;
+				}
+
+				default:
+				{
+					value = "<unknown>";
+
+					break;
+				}
+			}
+
+			Util::vlog("clientsocket: accept default %s = %s",
+					feature->id, value.c_str());
+
+			streaming_parameters[feature->id] = value;
+		}
+	}
+}
+
+void ClientSocket::check_add_urlparams() throw()
+{
+	UrlParameterMap::const_iterator	it;
+	string							value;
+	string							value_out;
+	string							api_data;
+
+	for(it = urlparams.begin(); it != urlparams.end(); it++)
+	{
+		if(it->first == "")
+			continue;
+
+		Util::vlog("clientsocket: get parameter[%s] = \"%s\"", it->first.c_str(), it->second.c_str());
+
+		if((it->first == "startfrom") || (it->first == "startpct") ||
+				(it->first == "startpos"))
+		{
+			streaming_parameters[it->first] = it->second;
+
+			Util::vlog("ClientSocket: set aspecific streaming parameter[%s] = \"%s\"",
+					it->first.c_str(), streaming_parameters.at(it->first).c_str());
+
+			continue;
+		}
+
+		value = it->second;
+
+#if 0
+		if(it->first == "bitrate")
+		{
+			if(value.length() > 3)
+				value = value.substr(0, value.length() - 3);
+
+			Util::vlog("clientsocket: use bitrate workaround (/1000) -> %s", value.c_str());
+		}
+#endif
+
+		if(get_feature_value(it->first, value, value_out, api_data))
+		{
+			Util::vlog("clientsocket: accept streaming specific param %s = %s", it->first.c_str(), value.c_str());
+			streaming_parameters[it->first] = value_out;
+		}
+		else
+			Util::vlog("clientsocket: reject streaming specific param %s = %s", it->first.c_str(), value.c_str());
+	}
 }
