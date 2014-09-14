@@ -32,10 +32,15 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 	Queue			socket_queue(32 * 1024);
 	int				time_offset_s = 0;
 	off_t			byte_offset = 0;
+	off_t			http_range = 0;
 	int				pct_offset = 0;
+	bool			partial = false;
 
 	if(streaming_parameters.count("startfrom"))
 		time_offset_s = TimeOffset(streaming_parameters.at("startfrom")).as_seconds();
+
+	if(streaming_parameters.count("http_range"))
+		byte_offset = Util::string_to_uint(streaming_parameters.at("http_range"));
 
 	if(streaming_parameters.count("byte_offset"))
 		byte_offset = Util::string_to_uint(streaming_parameters.at("byte_offset"));
@@ -51,25 +56,52 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 	Util::vlog("FileStreaming: pct_offset: %d", pct_offset);
 	Util::vlog("FileStreaming: time_offset: %d", time_offset_s);
 
-	if(byte_offset > 0)
+	if(http_range > 0)
 	{
-		stream.seek_absolute(byte_offset);
+		Util::vlog("FileTranscoding: performing http byte range seek");
+
+		stream.seek_absolute(http_range);
 
 		// Lie to the client because it will never get the exact position it requests due to ts packet alignment.
 		// E.g. wget will refuse range operation this way. It won't hurt for viewing anyway.
 
-		file_offset = byte_offset;
+		file_offset = http_range;
+		partial = true;
 	}
 	else
-		if(pct_offset > 0)
-			file_offset = stream.seek_relative(pct_offset, 100);
+	{
+		if(byte_offset > 0)
+		{
+			Util::vlog("FileTranscoding: performing byte_offset seek");
+
+			stream.seek_absolute(byte_offset);
+
+			// Lie to the client because it will never get the exact position it requests due to ts packet alignment.
+			// E.g. wget will refuse range operation this way. It won't hurt for viewing anyway.
+
+			file_offset = byte_offset;
+		}
 		else
-			if(stream.is_time_seekable && (time_offset_s > 0))
-				file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
+		{
+			if(pct_offset > 0)
+			{
+				Util::vlog("FileTranscoding: performing pct_offset seek");
+				file_offset = stream.seek_relative(pct_offset, 100);
+			}
+			else
+			{
+				if(stream.is_time_seekable && (time_offset_s > 0))
+				{
+					Util::vlog("FileTranscoding: performing startfrom seek");
+					file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
+				}
+			}
+		}
+	}
 
 	Util::vlog("FileStreaming: file_offset: %lld", file_offset);
 
-	if(file_offset > 0)
+	if(partial)
 		http_reply = http_partial;
 	else
 		http_reply = http_ok;
@@ -77,7 +109,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 	http_reply += http_headers;
 	http_reply += "Content-Length: " + Util::uint_to_string(stream.stream_length) + "\r\n";
 
-	if(file_offset > 0)
+	if(partial)
 		http_reply += string("Content-Range: bytes ") +
 			Util::uint_to_string(file_offset) + "-" +
 			Util::uint_to_string(stream.stream_length - 1) + "/" +

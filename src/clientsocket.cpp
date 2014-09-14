@@ -240,7 +240,7 @@ ClientSocket::ClientSocket(int fd_in,
 				range_header = range_header.substr(6);
 
 				if(range_header.find('-') == (range_header.length() - 1))
-					streaming_parameters["byte_offset"] = range_header;
+					streaming_parameters["http_range"] = range_header;
 			}
 		}
 
