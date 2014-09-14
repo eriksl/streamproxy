@@ -767,8 +767,8 @@ void ClientSocket::check_add_urlparams() throw()
 
 		Util::vlog("clientsocket: get parameter[%s] = \"%s\"", it->first.c_str(), it->second.c_str());
 
-		if((it->first == "startfrom") || (it->first == "startpct") ||
-				(it->first == "startpos"))
+		if((it->first == "startfrom") || (it->first == "pct_offset") ||
+				(it->first == "byte_offset"))
 		{
 			streaming_parameters[it->first] = it->second;
 
