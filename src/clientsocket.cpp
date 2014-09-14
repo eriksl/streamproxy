@@ -780,16 +780,6 @@ void ClientSocket::check_add_urlparams() throw()
 
 		value = it->second;
 
-#if 0
-		if(it->first == "bitrate")
-		{
-			if(value.length() > 3)
-				value = value.substr(0, value.length() - 3);
-
-			Util::vlog("clientsocket: use bitrate workaround (/1000) -> %s", value.c_str());
-		}
-#endif
-
 		if(get_feature_value(it->first, value, value_out, api_data))
 		{
 			Util::vlog("clientsocket: accept streaming specific param %s = %s", it->first.c_str(), value.c_str());

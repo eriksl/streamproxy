@@ -51,7 +51,6 @@ Encoder::Encoder(const PidMap &pids_in,
 
 		if((it2 != pids.end()) && (it->first == "video"))
 			pids.erase(it2);
-
 		if((it2 = pids.find(it->first)) != pids.end())
 			pids.erase(it2);
 
