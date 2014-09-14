@@ -17,7 +17,6 @@ using std::string;
 #include <errno.h>
 #include <poll.h>
 #include <string.h>
-#include <dirent.h>
 #include <stdlib.h>
 
 Encoder::Encoder(const PidMap &pids_in,
@@ -32,14 +31,7 @@ Encoder::Encoder(const PidMap &pids_in,
 	string					value;
 	int						int_value;
 	int						pmt = -1, video = -1, audio = -1;
-	string	encoder_device;
-	int		encoder;
-	DIR		*rootdir, *dir;
-	struct dirent *rootdirent, *dirent;
-	string	fdfile;
-	char	linkname[256];
-	ssize_t	rv;
-	bool	encoder_in_use[2];
+	int						attempt;
 
 	start_thread_running	= false;
 	start_thread_joined		= true;
@@ -77,57 +69,6 @@ Encoder::Encoder(const PidMap &pids_in,
 
 	if((pmt == -1) || (video == -1) || (audio == -1))
 		throw(trap("Encoder: missing pmt, video or audio pid"));
-
-	encoder_in_use[0] = encoder_in_use[1] = false;
-
-	if(!(rootdir = opendir("/proc")))
-		throw(trap("Encoder: cannot open /proc"));
-
-	for(rootdirent = readdir(rootdir); rootdirent; rootdirent = readdir(rootdir))
-	{
-		if((dir = opendir((string("/proc/") + rootdirent->d_name + "/fd").c_str())))
-		{
-			for(dirent = readdir(dir); dirent; dirent = readdir(dir))
-			{
-				if(dirent->d_name[0] == '.')
-					continue;
-
-				fdfile = string("/proc/") + rootdirent->d_name + "/fd/" + dirent->d_name;
-
-				if((rv = readlink(fdfile.c_str(), linkname, sizeof(linkname))) < 0)
-				{
-					Util::vlog("Encoder: cannot read link %s", fdfile.c_str());
-					continue;
-				}
-
-				linkname[rv] = '\0';
-
-				if((rv == 13) && !strncmp(linkname, "/dev/bcm_enc", 12) && ((linkname[12] == '0') || (linkname[12] == '1')))
-				{
-					encoder = linkname[12] - '0';
-					encoder_in_use[encoder] = true;
-				}
-			}
-
-			closedir(dir);
-		}
-	}
-
-	closedir(rootdir);
-
-	errno = 0;
-	Util::vlog("Encoder: encoder 0 in use: %d", encoder_in_use[0]);
-	Util::vlog("Encoder: encoder 1 in use: %d", encoder_in_use[1]);
-
-	if(encoder_in_use[0])
-	{
-		if(encoder_in_use[1])
-			throw(trap("Encoder:: all encoders busy"));
-		else
-			id = 1;
-	}
-	else
-		id = 0;
 
 	for(StreamingParameters::const_iterator it(streaming_parameters.begin()); it != streaming_parameters.end(); it++)
 	{
@@ -244,13 +185,47 @@ Encoder::Encoder(const PidMap &pids_in,
 		setprop(feature->api_data, value);
 	}
 
-	encoder_device = string("/dev/bcm_enc") + Util::int_to_string(id);
+	// try multiples times with a little delay, as often multiple
+	// requests are sent from a single http client, resulting in multiple
+	// streamproxy threads, all of them having the encoder open
+	// for a short while
 
-	errno = 0;
-	Util::vlog("Encoder: open encoder %s", encoder_device.c_str());
+	fd = -1;
 
-	if((fd = open(encoder_device.c_str(), O_RDWR, 0)) < 0)
-		throw(trap(string("Encoder: cannot open encoder ") +  encoder_device));
+	if(stb_traits.encoders > 0)
+	{
+		for(attempt = 0; attempt < 32; attempt++)
+		{
+			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
+			{
+				Util::vlog("Encoder: bcm_enc0 open");
+				break;
+			}
+
+			Util::vlog("Encoder: waiting for encoder 0 to become available, attempt %d", attempt);
+
+			usleep(100000);
+		}
+	}
+
+	if((stb_traits.encoders > 1) && (fd < 0))
+	{
+		for(attempt = 0; attempt < 32; attempt++)
+		{
+			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
+			{
+				Util::vlog("Encoder: bcm_enc1 open");
+				break;
+			}
+
+			Util::vlog("Encoder: waiting for encoder 1 to become available, attempt %d", attempt);
+
+			usleep(100000);
+		}
+	}
+
+	if(fd < 0)
+		throw(trap("no encoders available"));
 
 	Util::vlog("pmt: %d", pmt);
 	Util::vlog("video: %d", video);
