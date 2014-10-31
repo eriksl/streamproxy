@@ -190,6 +190,7 @@ Encoder::Encoder(const PidMap &pids_in,
 	// for a short while
 
 	fd = -1;
+	encoder = -1;
 
 	if(stb_traits.encoders > 0)
 	{
@@ -197,6 +198,7 @@ Encoder::Encoder(const PidMap &pids_in,
 		{
 			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
 			{
+				encoder = 0;
 				Util::vlog("Encoder: bcm_enc0 open");
 				break;
 			}
@@ -207,12 +209,13 @@ Encoder::Encoder(const PidMap &pids_in,
 		}
 	}
 
-	if((stb_traits.encoders > 1) && (fd < 0))
+	if((stb_traits.encoders > 1) && (encoder < 0))
 	{
 		for(attempt = 0; attempt < 32; attempt++)
 		{
 			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
 			{
+				encoder = 1;
 				Util::vlog("Encoder: bcm_enc1 open");
 				break;
 			}
@@ -223,7 +226,7 @@ Encoder::Encoder(const PidMap &pids_in,
 		}
 	}
 
-	if(fd < 0)
+	if(encoder < 0)
 		throw(trap("no encoders available"));
 
 	Util::vlog("pmt: %d", pmt);
@@ -376,7 +379,7 @@ string Encoder::getprop(string property) const throw()
 	string	path;
 	char	tmp[256];
 
-	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
+	path = string("/proc/stb/encoder/") + Util::int_to_string(encoder) + "/" + property;
 
 	if((procfd = open(path.c_str(), O_RDONLY, 0)) < 0)
 	{
@@ -404,7 +407,7 @@ void Encoder::setprop(const string &property, const string &value) const throw()
 
 	Util::vlog("setprop: %s=%s", property.c_str(), value.c_str());
 
-	path = string("/proc/stb/encoder/") + Util::int_to_string(id) + "/" + property;
+	path = string("/proc/stb/encoder/") + Util::int_to_string(encoder) + "/" + property;
 
 	if((procfd = open(path.c_str(), O_WRONLY, 0)) < 0)
 	{

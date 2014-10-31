@@ -30,7 +30,7 @@ class Encoder
 		bool						start_thread_joined;
 		bool						stopped;
 		int							fd;
-		int							id;
+		int							encoder;
 		PidMap						pids;
 		const StreamingParameters	&streaming_parameters;
 		const stb_traits_t			&stb_traits;
