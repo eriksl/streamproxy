@@ -33,6 +33,8 @@ Encoder::Encoder(const PidMap &pids_in,
 	int						pmt = -1, video = -1, audio = -1;
 	int						attempt;
 
+	fd						= -1;
+	encoder					= -1;
 	start_thread_running	= false;
 	start_thread_joined		= true;
 	stopped					= false;
@@ -68,6 +70,48 @@ Encoder::Encoder(const PidMap &pids_in,
 
 	if((pmt == -1) || (video == -1) || (audio == -1))
 		throw(trap("Encoder: missing pmt, video or audio pid"));
+
+	// try multiples times with a little delay, as often multiple
+	// requests are sent from a single http client, resulting in multiple
+	// streamproxy threads, all of them having the encoder open
+	// for a short while
+
+	if(stb_traits.encoders > 0)
+	{
+		for(attempt = 0; attempt < 32; attempt++)
+		{
+			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
+			{
+				encoder = 0;
+				Util::vlog("Encoder: bcm_enc0 open");
+				break;
+			}
+
+			Util::vlog("Encoder: waiting for encoder 0 to become available, attempt %d", attempt);
+
+			usleep(100000);
+		}
+	}
+
+	if((stb_traits.encoders > 1) && (encoder < 0))
+	{
+		for(attempt = 0; attempt < 32; attempt++)
+		{
+			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
+			{
+				encoder = 1;
+				Util::vlog("Encoder: bcm_enc1 open");
+				break;
+			}
+
+			Util::vlog("Encoder: waiting for encoder 1 to become available, attempt %d", attempt);
+
+			usleep(100000);
+		}
+	}
+
+	if(encoder < 0)
+		throw(trap("no encoders available"));
 
 	for(StreamingParameters::const_iterator it(streaming_parameters.begin()); it != streaming_parameters.end(); it++)
 	{
@@ -183,51 +227,6 @@ Encoder::Encoder(const PidMap &pids_in,
 
 		setprop(feature->api_data, value);
 	}
-
-	// try multiples times with a little delay, as often multiple
-	// requests are sent from a single http client, resulting in multiple
-	// streamproxy threads, all of them having the encoder open
-	// for a short while
-
-	fd = -1;
-	encoder = -1;
-
-	if(stb_traits.encoders > 0)
-	{
-		for(attempt = 0; attempt < 32; attempt++)
-		{
-			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
-			{
-				encoder = 0;
-				Util::vlog("Encoder: bcm_enc0 open");
-				break;
-			}
-
-			Util::vlog("Encoder: waiting for encoder 0 to become available, attempt %d", attempt);
-
-			usleep(100000);
-		}
-	}
-
-	if((stb_traits.encoders > 1) && (encoder < 0))
-	{
-		for(attempt = 0; attempt < 32; attempt++)
-		{
-			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
-			{
-				encoder = 1;
-				Util::vlog("Encoder: bcm_enc1 open");
-				break;
-			}
-
-			Util::vlog("Encoder: waiting for encoder 1 to become available, attempt %d", attempt);
-
-			usleep(100000);
-		}
-	}
-
-	if(encoder < 0)
-		throw(trap("no encoders available"));
 
 	Util::vlog("pmt: %d", pmt);
 	Util::vlog("video: %d", video);
