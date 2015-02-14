@@ -4,11 +4,12 @@
 #include <stdint.h>
 #include <stddef.h>
 
-typedef struct
+typedef enum
 {
-	const char *file;
-	const char *content;
-} stb_id_t;
+	stb_transcoding_unknown,
+	stb_transcoding_vuplus,
+	stb_transcoding_enigma,
+} stb_transcoding_t;
 
 typedef enum
 {
@@ -17,6 +18,12 @@ typedef enum
 	stb_traits_type_string,
 	stb_traits_type_string_enum,
 } stb_feature_type_t;
+
+typedef struct
+{
+	const char *file;
+	const char *content;
+} stb_id_t;
 
 typedef struct
 {
@@ -61,6 +68,7 @@ typedef struct
 	const char				*manufacturer;
 	const char 				*model;
 	const char				*chipset;
+	stb_transcoding_t		transcoding_type;
 	int						encoders;
 	size_t					num_id;
 	const stb_id_t			id[2];
@@ -71,7 +79,7 @@ typedef struct
 typedef struct
 {
 	size_t					num_traits;
-	const stb_traits_t		traits_entry[3];
+	const stb_traits_t		traits_entry[5];
 } stbs_traits_t;
 
 extern const stbs_traits_t stbs_traits;
