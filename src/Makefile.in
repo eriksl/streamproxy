@@ -95,6 +95,7 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-configmap.$(OBJEXT) streamproxy-demuxer.$(OBJEXT) \
 	streamproxy-enigma_settings.$(OBJEXT) \
 	streamproxy-encoder.$(OBJEXT) \
+	streamproxy-encoder-vuplus.$(OBJEXT) \
 	streamproxy-filestreaming.$(OBJEXT) \
 	streamproxy-filetranscoding.$(OBJEXT) \
 	streamproxy-livestreaming.$(OBJEXT) \
@@ -268,6 +269,7 @@ streamproxy_SOURCES = \
 	demuxer.cpp \
 	enigma_settings.cpp \
 	encoder.cpp \
+	encoder-vuplus.cpp \
 	filestreaming.cpp \
 	filetranscoding.cpp \
 	livestreaming.cpp \
@@ -377,6 +379,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-clientsocket.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-configmap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-demuxer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-encoder-vuplus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-encoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-enigma_settings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filestreaming.Po@am__quote@
@@ -492,6 +495,20 @@ streamproxy-encoder.obj: encoder.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='encoder.cpp' object='streamproxy-encoder.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-encoder.obj `if test -f 'encoder.cpp'; then $(CYGPATH_W) 'encoder.cpp'; else $(CYGPATH_W) '$(srcdir)/encoder.cpp'; fi`
+
+streamproxy-encoder-vuplus.o: encoder-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-encoder-vuplus.o -MD -MP -MF $(DEPDIR)/streamproxy-encoder-vuplus.Tpo -c -o streamproxy-encoder-vuplus.o `test -f 'encoder-vuplus.cpp' || echo '$(srcdir)/'`encoder-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-encoder-vuplus.Tpo $(DEPDIR)/streamproxy-encoder-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='encoder-vuplus.cpp' object='streamproxy-encoder-vuplus.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-encoder-vuplus.o `test -f 'encoder-vuplus.cpp' || echo '$(srcdir)/'`encoder-vuplus.cpp
+
+streamproxy-encoder-vuplus.obj: encoder-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-encoder-vuplus.obj -MD -MP -MF $(DEPDIR)/streamproxy-encoder-vuplus.Tpo -c -o streamproxy-encoder-vuplus.obj `if test -f 'encoder-vuplus.cpp'; then $(CYGPATH_W) 'encoder-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/encoder-vuplus.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-encoder-vuplus.Tpo $(DEPDIR)/streamproxy-encoder-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='encoder-vuplus.cpp' object='streamproxy-encoder-vuplus.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-encoder-vuplus.obj `if test -f 'encoder-vuplus.cpp'; then $(CYGPATH_W) 'encoder-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/encoder-vuplus.cpp'; fi`
 
 streamproxy-filestreaming.o: filestreaming.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-filestreaming.o -MD -MP -MF $(DEPDIR)/streamproxy-filestreaming.Tpo -c -o streamproxy-filestreaming.o `test -f 'filestreaming.cpp' || echo '$(srcdir)/'`filestreaming.cpp

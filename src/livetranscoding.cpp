@@ -8,6 +8,7 @@
 #include "service.h"
 #include "demuxer.h"
 #include "encoder.h"
+#include "encoder-vuplus.h"
 #include "configmap.h"
 #include "livetranscoding.h"
 #include "stbtraits.h"
@@ -77,19 +78,25 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	for(it = pids.begin(); it != pids.end(); it++)
 		Util::vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
 
-	Encoder encoder(pids, stb_traits, streaming_parameters);
-	encoder_pids = encoder.getpids();
+	Encoder *encoder = new EncoderVuPlus(pids, stb_traits, streaming_parameters);
+	encoder_pids = encoder->getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
 		Util::vlog("LiveTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
-	if((encoder_fd = encoder.getfd()) < 0)
+	if((encoder_fd = encoder->getfd()) < 0)
+	{
+		delete encoder;
 		throw(trap("LiveTranscoding: encoder: fd not open"));
+	}
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
+	{
+		delete encoder;
 		throw(trap("LiveTranscoding: demuxer: fd not open"));
+	}
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -107,7 +114,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			case(state_initial):
 			{
-				if(encoder.start_init())
+				if(encoder->start_init())
 				{
 					encoder_state = state_starting;
 					Util::vlog("LiveTranscoding: state init -> starting");
@@ -117,7 +124,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 
 			case(state_starting):
 			{
-				if(encoder.start_finish())
+				if(encoder->start_finish())
 				{
 					encoder_state = state_running;
 					Util::vlog("LiveTranscoding: state starting -> running");
@@ -147,7 +154,10 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 			pfd[2].events |= POLLOUT;
 
 		if(poll(pfd, 3, -1) <= 0)
+		{
+			delete encoder;
 			throw(trap("LiveTranscoding: streaming: poll error"));
+		}
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
@@ -209,6 +219,8 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 			}
 		}
 	}
+
+	delete encoder;
 
 	Util::vlog("LiveTranscoding: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
 	Util::vlog("LiveTranscoding: socket max queue fill: %d%%", max_fill_socket);

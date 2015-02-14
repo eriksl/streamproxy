@@ -1,15 +1,16 @@
-#ifndef _encoder_h_
-#define _encoder_h_
+#ifndef _encoder_vuplus_h_
+#define _encoder_vuplus_h_
 
 #include "config.h"
 #include "trap.h"
 #include "stbtraits.h"
+#include "encoder.h"
 
 #include "types.h"
 #include <string>
 #include <pthread.h>
 
-class Encoder
+class EncoderVuPlus : public Encoder
 {
 	private:
 
@@ -22,8 +23,8 @@ class Encoder
 			IOCTL_VUPLUS_STOP_TRANSCODING	= 200,
 		};
 
-		Encoder();
-		Encoder(const Encoder &);
+		EncoderVuPlus();
+		EncoderVuPlus(const EncoderVuPlus &);
 
 		pthread_t					start_thread;
 		bool						start_thread_running;
@@ -39,10 +40,10 @@ class Encoder
 
 	public:
 
-		Encoder(const PidMap &,
+		EncoderVuPlus(const PidMap &,
 				const stb_traits_t &,
 				const StreamingParameters &)					throw(trap);
-		~Encoder()												throw();
+		~EncoderVuPlus()										throw();
 
 		std::string	getprop(std::string)				const	throw();
 		void		setprop(const std::string &,
