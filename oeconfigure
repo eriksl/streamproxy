@@ -1,0 +1,232 @@
+#!/bin/sh
+
+src=/nfs/src/streamproxy
+host=vuduo2
+
+# Emit a useful diagnostic if something fails:
+bb_exit_handler() {
+    ret=$?
+    case $ret in
+    0)  ;;
+    *)  case $BASH_VERSION in
+        "")   echo "WARNING: exit code $ret from a shell command.";;
+        *)    echo "WARNING: ${BASH_SOURCE[0]}:${BASH_LINENO[0]} exit $ret from
+  "$BASH_COMMAND"";;
+        esac
+        exit $ret
+    esac
+}
+trap 'bb_exit_handler' 0
+set -e
+export prefix="/usr"
+export STRIP="mipsel-oe-linux-strip"
+export localstatedir="/var"
+export USER="erik"
+export libexecdir="/usr/lib/streamproxy"
+export datadir="/usr/share"
+export PKG_CONFIG_SYSROOT_DIR="/nfs/src/openpli/build/tmp/sysroots/$host"
+export BUILD_CXX="g++ "
+export LD="mipsel-oe-linux-ld --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host "
+export LDFLAGS="-Wl,-O1  -Wl,--as-needed"
+export MAKE="make"
+export includedir="/usr/include"
+export BUILD_CC="gcc "
+export BUILD_LDFLAGS="-L/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -L/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-rpath-link,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -Wl,-rpath-link,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-rpath,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -Wl,-rpath,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-O1"
+export CC_FOR_BUILD="gcc "
+export CPP_FOR_BUILD="gcc  -E"
+unset TARGET_ARCH
+export STRINGS="mipsel-oe-linux-strings"
+export BUILD_LD="ld "
+export oldincludedir="/usr/include"
+export BUILD_CCLD="gcc "
+export CFLAGS_FOR_BUILD="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include -march=native -O2 -pipe"
+export BUILD_CFLAGS="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include -march=native -O2 -pipe"
+export CXXFLAGS_FOR_BUILD="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include -march=native -O2 -pipe"
+export docdir="/usr/share/doc"
+export infodir="/usr/share/info"
+export base_prefix=""
+export CC="mipsel-oe-linux-gcc  -mel -mabi=32 -mhard-float -march=mips32 --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host"
+export TARGET_LDFLAGS="-Wl,-O1  -Wl,--as-needed"
+export TERM="xterm-256color"
+export CPPFLAGS=""
+export RANLIB="mipsel-oe-linux-ranlib"
+export base_sbindir="/sbin"
+export CXX="mipsel-oe-linux-g++  -mel -mabi=32 -mhard-float -march=mips32 --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host"
+export HOME="/home/erik"
+export BUILD_RANLIB="ranlib"
+export BUILD_NM="nm"
+export LD_FOR_BUILD="ld "
+export lt_cv_sys_lib_dlsearch_path_spec="/usr/lib /lib"
+export AS="mipsel-oe-linux-as "
+export AR="mipsel-oe-linux-ar"
+export BUILD_CPPFLAGS="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include"
+export CPP="mipsel-oe-linux-gcc -E --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host  -mel -mabi=32 -mhard-float -march=mips32"
+export mandir="/usr/share/man"
+export CONFIG_SITE="/nfs/src/openpli/meta-openembedded/meta-oe/site/endian-little /nfs/src/openpli/openembedded-core/meta/site/endian-little /nfs/src/openpli/openembedded-core/meta/site/mips-common /nfs/src/openpli/openembedded-core/meta/site/common-linux /nfs/src/openpli/openembedded-core/meta/site/common-glibc /nfs/src/openpli/openembedded-core/meta/site/mipsel-linux /nfs/src/openpli/openembedded-core/meta/site/common /nfs/src/openpli/build/tmp/sysroots/$host/usr/share/mipsel-oe-linux_config_site.d/ncurses_config /nfs/src/openpli/build/tmp/sysroots/$host/usr/share/mipsel-oe-linux_config_site.d/glibc_config "
+export BUILD_CXXFLAGS="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include -march=native -O2 -pipe"
+export OBJCOPY="mipsel-oe-linux-objcopy"
+export CCACHE_DISABLE="1"
+export servicedir="/srv"
+export PKG_CONFIG_PATH="/nfs/src/openpli/build/tmp/sysroots/$host/usr/lib/pkgconfig:/nfs/src/openpli/build/tmp/sysroots/$host/usr/share/pkgconfig"
+export FC="mipsel-oe-linux-gfortran  -mel -mabi=32 -mhard-float -march=mips32 --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host"
+export BUILD_FC="gfortran "
+export LC_ALL="C"
+export TARGET_CPPFLAGS=""
+export exec_prefix="/usr"
+export bindir="/usr/bin"
+export sysconfdir="/etc"
+export CCLD="mipsel-oe-linux-gcc  -mel -mabi=32 -mhard-float -march=mips32 --sysroot=/nfs/src/openpli/build/tmp/sysroots/$host"
+export base_libdir="/lib"
+export LOGNAME="erik"
+export PATH="/nfs/src/openpli/openembedded-core/scripts:/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/bin/mipsel-oe-linux:/nfs/src/openpli/build/tmp/sysroots/$host/usr/bin/crossscripts:/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/sbin:/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/bin:/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/sbin:/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/bin:/nfs/src/openpli/openembedded-core/scripts:/nfs/src/openpli/bitbake/bin:/usr/bin:/bin"
+export TARGET_CFLAGS=" -Os -pipe -g -feliminate-unused-debug-types"
+export base_bindir="/bin"
+export PKG_CONFIG_LIBDIR="/nfs/src/openpli/build/tmp/sysroots/$host/usr/lib/pkgconfig"
+unset MACHINE
+export sbindir="/usr/sbin"
+export CFLAGS=" -Os -pipe -g -feliminate-unused-debug-types"
+export BUILD_AR="ar"
+export BUILD_AS="as "
+export sharedstatedir="/com"
+export OBJDUMP="mipsel-oe-linux-objdump"
+unset DISTRO
+export PKG_CONFIG_DIR="/nfs/src/openpli/build/tmp/sysroots/$host/usr/lib/pkgconfig"
+export PKG_CONFIG_DISABLE_UNINSTALLED="yes"
+export libdir="/usr/lib"
+export nonarch_base_libdir="/lib"
+export PSEUDO_DISABLED="1"
+export CPPFLAGS_FOR_BUILD="-isystem/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/include"
+export PSEUDO_UNLOAD="1"
+export LDFLAGS_FOR_BUILD="-L/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -L/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-rpath-link,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -Wl,-rpath-link,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-rpath,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/lib -Wl,-rpath,/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/lib -Wl,-O1"
+export SHELL="/bin/zsh"
+export systemd_unitdir="/lib/systemd"
+export TARGET_CXXFLAGS=" -Os -pipe -g -feliminate-unused-debug-types"
+export CXX_FOR_BUILD="g++ "
+export CCACHE_DIR="/home/erik"
+export BUILD_CPP="gcc  -E"
+export PATCH_GET="0"
+export CXXFLAGS=" -Os -pipe -g -feliminate-unused-debug-types -fvisibility-inlines-hidden"
+export NM="mipsel-oe-linux-nm"
+export BUILD_STRIP="strip"
+do_configure() {
+    autotools_do_configure
+
+}
+
+autotools_do_configure() {
+	# WARNING: gross hack follows:
+	# An autotools built package generally needs these scripts, however only
+	# automake or libtoolize actually install the current versions of them.
+	# This is a problem in builds that do not use libtool or automake, in the case
+	# where we -need- the latest version of these scripts.  e.g. running a build
+	# for a package whose autotools are old, on an x86_64 machine, which the old
+	# config.sub does not support.  Work around this by installing them manually
+	# regardless.
+	( for ac in `find $src -name configure.in -o -name configure.ac`; do
+		rm -f `dirname $ac`/configure
+		done )
+	if [ -e $src/configure.in -o -e $src/configure.ac ]; then
+		olddir=`pwd`
+		cd $src
+		ACLOCAL="aclocal --system-acdir=$src/aclocal-copy/"
+		if [ x"default" = xdefault ]; then
+			acpaths=
+			for i in `find $src -maxdepth 2 -name \*.m4|grep -v 'aclocal.m4'| \
+				grep -v 'acinclude.m4' | grep -v 'aclocal-copy' | sed -e 's,\(.*/\).*$,\1,'|sort -u`; do
+				acpaths="$acpaths -I $i"
+			done
+		else
+			acpaths="default"
+		fi
+		AUTOV=`automake --version | sed -e '1{s/.* //;s/\.[0-9]\+$//};q'`
+		automake --version
+		echo "AUTOV is $AUTOV"
+		if [ -d /nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/share/aclocal-$AUTOV ]; then
+			ACLOCAL="$ACLOCAL --automake-acdir=/nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/share/aclocal-$AUTOV"
+		fi
+		# autoreconf is too shy to overwrite aclocal.m4 if it doesn't look
+		# like it was auto-generated.  Work around this by blowing it away
+		# by hand, unless the package specifically asked not to run aclocal.
+		if ! echo --exclude=autopoint | grep -q "aclocal"; then
+			rm -f aclocal.m4
+		fi
+		if [ -e configure.in ]; then
+			CONFIGURE_AC=configure.in
+		else
+			CONFIGURE_AC=configure.ac
+		fi
+		if grep "^[[:space:]]*AM_GLIB_GNU_GETTEXT" $CONFIGURE_AC >/dev/null; then
+			if grep "sed.*POTFILES" $CONFIGURE_AC >/dev/null; then
+				: do nothing -- we still have an old unmodified configure.ac
+	    		else
+				bbnote Executing glib-gettextize --force --copy
+				echo "no" | glib-gettextize --force --copy
+			fi
+		else if grep "^[[:space:]]*AM_GNU_GETTEXT" $CONFIGURE_AC >/dev/null; then
+			# We'd call gettextize here if it wasn't so broken...
+				cp /nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/share/gettext/config.rpath $src/
+				if [ -d $src/po/ ]; then
+					cp -f /nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/share/gettext/po/Makefile.in.in $src/po/
+					if [ ! -e $src/po/remove-potcdate.sin ]; then
+						cp /nfs/src/openpli/build/tmp/sysroots/x86_64-linux/usr/share/gettext/po/remove-potcdate.sin $src/po/
+					fi
+				fi
+				for i in gettext.m4 iconv.m4 lib-ld.m4 lib-link.m4 lib-prefix.m4 nls.m4 po.m4 progtest.m4; do
+					for j in `find $src -name $i | grep -v aclocal-copy`; do
+						rm $j
+					done
+				done
+			fi
+		fi
+		mkdir -p m4
+		if grep "^[[:space:]]*[AI][CT]_PROG_INTLTOOL" $CONFIGURE_AC >/dev/null; then
+			bbnote Executing intltoolize --copy --force --automake
+			intltoolize --copy --force --automake
+		fi
+		bbnote Executing ACLOCAL=\"$ACLOCAL\" autoreconf --verbose --install --force --exclude=autopoint $acpaths
+		ACLOCAL="$ACLOCAL" autoreconf -Wcross --verbose --install --force --exclude=autopoint $acpaths || bbfatal "autoreconf execution failed."
+		cd $olddir
+	fi
+	if [ -e $src/configure ]; then
+		oe_runconf
+	else
+		bbnote "nothing to configure"
+	fi
+
+}
+
+bbnote() {
+	echo "NOTE: $*"
+
+}
+
+bbfatal() {
+	echo "ERROR: $*"
+	exit 1
+
+}
+
+oe_runconf() {
+	cfgscript="$src/configure"
+	if [ -x "$cfgscript" ] ; then
+		bbnote "Running $cfgscript  --build=x86_64-linux 		  --host=mipsel-oe-linux 		  --target=mipsel-oe-linux 		  --prefix=/usr 		  --exec_prefix=/usr 		  --bindir=/usr/bin 		  --sbindir=/usr/sbin 		  --libexecdir=/usr/lib/streamproxy 		  --datadir=/usr/share 		  --sysconfdir=/etc 		  --sharedstatedir=/com 		  --localstatedir=/var 		  --libdir=/usr/lib 		  --includedir=/usr/include 		  --oldincludedir=/usr/include 		  --infodir=/usr/share/info 		  --mandir=/usr/share/man 		  --disable-silent-rules 		  --disable-dependency-tracking 		  --with-libtool-sysroot=/nfs/src/openpli/build/tmp/sysroots/$host  $@"
+		set +e
+		${CACHED_CONFIGUREVARS} $cfgscript  --build=x86_64-linux 		  --host=mipsel-oe-linux 		  --target=mipsel-oe-linux 		  --prefix=/usr 		  --exec_prefix=/usr 		  --bindir=/usr/bin 		  --sbindir=/usr/sbin 		  --libexecdir=/usr/lib/streamproxy 		  --datadir=/usr/share 		  --sysconfdir=/etc 		  --sharedstatedir=/com 		  --localstatedir=/var 		  --libdir=/usr/lib 		  --includedir=/usr/include 		  --oldincludedir=/usr/include 		  --infodir=/usr/share/info 		  --mandir=/usr/share/man 		  --disable-silent-rules 		  --disable-dependency-tracking 		  --with-libtool-sysroot=/nfs/src/openpli/build/tmp/sysroots/$host  "$@"
+		if [ "$?" != "0" ]; then
+			echo "Configure failed. The contents of all config.log files follows to aid debugging"
+			find $src -name config.log -print -exec cat {} \;
+			bbfatal "oe_runconf failed"
+		fi
+		set -e
+	else
+		bbfatal "no configure script found at $cfgscript"
+	fi
+
+}
+
+do_configure
+
+# cleanup
+ret=$?
+trap '' 0
+exit $?

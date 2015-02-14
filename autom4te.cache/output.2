@@ -216,7 +216,7 @@ do
   as_found=:
   case $as_dir in @%:@(
 	 /*)
-	   for as_base in bash sh ksh sh5; do
+	   for as_base in sh bash ksh sh5; do
 	     # Try only shells that exist, to save several forks.
 	     as_shell=$as_dir/$as_base
 	     if { test -f "$as_shell" || test -f "$as_shell.exe"; } &&
@@ -2183,6 +2183,7 @@ _ACEOF
 # Let the site file select an alternate cache file if it wants to.
 # Prefer an explicitly selected file to automatically selected ones.
 ac_site_file1=NONE
+ac_site_file2=NONE
 if test -n "$CONFIG_SITE"; then
   # We do not want a PATH search for config.site.
   case $CONFIG_SITE in @%:@((
@@ -2190,8 +2191,14 @@ if test -n "$CONFIG_SITE"; then
     */*) ac_site_file1=$CONFIG_SITE;;
     *)   ac_site_file1=./$CONFIG_SITE;;
   esac
+elif test "x$prefix" != xNONE; then
+  ac_site_file1=$prefix/share/config.site
+  ac_site_file2=$prefix/etc/config.site
+else
+  ac_site_file1=$ac_default_prefix/share/config.site
+  ac_site_file2=$ac_default_prefix/etc/config.site
 fi
-for ac_site_file in $ac_site_file1
+for ac_site_file in "$ac_site_file1" "$ac_site_file2"
 do
   test "x$ac_site_file" = xNONE && continue
   if test /dev/null != "$ac_site_file" && test -r "$ac_site_file"; then
