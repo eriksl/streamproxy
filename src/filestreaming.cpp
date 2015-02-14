@@ -58,7 +58,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 
 	if(http_range > 0)
 	{
-		Util::vlog("FileTranscoding: performing http byte range seek");
+		Util::vlog("FileTranscodingVuPlus: performing http byte range seek");
 
 		stream.seek_absolute(http_range);
 
@@ -72,7 +72,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 	{
 		if(byte_offset > 0)
 		{
-			Util::vlog("FileTranscoding: performing byte_offset seek");
+			Util::vlog("FileTranscodingVuPlus: performing byte_offset seek");
 
 			stream.seek_absolute(byte_offset);
 
@@ -85,14 +85,14 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 		{
 			if(pct_offset > 0)
 			{
-				Util::vlog("FileTranscoding: performing pct_offset seek");
+				Util::vlog("FileTranscodingVuPlus: performing pct_offset seek");
 				file_offset = stream.seek_relative(pct_offset, 100);
 			}
 			else
 			{
 				if(stream.is_time_seekable && (time_offset_s > 0))
 				{
-					Util::vlog("FileTranscoding: performing startfrom seek");
+					Util::vlog("FileTranscodingVuPlus: performing startfrom seek");
 					file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
 				}
 			}

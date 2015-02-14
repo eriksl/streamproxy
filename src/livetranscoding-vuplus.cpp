@@ -10,7 +10,7 @@
 #include "encoder.h"
 #include "encoder-vuplus.h"
 #include "configmap.h"
-#include "livetranscoding.h"
+#include "livetranscoding-vuplus.h"
 #include "stbtraits.h"
 
 #include <string>
@@ -21,7 +21,7 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
+LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketfd,
 		string webauth, const stb_traits_t &stb_traits,
 		const StreamingParameters &streaming_parameters,
 		const ConfigMap &config_map) throw(trap)
@@ -45,10 +45,10 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	Queue			encoder_queue(512 * 1024);
 	Queue			socket_queue(1024 * 1024);
 
-	Util::vlog("LiveTranscoding: %s", service.service_string().c_str());
+	Util::vlog("LiveTranscodingVuPlus: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
-		throw(http_trap("LiveTranscoding: invalid service", 404, "Not found, unknown service"));
+		throw(http_trap("LiveTranscodingVuPlus: invalid service", 404, "Not found, unknown service"));
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
@@ -71,31 +71,31 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 	}
 
 	if(!webifrequest_ok)
-		throw(http_trap("LiveTranscoding: tuning request to enigma failed (webif timeout)", 404, "Not found, cannot tune to service"));
+		throw(http_trap("LiveTranscodingVuPlus: tuning request to enigma failed (webif timeout)", 404, "Not found, cannot tune to service"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("LiveTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingVuPlus: pid[%s] = %x", it->first.c_str(), it->second);
 
 	Encoder *encoder = new EncoderVuPlus(pids, stb_traits, streaming_parameters);
 	encoder_pids = encoder->getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		Util::vlog("LiveTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingVuPlus: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
 	if((encoder_fd = encoder->getfd()) < 0)
 	{
 		delete encoder;
-		throw(trap("LiveTranscoding: encoder: fd not open"));
+		throw(trap("LiveTranscodingVuPlus: encoder: fd not open"));
 	}
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
 	{
 		delete encoder;
-		throw(trap("LiveTranscoding: demuxer: fd not open"));
+		throw(trap("LiveTranscodingVuPlus: demuxer: fd not open"));
 	}
 
 	socket_queue.append(httpok.length(), httpok.c_str());
@@ -117,7 +117,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 				if(encoder->start_init())
 				{
 					encoder_state = state_starting;
-					Util::vlog("LiveTranscoding: state init -> starting");
+					Util::vlog("LiveTranscodingVuPlus: state init -> starting");
 				}
 				break;
 			}
@@ -127,7 +127,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 				if(encoder->start_finish())
 				{
 					encoder_state = state_running;
-					Util::vlog("LiveTranscoding: state starting -> running");
+					Util::vlog("LiveTranscodingVuPlus: state starting -> running");
 				}
 				break;
 			}
@@ -156,30 +156,30 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		if(poll(pfd, 3, -1) <= 0)
 		{
 			delete encoder;
-			throw(trap("LiveTranscoding: streaming: poll error"));
+			throw(trap("LiveTranscodingVuPlus: streaming: poll error"));
 		}
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			Util::vlog("LiveTranscoding: demuxer error");
+			Util::vlog("LiveTranscodingVuPlus: demuxer error");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			Util::vlog("LiveTranscoding: encoder error");
+			Util::vlog("LiveTranscodingVuPlus: encoder error");
 			break;
 		}
 
 		if(pfd[2].revents & (POLLRDHUP | POLLHUP))
 		{
-			Util::vlog("LiveTranscoding: client hung up");
+			Util::vlog("LiveTranscodingVuPlus: client hung up");
 			break;
 		}
 
 		if(pfd[2].revents & (POLLERR | POLLNVAL))
 		{
-			Util::vlog("LiveTranscoding: socket error");
+			Util::vlog("LiveTranscodingVuPlus: socket error");
 			break;
 		}
 
@@ -187,7 +187,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!encoder_queue.read(demuxer_fd))
 			{
-				Util::vlog("LiveTranscoding: read demux error");
+				Util::vlog("LiveTranscodingVuPlus: read demux error");
 				break;
 			}
 		}
@@ -196,7 +196,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!encoder_queue.write(encoder_fd, vuplus_magic_buffer_size))
 			{
-				Util::vlog("LiveTranscoding: write encoder error");
+				Util::vlog("LiveTranscodingVuPlus: write encoder error");
 				break;
 			}
 		}
@@ -205,7 +205,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!socket_queue.read(encoder_fd, vuplus_magic_buffer_size))
 			{
-				Util::vlog("LiveTranscoding: read encoder error");
+				Util::vlog("LiveTranscodingVuPlus: read encoder error");
 				break;
 			}
 		}
@@ -214,7 +214,7 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 		{
 			if(!socket_queue.write(socketfd))
 			{
-				Util::vlog("LiveTranscoding: write socket error");
+				Util::vlog("LiveTranscodingVuPlus: write socket error");
 				break;
 			}
 		}
@@ -222,6 +222,6 @@ LiveTranscoding::LiveTranscoding(const Service &service, int socketfd,
 
 	delete encoder;
 
-	Util::vlog("LiveTranscoding: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
-	Util::vlog("LiveTranscoding: socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("LiveTranscodingVuPlus: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
+	Util::vlog("LiveTranscodingVuPlus: socket max queue fill: %d%%", max_fill_socket);
 }

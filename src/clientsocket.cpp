@@ -4,9 +4,9 @@
 #include "clientsocket.h"
 #include "service.h"
 #include "livestreaming.h"
-#include "livetranscoding.h"
+#include "livetranscoding-vuplus.h"
 #include "filestreaming.h"
-#include "filetranscoding.h"
+#include "filetranscoding-vuplus.h"
 #include "util.h"
 #include "url.h"
 #include "types.h"
@@ -292,7 +292,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscoding(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+			(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -310,7 +310,7 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file transcoding request");
-			(void)FileTranscoding(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+			(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: file transcoding ends");
 
 			return;
@@ -358,7 +358,7 @@ ClientSocket::ClientSocket(int fd_in,
 				else
 				{
 					Util::vlog("ClientSocket: transcoding file");
-					(void)FileTranscoding(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+					(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 				}
 
 				Util::vlog("ClientSocket: default file ends");
@@ -381,7 +381,7 @@ ClientSocket::ClientSocket(int fd_in,
 					else
 					{
 						Util::vlog("ClientSocket: transcoding service");
-						(void)LiveTranscoding(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+						(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 					}
 
 					Util::vlog("ClientSocket: default live ends");

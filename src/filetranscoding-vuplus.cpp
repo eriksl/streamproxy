@@ -1,7 +1,7 @@
 #include "config.h"
 #include "trap.h"
 
-#include "filetranscoding.h"
+#include "filetranscoding-vuplus.h"
 #include "util.h"
 #include "queue.h"
 #include "encoder.h"
@@ -19,7 +19,7 @@ using std::string;
 #include <fcntl.h>
 #include <poll.h>
 
-FileTranscoding::FileTranscoding(string file, int socket_fd, string,
+FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		const stb_traits_t &stb_traits, const StreamingParameters &streaming_parameters,
 		const ConfigMap &) throw(trap)
 {
@@ -67,7 +67,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 
 	if(http_range > 0)
 	{
-		Util::vlog("FileTranscoding: performing http byte range seek");
+		Util::vlog("FileTranscodingVuPlus: performing http byte range seek");
 
 		stream.seek_absolute(http_range);
 
@@ -81,7 +81,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 	{
 		if(byte_offset > 0)
 		{
-			Util::vlog("FileTranscoding: performing byte_offset seek");
+			Util::vlog("FileTranscodingVuPlus: performing byte_offset seek");
 
 			stream.seek_absolute(byte_offset);
 
@@ -94,21 +94,21 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 		{
 			if(pct_offset > 0)
 			{
-				Util::vlog("FileTranscoding: performing pct_offset seek");
+				Util::vlog("FileTranscodingVuPlus: performing pct_offset seek");
 				file_offset = stream.seek_relative(pct_offset, 100);
 			}
 			else
 			{
 				if(stream.is_time_seekable && (time_offset_s > 0))
 				{
-					Util::vlog("FileTranscoding: performing startfrom seek");
+					Util::vlog("FileTranscodingVuPlus: performing startfrom seek");
 					file_offset = stream.seek_time((time_offset_s * 1000) + stream.first_pcr_ms);
 				}
 			}
 		}
 	}
 
-	Util::vlog("FileTranscoding: file_offset: %llu", file_offset);
+	Util::vlog("FileTranscodingVuPlus: file_offset: %llu", file_offset);
 
 	if(partial > 0)
 		http_reply = http_partial;
@@ -129,7 +129,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 	socket_queue.append(http_reply.length(), http_reply.c_str());
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("FileTranscoding: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("FileTranscodingVuPlus: pid[%s] = %x", it->first.c_str(), it->second);
 
 	encoder_buffer = new char[vuplus_magic_buffer_size];
 
@@ -141,12 +141,12 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 	encoder_pids = encoder->getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		Util::vlog("FileTranscoding: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("FileTranscodingVuPlus: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	if((encoder_fd = encoder->getfd()) < 0)
 	{
 		delete encoder;
-		throw(trap("FileTranscoding: transcoding: encoder: fd not open"));
+		throw(trap("FileTranscodingVuPlus: transcoding: encoder: fd not open"));
 	}
 
 	encoder_state = state_initial;
@@ -198,24 +198,24 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 		if(poll(pfd, 2, timeout) <= 0)
 		{
 			delete encoder;
-			throw(trap("FileTranscoding: poll error"));
+			throw(trap("FileTranscodingVuPlus: poll error"));
 		}
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			Util::vlog("FileTranscoding: encoder error");
+			Util::vlog("FileTranscodingVuPlus: encoder error");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLRDHUP | POLLHUP))
 		{
-			Util::vlog("FileTranscoding: client hung up");
+			Util::vlog("FileTranscodingVuPlus: client hung up");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLERR | POLLNVAL))
 		{
-			Util::vlog("FileTranscoding: socket error");
+			Util::vlog("FileTranscodingVuPlus: socket error");
 			break;
 		}
 
@@ -223,13 +223,13 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 		{
 			if((bytes_read = read(stream.get_fd(), encoder_buffer, vuplus_magic_buffer_size)) != vuplus_magic_buffer_size)
 			{
-				Util::vlog("FileTranscoding: eof");
+				Util::vlog("FileTranscodingVuPlus: eof");
 				break;
 			}
 
 			if((bytes_read = write(encoder_fd, encoder_buffer, bytes_read)) != vuplus_magic_buffer_size)
 			{
-				Util::vlog("FileTranscoding: encoder error");
+				Util::vlog("FileTranscodingVuPlus: encoder error");
 				break;
 			}
 		}
@@ -238,7 +238,7 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 		{
 			if(!socket_queue.read(encoder_fd, vuplus_magic_buffer_size))
 			{
-				Util::vlog("FileTranscoding: read encoder error");
+				Util::vlog("FileTranscodingVuPlus: read encoder error");
 				break;
 			}
 		}
@@ -247,18 +247,18 @@ FileTranscoding::FileTranscoding(string file, int socket_fd, string,
 		{
 			if(!socket_queue.write(socket_fd))
 			{
-				Util::vlog("FileTranscoding: write socket error");
+				Util::vlog("FileTranscodingVuPlus: write socket error");
 				break;
 			}
 		}
 	}
 
 	delete encoder;
-	Util::vlog("FileTranscoding: streaming ends, socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("FileTranscodingVuPlus: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }
 
-FileTranscoding::~FileTranscoding() throw()
+FileTranscodingVuPlus::~FileTranscodingVuPlus() throw()
 {
 	delete [] encoder_buffer;
-	Util::vlog("FileTranscoding: cleanup up");
+	Util::vlog("FileTranscodingVuPlus: cleanup up");
 }

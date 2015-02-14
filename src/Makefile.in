@@ -97,9 +97,9 @@ am_streamproxy_OBJECTS = streamproxy-acceptsocket.$(OBJEXT) \
 	streamproxy-encoder.$(OBJEXT) \
 	streamproxy-encoder-vuplus.$(OBJEXT) \
 	streamproxy-filestreaming.$(OBJEXT) \
-	streamproxy-filetranscoding.$(OBJEXT) \
+	streamproxy-filetranscoding-vuplus.$(OBJEXT) \
 	streamproxy-livestreaming.$(OBJEXT) \
-	streamproxy-livetranscoding.$(OBJEXT) \
+	streamproxy-livetranscoding-vuplus.$(OBJEXT) \
 	streamproxy-mpegts.$(OBJEXT) streamproxy-queue.$(OBJEXT) \
 	streamproxy-service.$(OBJEXT) streamproxy-stbtraits.$(OBJEXT) \
 	streamproxy-streamproxy.$(OBJEXT) \
@@ -271,9 +271,9 @@ streamproxy_SOURCES = \
 	encoder.cpp \
 	encoder-vuplus.cpp \
 	filestreaming.cpp \
-	filetranscoding.cpp \
+	filetranscoding-vuplus.cpp \
 	livestreaming.cpp \
-	livetranscoding.cpp \
+	livetranscoding-vuplus.cpp \
 	mpegts.cpp \
 	queue.cpp \
 	service.cpp \
@@ -383,9 +383,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-encoder.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-enigma_settings.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filestreaming.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filetranscoding.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-filetranscoding-vuplus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livestreaming.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livetranscoding.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-livetranscoding-vuplus.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-mpegts.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-queue.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/streamproxy-service.Po@am__quote@
@@ -524,19 +524,19 @@ streamproxy-filestreaming.obj: filestreaming.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-filestreaming.obj `if test -f 'filestreaming.cpp'; then $(CYGPATH_W) 'filestreaming.cpp'; else $(CYGPATH_W) '$(srcdir)/filestreaming.cpp'; fi`
 
-streamproxy-filetranscoding.o: filetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-filetranscoding.o -MD -MP -MF $(DEPDIR)/streamproxy-filetranscoding.Tpo -c -o streamproxy-filetranscoding.o `test -f 'filetranscoding.cpp' || echo '$(srcdir)/'`filetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-filetranscoding.Tpo $(DEPDIR)/streamproxy-filetranscoding.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='filetranscoding.cpp' object='streamproxy-filetranscoding.o' libtool=no @AMDEPBACKSLASH@
+streamproxy-filetranscoding-vuplus.o: filetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-filetranscoding-vuplus.o -MD -MP -MF $(DEPDIR)/streamproxy-filetranscoding-vuplus.Tpo -c -o streamproxy-filetranscoding-vuplus.o `test -f 'filetranscoding-vuplus.cpp' || echo '$(srcdir)/'`filetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-filetranscoding-vuplus.Tpo $(DEPDIR)/streamproxy-filetranscoding-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='filetranscoding-vuplus.cpp' object='streamproxy-filetranscoding-vuplus.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-filetranscoding.o `test -f 'filetranscoding.cpp' || echo '$(srcdir)/'`filetranscoding.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-filetranscoding-vuplus.o `test -f 'filetranscoding-vuplus.cpp' || echo '$(srcdir)/'`filetranscoding-vuplus.cpp
 
-streamproxy-filetranscoding.obj: filetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-filetranscoding.obj -MD -MP -MF $(DEPDIR)/streamproxy-filetranscoding.Tpo -c -o streamproxy-filetranscoding.obj `if test -f 'filetranscoding.cpp'; then $(CYGPATH_W) 'filetranscoding.cpp'; else $(CYGPATH_W) '$(srcdir)/filetranscoding.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-filetranscoding.Tpo $(DEPDIR)/streamproxy-filetranscoding.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='filetranscoding.cpp' object='streamproxy-filetranscoding.obj' libtool=no @AMDEPBACKSLASH@
+streamproxy-filetranscoding-vuplus.obj: filetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-filetranscoding-vuplus.obj -MD -MP -MF $(DEPDIR)/streamproxy-filetranscoding-vuplus.Tpo -c -o streamproxy-filetranscoding-vuplus.obj `if test -f 'filetranscoding-vuplus.cpp'; then $(CYGPATH_W) 'filetranscoding-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/filetranscoding-vuplus.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-filetranscoding-vuplus.Tpo $(DEPDIR)/streamproxy-filetranscoding-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='filetranscoding-vuplus.cpp' object='streamproxy-filetranscoding-vuplus.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-filetranscoding.obj `if test -f 'filetranscoding.cpp'; then $(CYGPATH_W) 'filetranscoding.cpp'; else $(CYGPATH_W) '$(srcdir)/filetranscoding.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-filetranscoding-vuplus.obj `if test -f 'filetranscoding-vuplus.cpp'; then $(CYGPATH_W) 'filetranscoding-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/filetranscoding-vuplus.cpp'; fi`
 
 streamproxy-livestreaming.o: livestreaming.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-livestreaming.o -MD -MP -MF $(DEPDIR)/streamproxy-livestreaming.Tpo -c -o streamproxy-livestreaming.o `test -f 'livestreaming.cpp' || echo '$(srcdir)/'`livestreaming.cpp
@@ -552,19 +552,19 @@ streamproxy-livestreaming.obj: livestreaming.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livestreaming.obj `if test -f 'livestreaming.cpp'; then $(CYGPATH_W) 'livestreaming.cpp'; else $(CYGPATH_W) '$(srcdir)/livestreaming.cpp'; fi`
 
-streamproxy-livetranscoding.o: livetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-livetranscoding.o -MD -MP -MF $(DEPDIR)/streamproxy-livetranscoding.Tpo -c -o streamproxy-livetranscoding.o `test -f 'livetranscoding.cpp' || echo '$(srcdir)/'`livetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-livetranscoding.Tpo $(DEPDIR)/streamproxy-livetranscoding.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='livetranscoding.cpp' object='streamproxy-livetranscoding.o' libtool=no @AMDEPBACKSLASH@
+streamproxy-livetranscoding-vuplus.o: livetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-livetranscoding-vuplus.o -MD -MP -MF $(DEPDIR)/streamproxy-livetranscoding-vuplus.Tpo -c -o streamproxy-livetranscoding-vuplus.o `test -f 'livetranscoding-vuplus.cpp' || echo '$(srcdir)/'`livetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-livetranscoding-vuplus.Tpo $(DEPDIR)/streamproxy-livetranscoding-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='livetranscoding-vuplus.cpp' object='streamproxy-livetranscoding-vuplus.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livetranscoding.o `test -f 'livetranscoding.cpp' || echo '$(srcdir)/'`livetranscoding.cpp
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livetranscoding-vuplus.o `test -f 'livetranscoding-vuplus.cpp' || echo '$(srcdir)/'`livetranscoding-vuplus.cpp
 
-streamproxy-livetranscoding.obj: livetranscoding.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-livetranscoding.obj -MD -MP -MF $(DEPDIR)/streamproxy-livetranscoding.Tpo -c -o streamproxy-livetranscoding.obj `if test -f 'livetranscoding.cpp'; then $(CYGPATH_W) 'livetranscoding.cpp'; else $(CYGPATH_W) '$(srcdir)/livetranscoding.cpp'; fi`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-livetranscoding.Tpo $(DEPDIR)/streamproxy-livetranscoding.Po
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='livetranscoding.cpp' object='streamproxy-livetranscoding.obj' libtool=no @AMDEPBACKSLASH@
+streamproxy-livetranscoding-vuplus.obj: livetranscoding-vuplus.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-livetranscoding-vuplus.obj -MD -MP -MF $(DEPDIR)/streamproxy-livetranscoding-vuplus.Tpo -c -o streamproxy-livetranscoding-vuplus.obj `if test -f 'livetranscoding-vuplus.cpp'; then $(CYGPATH_W) 'livetranscoding-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/livetranscoding-vuplus.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/streamproxy-livetranscoding-vuplus.Tpo $(DEPDIR)/streamproxy-livetranscoding-vuplus.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='livetranscoding-vuplus.cpp' object='streamproxy-livetranscoding-vuplus.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livetranscoding.obj `if test -f 'livetranscoding.cpp'; then $(CYGPATH_W) 'livetranscoding.cpp'; else $(CYGPATH_W) '$(srcdir)/livetranscoding.cpp'; fi`
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -c -o streamproxy-livetranscoding-vuplus.obj `if test -f 'livetranscoding-vuplus.cpp'; then $(CYGPATH_W) 'livetranscoding-vuplus.cpp'; else $(CYGPATH_W) '$(srcdir)/livetranscoding-vuplus.cpp'; fi`
 
 streamproxy-mpegts.o: mpegts.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(streamproxy_CXXFLAGS) $(CXXFLAGS) -MT streamproxy-mpegts.o -MD -MP -MF $(DEPDIR)/streamproxy-mpegts.Tpo -c -o streamproxy-mpegts.o `test -f 'mpegts.cpp' || echo '$(srcdir)/'`mpegts.cpp

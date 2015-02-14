@@ -9,9 +9,9 @@ streamproxy_SOURCES = \
 	encoder.cpp \
 	encoder-vuplus.cpp \
 	filestreaming.cpp \
-	filetranscoding.cpp \
+	filetranscoding-vuplus.cpp \
 	livestreaming.cpp \
-	livetranscoding.cpp \
+	livetranscoding-vuplus.cpp \
 	mpegts.cpp \
 	queue.cpp \
 	service.cpp \

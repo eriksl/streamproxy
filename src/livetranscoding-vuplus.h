@@ -1,5 +1,5 @@
-#ifndef _livetranscoding_h_
-#define _livetranscoding_h_
+#ifndef _livetranscoding_vuplus_h_
+#define _livetranscoding_vuplus_h_
 
 #include "config.h"
 #include "trap.h"
@@ -11,7 +11,7 @@
 
 #include <string>
 
-class LiveTranscoding
+class LiveTranscodingVuPlus
 {
 	private:
 
@@ -27,12 +27,12 @@ class LiveTranscoding
 			state_running
 		} encoder_state_t;
 
-		LiveTranscoding()					throw();
-		LiveTranscoding(LiveTranscoding &)	throw();
+		LiveTranscodingVuPlus()							throw();
+		LiveTranscodingVuPlus(LiveTranscodingVuPlus &)	throw();
 
 	public:
 
-		LiveTranscoding(const Service &service, int socketfd,
+		LiveTranscodingVuPlus(const Service &service, int socketfd,
 				std::string webauth, const stb_traits_t &stb_traits,
 				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map)
