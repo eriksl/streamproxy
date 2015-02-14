@@ -7,7 +7,6 @@
 #include "queue.h"
 #include "service.h"
 #include "demuxer.h"
-#include "encoder.h"
 #include "encoder-vuplus.h"
 #include "configmap.h"
 #include "livetranscoding-vuplus.h"
@@ -78,25 +77,19 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 	for(it = pids.begin(); it != pids.end(); it++)
 		Util::vlog("LiveTranscodingVuPlus: pid[%s] = %x", it->first.c_str(), it->second);
 
-	Encoder *encoder = new EncoderVuPlus(pids, stb_traits, streaming_parameters);
-	encoder_pids = encoder->getpids();
+	EncoderVuPlus encoder(pids, stb_traits, streaming_parameters);
+	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
 		Util::vlog("LiveTranscodingVuPlus: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
-	if((encoder_fd = encoder->getfd()) < 0)
-	{
-		delete encoder;
+	if((encoder_fd = encoder.getfd()) < 0)
 		throw(trap("LiveTranscodingVuPlus: encoder: fd not open"));
-	}
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
-	{
-		delete encoder;
 		throw(trap("LiveTranscodingVuPlus: demuxer: fd not open"));
-	}
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -114,7 +107,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 		{
 			case(state_initial):
 			{
-				if(encoder->start_init())
+				if(encoder.start_init())
 				{
 					encoder_state = state_starting;
 					Util::vlog("LiveTranscodingVuPlus: state init -> starting");
@@ -124,7 +117,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 
 			case(state_starting):
 			{
-				if(encoder->start_finish())
+				if(encoder.start_finish())
 				{
 					encoder_state = state_running;
 					Util::vlog("LiveTranscodingVuPlus: state starting -> running");
@@ -154,10 +147,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 			pfd[2].events |= POLLOUT;
 
 		if(poll(pfd, 3, -1) <= 0)
-		{
-			delete encoder;
 			throw(trap("LiveTranscodingVuPlus: streaming: poll error"));
-		}
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
@@ -219,8 +209,6 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 			}
 		}
 	}
-
-	delete encoder;
 
 	Util::vlog("LiveTranscodingVuPlus: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
 	Util::vlog("LiveTranscodingVuPlus: socket max queue fill: %d%%", max_fill_socket);

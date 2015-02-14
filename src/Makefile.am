@@ -6,7 +6,6 @@ streamproxy_SOURCES = \
 	configmap.cpp \
 	demuxer.cpp \
 	enigma_settings.cpp \
-	encoder.cpp \
 	encoder-vuplus.cpp \
 	filestreaming.cpp \
 	filetranscoding-vuplus.cpp \

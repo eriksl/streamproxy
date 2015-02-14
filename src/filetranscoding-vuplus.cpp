@@ -4,7 +4,6 @@
 #include "filetranscoding-vuplus.h"
 #include "util.h"
 #include "queue.h"
-#include "encoder.h"
 #include "encoder-vuplus.h"
 #include "types.h"
 #include "mpegts.h"
@@ -137,17 +136,14 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 	pids["video"]	= stream.video_pid;
 	pids["audio"]	= stream.audio_pid;
 
-	Encoder *encoder = new EncoderVuPlus(pids, stb_traits, streaming_parameters);
-	encoder_pids = encoder->getpids();
+	EncoderVuPlus encoder(pids, stb_traits, streaming_parameters);
+	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
 		Util::vlog("FileTranscodingVuPlus: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
-	if((encoder_fd = encoder->getfd()) < 0)
-	{
-		delete encoder;
+	if((encoder_fd = encoder.getfd()) < 0)
 		throw(trap("FileTranscodingVuPlus: transcoding: encoder: fd not open"));
-	}
 
 	encoder_state = state_initial;
 
@@ -160,21 +156,15 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		{
 			case(state_initial):
 			{
-				if(encoder->start_init())
-				{
+				if(encoder.start_init())
 					encoder_state = state_starting;
-					//Util::vlog("state init -> starting");
-				}
 				break;
 			}
 
 			case(state_starting):
 			{
-				if(encoder->start_finish())
-				{
+				if(encoder.start_finish())
 					encoder_state = state_running;
-					//Util::vlog("state starting -> running");
-				}
 				break;
 			}
 
@@ -196,10 +186,7 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		timeout = (encoder_state == state_starting) ? 100 : -1;
 
 		if(poll(pfd, 2, timeout) <= 0)
-		{
-			delete encoder;
 			throw(trap("FileTranscodingVuPlus: poll error"));
-		}
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
@@ -253,7 +240,6 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		}
 	}
 
-	delete encoder;
 	Util::vlog("FileTranscodingVuPlus: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }
 

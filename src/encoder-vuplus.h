@@ -4,13 +4,12 @@
 #include "config.h"
 #include "trap.h"
 #include "stbtraits.h"
-#include "encoder.h"
 
 #include "types.h"
 #include <string>
 #include <pthread.h>
 
-class EncoderVuPlus : public Encoder
+class EncoderVuPlus
 {
 	private:
 
