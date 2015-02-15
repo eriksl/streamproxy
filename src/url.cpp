@@ -16,6 +16,13 @@ using std::string;
 #include <string.h>
 #include <ctype.h>
 
+#include <sstream>
+#include <iomanip>
+using std::ostringstream;
+using std::hex;
+using std::setfill;
+using std::setw;
+
 Url::Url(const string &url_in) throw() : url(url_in)
 {
 }
@@ -95,4 +102,20 @@ UrlParameterMap Url::split() const throw()
 	}
 
 	return(rv);
+}
+
+string Url::encode() const throw()
+{
+	string::const_iterator it;
+	ostringstream conv;
+
+	for(it = url.begin(); it != url.end(); it++)
+	{
+		if(*it > ' ')
+			conv << setw(0) << *it;
+		else
+			conv << '%' << setw(2) << setfill('0') << hex << int(*it);
+	}
+
+	return(conv.str());
 }

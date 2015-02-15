@@ -18,6 +18,7 @@ streamproxy_SOURCES = \
 	streamproxy.cpp \
 	time_offset.cpp \
 	trap.cpp \
+	transcoding-enigma.cpp \
 	url.cpp \
 	util.cpp \
 	webifrequest.cpp \

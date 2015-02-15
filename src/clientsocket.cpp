@@ -7,6 +7,7 @@
 #include "livetranscoding-vuplus.h"
 #include "filestreaming.h"
 #include "filetranscoding-vuplus.h"
+#include "transcoding-enigma.h"
 #include "util.h"
 #include "url.h"
 #include "types.h"
@@ -292,7 +293,29 @@ ClientSocket::ClientSocket(int fd_in,
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live transcoding request");
-			(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+
+			switch(stb_traits.transcoding_type)
+			{
+				case(stb_transcoding_vuplus):
+				{
+					Util::vlog("ClientSocket: transcoding service vuplus");
+					(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+					break;
+				}
+
+				case(stb_transcoding_enigma):
+				{
+					Util::vlog("ClientSocket: transcoding service enigma");
+					(void)TranscodingEnigma(service.service_string(), fd, webauth, stb_traits, streaming_parameters);
+					break;
+				}
+
+				default:
+				{
+					throw(http_trap(string("not a supported stb for transcoding"), 400, "Bad request"));
+				}
+			}
+
 			Util::vlog("ClientSocket: live transcoding ends");
 
 			return;
@@ -310,7 +333,31 @@ ClientSocket::ClientSocket(int fd_in,
 		if((urlparams[""] == "/file") && urlparams.count("file"))
 		{
 			Util::vlog("ClientSocket: file transcoding request");
-			(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+
+			switch(stb_traits.transcoding_type)
+			{
+				case(stb_transcoding_vuplus):
+				{
+					Util::vlog("ClientSocket: transcoding service vuplus");
+					(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+					break;
+				}
+
+				case(stb_transcoding_enigma):
+				{
+					string service(string("1:0:1:0:0:0:0:0:0:0:") + Url(urlparams.at("file")).encode());
+
+					Util::vlog("ClientSocket: transcoding service enigma");
+					(void)TranscodingEnigma(service, fd, webauth, stb_traits, streaming_parameters);
+					break;
+				}
+
+				default:
+				{
+					throw(http_trap(string("not a supported stb for transcoding"), 400, "Bad request"));
+				}
+			}
+
 			Util::vlog("ClientSocket: file transcoding ends");
 
 			return;
@@ -357,8 +404,29 @@ ClientSocket::ClientSocket(int fd_in,
 				}
 				else
 				{
-					Util::vlog("ClientSocket: transcoding file");
-					(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+					switch(stb_traits.transcoding_type)
+					{
+						case(stb_transcoding_vuplus):
+						{
+							Util::vlog("ClientSocket: transcoding service vuplus");
+							(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+							break;
+						}
+
+						case(stb_transcoding_enigma):
+						{
+							string service(string("1:0:1:0:0:0:0:0:0:0:") + Url(urlparams.at("file")).encode());
+
+							Util::vlog("ClientSocket: transcoding service enigma");
+							(void)TranscodingEnigma(service, fd, webauth, stb_traits, streaming_parameters);
+							break;
+						}
+
+						default:
+						{
+							throw(http_trap(string("not a supported stb for transcoding"), 400, "Bad request"));
+						}
+					}
 				}
 
 				Util::vlog("ClientSocket: default file ends");
@@ -380,8 +448,29 @@ ClientSocket::ClientSocket(int fd_in,
 					}
 					else
 					{
-						Util::vlog("ClientSocket: transcoding service");
-						(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+						Util::vlog("ClientSocket: default live transcoding request");
+
+						switch(stb_traits.transcoding_type)
+						{
+							case(stb_transcoding_vuplus):
+							{
+								Util::vlog("ClientSocket: transcoding service vuplus");
+								(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+								break;
+							}
+
+							case(stb_transcoding_enigma):
+							{
+								Util::vlog("ClientSocket: transcoding service enigma");
+								(void)TranscodingEnigma(service.service_string(), fd, webauth, stb_traits, streaming_parameters);
+								break;
+							}
+
+							default:
+							{
+								throw(http_trap(string("not a supported stb for transcoding"), 400, "Bad request"));
+							}
+						}
 					}
 
 					Util::vlog("ClientSocket: default live ends");

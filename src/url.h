@@ -17,8 +17,10 @@ class Url
 
 	public:
 
-		Url(const std::string &url)			throw();
-		UrlParameterMap split() 	const	throw();
+		Url(const std::string &url)				throw();
+
+		UrlParameterMap		split() 	const	throw();
+		std::string			encode()	const	throw();
 
 	private:
 
