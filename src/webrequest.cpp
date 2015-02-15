@@ -119,7 +119,7 @@ string WebRequest::page_info(string &mimetype) const throw()
 			data += string("            <feature_entry id=\"") + feature->id + "\">\n";
 			data += string("<settable>") + (feature->settable ? "yes" : "no") + "</settable>\n";
 			data += string("<description>") + feature->description + "</description>\n";
-			data += string("<proc_entry>") + feature->api_data + "</proc_entry>\n";
+			data += string("<proc_entry>") + (feature->api_data ? feature->api_data : "") + "</proc_entry>\n";
 
 			switch(feature->type)
 			{
@@ -240,7 +240,7 @@ string WebRequest::page_info(string &mimetype) const throw()
 		{
 			const stb_feature_t *feature = &stb_traits.features[feature_index];
 			data += string("		<tr><td>") + feature->id + "</td><td>" + (feature->settable ? "yes" : "no") + "</td>";
-			data += string("<td>") + feature->description + "</td><td>" + feature->api_data + "</td>";
+			data += string("<td>") + feature->description + "</td><td>" + (feature->api_data ? feature->api_data : "") + "</td>";
 
 			switch(feature->type)
 			{
@@ -308,6 +308,7 @@ string WebRequest::get(string &mimetype) const throw()
 
 	if((request == "") || (request == "info"))
 		data = page_info(mimetype);
+
 	if(request == "cookie")
 		data = page_test_cookie(mimetype);
 
