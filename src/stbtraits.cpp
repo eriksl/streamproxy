@@ -13,7 +13,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "h264",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"h264", 0,
 				},
@@ -31,7 +31,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "aac",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"aac", 0,
 				},
@@ -66,7 +66,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "416x224",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"416x224", 0,
 				},
@@ -84,7 +84,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "constrained baseline",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"constrained baseline", 0,
 				},
@@ -102,7 +102,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "3.0",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"3.0", 0,
 				},
@@ -137,7 +137,7 @@ static const stb_feature_t features_vusolo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "30",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"24", "25", "30", 0,
 				},
@@ -159,7 +159,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "h264",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"h264", 0,
 				},
@@ -177,7 +177,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "aac",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"aac", 0,
 				},
@@ -212,7 +212,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "480p",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"480p", "576p", "720p", 0,
 				},
@@ -230,7 +230,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "baseline",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"baseline", "simple", "main", "high", 0,
 				},
@@ -248,7 +248,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "3.1",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"3.1", "3.2", "4.0", 0,
 				},
@@ -283,7 +283,7 @@ static const stb_feature_t features_vuduo2[] =
 			.string_enum_type =
 			{
 				.default_value	= "30000",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"24000", "25000", "30000", 0,
 				},
@@ -305,7 +305,7 @@ static const stb_feature_t features_et10000[] =
 			.string_enum_type =
 			{
 				.default_value	= "h264",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"h264", 0,
 				},
@@ -323,7 +323,7 @@ static const stb_feature_t features_et10000[] =
 			.string_enum_type =
 			{
 				.default_value	= "aac",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"aac", 0,
 				},
@@ -358,7 +358,7 @@ static const stb_feature_t features_et10000[] =
 			.string_enum_type =
 			{
 				.default_value	= "480p",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"480p", "576p", "720p", 0,
 				},
@@ -380,7 +380,7 @@ static const stb_feature_t features_hd2400[] =
 			.string_enum_type =
 			{
 				.default_value	= "h264",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"h264", 0,
 				},
@@ -398,7 +398,7 @@ static const stb_feature_t features_hd2400[] =
 			.string_enum_type =
 			{
 				.default_value	= "aac",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"aac", 0,
 				},
@@ -433,7 +433,7 @@ static const stb_feature_t features_hd2400[] =
 			.string_enum_type =
 			{
 				.default_value	= "480p",
-				.enum_values	= 
+				.enum_values	=
 				{
 					"480p", "576p", "720p", 0,
 				},
