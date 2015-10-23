@@ -79,7 +79,7 @@ typedef struct
 typedef struct
 {
 	size_t					num_traits;
-	const stb_traits_t		traits_entry[5];
+	const stb_traits_t		traits_entry[6];
 } stbs_traits_t;
 
 extern const stbs_traits_t stbs_traits;
