@@ -438,6 +438,152 @@ static const stb_feature_t features_vuduo2[] =
 	},
 };
 
+static const stb_feature_t features_vusolo4k[] =
+{
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Video codec",
+		.id				= "vcodec",
+		.settable		= true,
+		.api_data		= "video_codec",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "h264",
+				.enum_values	=
+				{
+					"h264", 0,
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Audio codec",
+		.id				= "acodec",
+		.settable		= true,
+		.api_data		= "audio_codec",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "aac",
+				.enum_values	=
+				{
+					"aac", 0,
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_int,
+		.description	= "Total stream bit rate",
+		.id				= "bitrate",
+		.settable		= true,
+		.api_data		= "bitrate",
+		.value			=
+		{
+			.int_type =
+			{
+				.default_value	= 1000,
+				.min_value		= 100,
+				.max_value		= 10000,
+				.scaling_factor	= 1000,
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Picture dimensions",
+		.id				= "size",
+		.settable		= true,
+		.api_data		= "display_format",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "480p",
+				.enum_values	=
+				{
+					"480p", "576p", "720p", "1080p", 0,
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Video codec profile",
+		.id				= "profile",
+		.settable		= true,
+		.api_data		= "profile",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "baseline",
+				.enum_values	=
+				{
+					"baseline", "simple", "main", "high", 0,
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Video codec level",
+		.id				= "level",
+		.settable		= true,
+		.api_data		= "level",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "high",
+				.enum_values	=
+				{
+					"low", "main", "high"
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_int,
+		.description	= "Max. bidirectional frames in a row",
+		.id				= "bframes",
+		.settable		= true,
+		.api_data		= "gop_frameb",
+		.value			=
+		{
+			.int_type =
+			{
+				.default_value	= 2,
+				.min_value		= 0,
+				.max_value		= 2,
+				.scaling_factor	= 1,
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Frame rate",
+		.id				= "framerate",
+		.settable		= true,
+		.api_data		= "framerate",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "30000",
+				.enum_values	=
+				{
+					"24000", "25000", "30000", 0,
+				},
+			},
+		},
+	},
+};
+
 static const stb_feature_t features_et10000[] =
 {
 	{
@@ -594,7 +740,7 @@ static const stb_feature_t features_generic[] =
 
 const stbs_traits_t stbs_traits =
 {
-	.num_traits = 6,
+	.num_traits = 7,
 	.traits_entry =
 	{
 		{
@@ -627,7 +773,6 @@ const stbs_traits_t stbs_traits =
 			.num_features		= 8,
 			.features			= features_vusolo2,
 		},
-
 		{
 			.manufacturer		= "VU+",
 			.model				= "Duo2",
@@ -642,6 +787,21 @@ const stbs_traits_t stbs_traits =
 			},
 			.num_features		= 8,
 			.features			= features_vuduo2,
+		},
+		{
+			.manufacturer		= "VU+",
+			.model				= "Solo4k",
+			.chipset			= "bcm7376",
+			.transcoding_type	= stb_transcoding_vuplus,
+			.encoders			= 1,
+			.num_id				= 2,
+			.id					=
+			{
+				{ "/proc/stb/info/chipset", "7376" },
+				{ "/proc/stb/info/vumodel", "solo4k" },
+			},
+			.num_features		= 8,
+			.features			= features_vusolo4k,
 		},
 		{
 			.manufacturer		= "XTrend",
