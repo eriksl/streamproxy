@@ -14,3 +14,12 @@ config.h.in~
 oe-configure
 aclocal-copy
 autom4te.cache
+Makefile.in
+aclocal.m4
+compile
+config.guess
+config.sub
+configure
+depcomp
+install-sh
+missing
