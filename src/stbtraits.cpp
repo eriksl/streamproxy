@@ -298,7 +298,7 @@ static const stb_feature_t features_vuduo2[] =
 		.type			= stb_traits_type_string_enum,
 		.description	= "Video codec",
 		.id				= "vcodec",
-		.settable		= true,
+		.settable		= false,
 		.api_data		= "video_codec",
 		.value			=
 		{
@@ -316,7 +316,7 @@ static const stb_feature_t features_vuduo2[] =
 		.type			= stb_traits_type_string_enum,
 		.description	= "Audio codec",
 		.id				= "acodec",
-		.settable		= true,
+		.settable		= false,
 		.api_data		= "audio_codec",
 		.value			=
 		{
@@ -444,7 +444,7 @@ static const stb_feature_t features_vusolo4k[] =
 		.type			= stb_traits_type_string_enum,
 		.description	= "Video codec",
 		.id				= "vcodec",
-		.settable		= true,
+		.settable		= false,
 		.api_data		= "video_codec",
 		.value			=
 		{
@@ -462,7 +462,7 @@ static const stb_feature_t features_vusolo4k[] =
 		.type			= stb_traits_type_string_enum,
 		.description	= "Audio codec",
 		.id				= "acodec",
-		.settable		= true,
+		.settable		= false,
 		.api_data		= "audio_codec",
 		.value			=
 		{
