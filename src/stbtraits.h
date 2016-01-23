@@ -13,6 +13,11 @@ typedef enum
 
 typedef enum
 {
+	stb_quirk_solo4k = 1 << 0,
+} stb_quirks_t;
+
+typedef enum
+{
 	stb_traits_type_bool,
 	stb_traits_type_int,
 	stb_traits_type_string,
@@ -69,6 +74,7 @@ typedef struct
 	const char 				*model;
 	const char				*chipset;
 	stb_transcoding_t		transcoding_type;
+	stb_quirks_t			quirks;
 	int						encoders;
 	size_t					num_id;
 	const stb_id_t			id[2];

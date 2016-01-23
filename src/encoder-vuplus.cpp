@@ -32,6 +32,9 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 	int						int_value;
 	int						pmt = -1, video = -1, audio = -1;
 	int						attempt;
+	int						ioctl_set_pmtpid;
+	int						ioctl_set_vpid;
+	int						ioctl_set_apid;
 
 	fd						= -1;
 	encoder					= -1;
@@ -233,9 +236,22 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 	Util::vlog("audio: %d", audio);
 	Util::vlog("start ioctl");
 
-	if(ioctl(fd, IOCTL_VUPLUS_SET_PMTPID, pmt) ||
-			ioctl(fd, IOCTL_VUPLUS_SET_VPID, video) ||
-			ioctl(fd, IOCTL_VUPLUS_SET_APID, audio))
+	if(stb_traits.quirks & stb_quirk_solo4k)
+	{
+		ioctl_set_pmtpid = 13;
+		ioctl_set_vpid = 11;
+		ioctl_set_apid = 12;
+	}
+	else
+	{
+		ioctl_set_pmtpid = 3;
+		ioctl_set_vpid = 1;
+		ioctl_set_apid = 2;
+	}
+
+	if(ioctl(fd, ioctl_set_pmtpid, pmt) ||
+			ioctl(fd, ioctl_set_vpid, video) ||
+			ioctl(fd, ioctl_set_apid, audio))
 	{
 			throw(trap("EncoderVuPlus: cannot init encoder"));
 	}

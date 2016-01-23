@@ -539,10 +539,10 @@ static const stb_feature_t features_vusolo4k[] =
 		{
 			.string_enum_type =
 			{
-				.default_value	= "high",
+				.default_value	= "3.1",
 				.enum_values	=
 				{
-					"low", "main", "high"
+					"3.0", "3.1", "3.2", "4.0", "4.1",
 				},
 			},
 		},
@@ -748,6 +748,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "SoloSE",
 			.chipset			= "bcm7429",
 			.transcoding_type	= stb_transcoding_vuplus,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 1,
 			.num_id				= 2,
 			.id					=
@@ -763,6 +764,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "Solo2",
 			.chipset			= "bcm7356",
 			.transcoding_type	= stb_transcoding_vuplus,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 1,
 			.num_id				= 2,
 			.id					=
@@ -778,6 +780,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "Duo2",
 			.chipset			= "bcm7424",
 			.transcoding_type	= stb_transcoding_vuplus,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 2,
 			.num_id				= 2,
 			.id					=
@@ -793,6 +796,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "Solo4k",
 			.chipset			= "bcm7376",
 			.transcoding_type	= stb_transcoding_vuplus,
+			.quirks				= (stb_quirks_t)stb_quirk_solo4k,
 			.encoders			= 1,
 			.num_id				= 2,
 			.id					=
@@ -808,6 +812,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "ET1000",
 			.chipset			= "bcm7424",
 			.transcoding_type	= stb_transcoding_enigma,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 2,
 			.num_id				= 2,
 			.id					=
@@ -823,6 +828,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "hd2400",
 			.chipset			= "bcm7424",
 			.transcoding_type	= stb_transcoding_enigma,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 2,
 			.num_id				= 2,
 			.id					=
@@ -838,6 +844,7 @@ const stbs_traits_t stbs_traits =
 			.model				= "non-transcoding settopbox",
 			.chipset			= "unknown",
 			.transcoding_type	= stb_transcoding_unknown,
+			.quirks				= (stb_quirks_t)0,
 			.encoders			= 0,
 			.num_id				= 0,
 			.id					=
