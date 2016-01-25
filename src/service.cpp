@@ -24,23 +24,20 @@ Service::Service(string service_in) throw(trap)
 	int						value;
 	string					field;
 
-	service = service_in;
 	valid	= false;
 
-	if(service.length() == 0)
+	if(service_in.length() == 0)
 	{
 		Util::vlog("Service: invalid service (empty)");
 		service_field.clear();
 		return;
 	}
 
-	if(service[service.length() - 1] == ':') // OpenWebIF leaves this in
-		service.erase(service.length() - 1);
+	Util::vlog("Service: create service: %s", service_in.c_str());
 
-	Util::vlog("Service: create service: %s", service.c_str());
-
-	for(find_it = make_split_iterator(service, first_finder(":", boost::algorithm::is_equal()));
-		find_it != string_split_iterator(); find_it++)
+	for(find_it = make_split_iterator(service_in, first_finder(":", boost::algorithm::is_equal()));
+		(find_it != string_split_iterator()) && (service_field.size() < 10);
+		find_it++)
 	{
 		value = 0;
 
@@ -54,6 +51,11 @@ Service::Service(string service_in) throw(trap)
 			service_field.clear();
 			return;
 		}
+
+		if(service_field.size() > 0)
+			service += ":";
+
+		service += field;
 
 		for(string_it = field.begin(); string_it != field.end(); string_it++)
 		{
@@ -76,16 +78,6 @@ Service::Service(string service_in) throw(trap)
 		}
 
 		service_field.push_back(value);
-	}
-
-	//for(int_it = service_field.begin(); int_it != service_field.end(); int_it++)
-		//Util::vlog("Service: service field: %x", *int_it);
-
-	if(service_field.size() != 10)
-	{
-		Util::vlog("Service: invalid service (invalid # of fields");
-		service_field.clear();
-		return;
 	}
 
 	valid = true;

@@ -485,7 +485,7 @@ ClientSocket::ClientSocket(int fd_in,
 	catch(const http_trap &e)
 	{
 		reply = string("HTTP/1.1 ") + Util::int_to_string(e.http_error) + " " + e.http_header;
-		reply += http_error_headers;
+		reply += string("\r\n") + http_error_headers;
 
 		message = reply;
 		boost::replace_all(message, "\r\n", "@");

@@ -23,8 +23,7 @@ trap::~trap() throw()
 {
 }
 
-http_trap::http_trap(string message_in, 
-		int http_error_in, string http_header_in) throw()
+http_trap::http_trap(string message_in, int http_error_in, string http_header_in) throw()
 		:
 	trap(message_in),
 	http_error(http_error_in),
