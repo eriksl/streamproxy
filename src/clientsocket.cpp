@@ -845,7 +845,7 @@ void ClientSocket::add_default_params() throw()
 void ClientSocket::check_add_urlparams() throw()
 {
 	UrlParameterMap::const_iterator	it;
-	string							value;
+	string							param, value;
 	string							value_out;
 	string							api_data;
 
@@ -867,14 +867,41 @@ void ClientSocket::check_add_urlparams() throw()
 			continue;
 		}
 
+		param = it->first;
 		value = it->second;
 
-		if(get_feature_value(it->first, value, value_out, api_data))
+		if(param == "height") // workaround for Xtrend streaming
 		{
-			Util::vlog("clientsocket: accept streaming specific param %s = %s", it->first.c_str(), value.c_str());
-			streaming_parameters[it->first] = value_out;
+			Util::vlog("ClientSocket: Xtrend workaround active");
+
+			if(value == "224")
+			{
+				param = "size";
+				value = "416x224";
+			}
+			else if(value == "480")
+			{
+				param = "size";
+				value = "480p";
+			}
+			else if(value == "576")
+			{
+				param = "size";
+				value = "576p";
+			}
+			else if(value == "720")
+			{
+				param = "size";
+				value = "720p";
+			}
+		}
+
+		if(get_feature_value(param, value, value_out, api_data))
+		{
+			Util::vlog("clientsocket: accept streaming specific param %s = %s", param.c_str(), value.c_str());
+			streaming_parameters[param] = value_out;
 		}
 		else
-			Util::vlog("clientsocket: reject streaming specific param %s = %s", it->first.c_str(), value.c_str());
+			Util::vlog("clientsocket: reject streaming specific param %s = %s", param.c_str(), value.c_str());
 	}
 }

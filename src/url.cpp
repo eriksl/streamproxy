@@ -87,7 +87,7 @@ UrlParameterMap Url::split() const throw()
 	rv[""] = url.substr(0, needle);
 
 	request = url.substr(needle + 1);
-	boost::split(params, request, boost::is_any_of("&"));
+	boost::split(params, request, boost::is_any_of("&?"));
 
 	for(it = params.begin(); it != params.end(); it++)
 	{
