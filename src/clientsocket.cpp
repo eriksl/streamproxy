@@ -714,6 +714,17 @@ bool ClientSocket::get_feature_value(string feature_name, string value_in, strin
 				return(true);
 			}
 
+			if(feature->value.int_type.scaling_factor > 1)
+			{
+				value /= feature->value.int_type.scaling_factor;
+
+				if((feature->value.int_type.min_value <= value) && (value <= feature->value.int_type.max_value))
+				{
+					value_out = Util::int_to_string(value);
+					return(true);
+				}
+			}
+
 			return(false);
 		}
 
