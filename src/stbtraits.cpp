@@ -809,7 +809,7 @@ const stbs_traits_t stbs_traits =
 		},
 		{
 			.manufacturer		= "XTrend",
-			.model				= "ET1000",
+			.model				= "ET10000",
 			.chipset			= "bcm7424",
 			.transcoding_type	= stb_transcoding_enigma,
 			.quirks				= (stb_quirks_t)0,
