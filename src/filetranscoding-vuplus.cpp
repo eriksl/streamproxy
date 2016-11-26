@@ -183,7 +183,7 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		if(socket_queue.length() > 0)
 			pfd[1].events |= POLLOUT;
 
-		timeout = (encoder_state == state_starting) ? 100 : -1;
+		timeout = (encoder_state == state_starting) ? 1000 : -1;
 
 		if(poll(pfd, 2, timeout) <= 0)
 			throw(trap("FileTranscodingVuPlus: poll error"));
