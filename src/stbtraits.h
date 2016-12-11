@@ -13,7 +13,7 @@ typedef enum
 
 typedef enum
 {
-	stb_quirk_solo4k = 1 << 0,
+	stb_quirk_vu4k = 1 << 0,
 } stb_quirks_t;
 
 typedef enum
@@ -85,7 +85,7 @@ typedef struct
 typedef struct
 {
 	size_t					num_traits;
-	const stb_traits_t		traits_entry[7];
+	const stb_traits_t		traits_entry[8];
 } stbs_traits_t;
 
 extern const stbs_traits_t stbs_traits;
