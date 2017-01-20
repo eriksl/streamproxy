@@ -122,7 +122,7 @@ int64_t Util::string_to_int(string in) throw()
 uint64_t Util::string_to_uint(string in) throw()
 {
 	stringstream	conv;
-	int				rv;
+	uint64_t		rv;
 
 	try
 	{
@@ -131,7 +131,7 @@ uint64_t Util::string_to_uint(string in) throw()
 	}
 	catch(...)
 	{
-		return(-1);
+		return(0);
 	}
 
 	return(rv);
