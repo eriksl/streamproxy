@@ -81,7 +81,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 	if(stb_traits.encoders > 0)
 	{
-		for(attempt = 0; attempt < 32; attempt++)
+		for(attempt = 0; attempt < 64; attempt++)
 		{
 			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
 			{
@@ -98,7 +98,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 	if((stb_traits.encoders > 1) && (encoder < 0))
 	{
-		for(attempt = 0; attempt < 32; attempt++)
+		for(attempt = 0; attempt < 64; attempt++)
 		{
 			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
 			{
