@@ -33,7 +33,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webaut
 						"Connection: Close\r\n"
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
-	Queue			socket_queue(512 * 1024);
+	Queue			socket_queue(1024 * 1024);
 
 	Util::vlog("LiveStreaming: %s", service.service_string().c_str());
 

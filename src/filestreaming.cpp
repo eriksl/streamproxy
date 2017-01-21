@@ -29,7 +29,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 										"Server: Streamproxy\r\n"
 										"Accept-Ranges: bytes\r\n";
 	string			http_reply;
-	Queue			socket_queue(32 * 1024);
+	Queue			socket_queue(1024 * 1024);
 	int				time_offset_s = 0;
 	off_t			byte_offset = 0;
 	off_t			http_range = 0;

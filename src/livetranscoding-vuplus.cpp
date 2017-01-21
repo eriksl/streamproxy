@@ -41,7 +41,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 						"Content-Type: video/mpeg\r\n"
 						"\r\n";
 
-	Queue			encoder_queue(512 * 1024);
+	Queue			encoder_queue(1024 * 1024);
 	Queue			socket_queue(1024 * 1024);
 
 	Util::vlog("LiveTranscodingVuPlus: %s", service.service_string().c_str());
