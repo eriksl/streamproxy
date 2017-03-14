@@ -1154,10 +1154,9 @@ const stbs_traits_t stbs_traits =
 			.transcoding_type	= stb_transcoding_enigma,
 			.quirks				= (stb_quirks_t)0,
 			.encoders			= 2,
-			.num_id				= 2,
+			.num_id				= 1,
 			.id					=
 			{
-				{ "/proc/stb/info/model", "dm800se" },
 				{ "/proc/stb/info/boxtype", "hd2400" },
 			},
 			.num_features		= 4,
