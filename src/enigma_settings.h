@@ -19,10 +19,10 @@ class EnigmaSettings
 
 	public:
 
-		EnigmaSettings() throw(trap);
-		bool exists(std::string key) const throw();
-		std::string as_string(std::string key) const throw(trap);
-		int as_int(std::string key) const throw(trap);
+		EnigmaSettings();
+		bool exists(std::string key) const;
+		std::string as_string(std::string key) const;
+		int as_int(std::string key) const;
 };
 
 #endif

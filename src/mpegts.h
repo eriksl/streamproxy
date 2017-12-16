@@ -179,14 +179,14 @@ class MpegTS
 		u8string		raw_table_data;
 		u8string		table_data;
 
-		static void	parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw();
+		static void	parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms);
 
-		void	init()											throw(trap);
-		bool	read_table(int filter_pid, int filter_table)	throw(trap);
-		bool	read_pat()										throw(trap);
-		bool	read_pmt(int filter_pid)						throw(trap);
-		int		find_pcr_ms(seek_direction_t direction)	const	throw();
-		off_t	seek(int whence, off_t offset)			const	throw(trap);
+		void	init();
+		bool	read_table(int filter_pid, int filter_table);
+		bool	read_pat();
+		bool	read_pmt(int filter_pid);
+		int		find_pcr_ms(seek_direction_t direction)	const;
+		off_t	seek(int whence, off_t offset)			const;
 
 	public:
 
@@ -203,13 +203,13 @@ class MpegTS
 		off_t	eof_offset;
 		off_t	stream_length;
 
-		MpegTS(int fd, bool request_time_seek)						throw(trap);
-		MpegTS(std::string file, bool request_time_seek)			throw(trap);
-		~MpegTS()													throw();
+		MpegTS(int fd, bool request_time_seek);
+		MpegTS(std::string file, bool request_time_seek);
+		~MpegTS();
 
-		int		get_fd()									const	throw();
-		off_t	seek_absolute(off_t offset)					const	throw(trap);
-		off_t	seek_relative(off_t offset, off_t limit)	const	throw(trap);
-		off_t	seek_time(int pts_ms)						const	throw(trap);
+		int		get_fd()									const;
+		off_t	seek_absolute(off_t offset)					const;
+		off_t	seek_relative(off_t offset, off_t limit)	const;
+		off_t	seek_time(int pts_ms)						const;
 };
 #endif

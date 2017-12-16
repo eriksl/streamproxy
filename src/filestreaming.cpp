@@ -17,7 +17,7 @@ using std::string;
 
 FileStreaming::FileStreaming(string file, int socket_fd, string,
 		const StreamingParameters &streaming_parameters,
-		const ConfigMap &) throw(trap)
+		const ConfigMap &)
 {
 	size_t			max_fill_socket = 0;
 	struct pollfd	pfd;

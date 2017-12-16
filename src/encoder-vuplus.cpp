@@ -21,7 +21,7 @@ using std::string;
 
 EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 		const stb_traits_t &stb_traits_in,
-		const StreamingParameters &streaming_parameters_in) throw(trap)
+		const StreamingParameters &streaming_parameters_in)
 	:
 		streaming_parameters(streaming_parameters_in),
 		stb_traits(stb_traits_in)
@@ -257,7 +257,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 	}
 }
 
-EncoderVuPlus::~EncoderVuPlus() throw()
+EncoderVuPlus::~EncoderVuPlus()
 {
 	stop();
 	close(fd);
@@ -281,7 +281,7 @@ void* EncoderVuPlus::start_thread_function(void * arg)
 	return((void *)0);
 }
 
-bool EncoderVuPlus::start_init() throw()
+bool EncoderVuPlus::start_init()
 {
 	//Util::vlog("EncoderVuPlus: START TRANSCODING start");
 
@@ -301,7 +301,7 @@ bool EncoderVuPlus::start_init() throw()
 	return(true);
 }
 
-bool EncoderVuPlus::start_finish() throw()
+bool EncoderVuPlus::start_finish()
 {
 	if(!start_thread_running && !start_thread_joined)
 	{
@@ -316,7 +316,7 @@ bool EncoderVuPlus::start_finish() throw()
 	return(false);
 }
 
-bool EncoderVuPlus::stop() throw()
+bool EncoderVuPlus::stop()
 {
 	struct pollfd pfd;
 	static char buffer[4096];
@@ -377,17 +377,17 @@ bool EncoderVuPlus::stop() throw()
 	return(true);
 }
 
-int EncoderVuPlus::getfd() const throw()
+int EncoderVuPlus::getfd() const
 {
 	return(fd);
 }
 
-PidMap EncoderVuPlus::getpids() const throw()
+PidMap EncoderVuPlus::getpids() const
 {
 	return(pids);
 }
 
-string EncoderVuPlus::getprop(string property) const throw()
+string EncoderVuPlus::getprop(string property) const
 {
 	int		procfd;
 	ssize_t	rv;
@@ -415,7 +415,7 @@ string EncoderVuPlus::getprop(string property) const throw()
 	return(tmp);
 }
 
-void EncoderVuPlus::setprop(const string &property, const string &value) const throw()
+void EncoderVuPlus::setprop(const string &property, const string &value) const
 {
 	int		procfd;
 	string	path;

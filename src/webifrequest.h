@@ -27,12 +27,12 @@ class WebifRequest
 	public:
 
 		WebifRequest(const Service &service, std::string webauth,
-					const ConfigMap &config_map) throw(trap);
+					const ConfigMap &config_map);
 		~WebifRequest();
 
-		void	poll()							throw(trap);
-		PidMap	get_pids()				const	throw();
-		int		get_demuxer_id()		const	throw();
+		void	poll();
+		PidMap	get_pids()				const;
+		int		get_demuxer_id()		const;
 };
 
 #endif

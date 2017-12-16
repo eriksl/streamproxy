@@ -23,7 +23,7 @@ using std::string;
 LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketfd,
 		string webauth, const stb_traits_t &stb_traits,
 		const StreamingParameters &streaming_parameters,
-		const ConfigMap &config_map) throw(trap)
+		const ConfigMap &config_map)
 {
 	PidMap::const_iterator it;
 	bool			webifrequest_ok;

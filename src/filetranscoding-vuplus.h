@@ -26,8 +26,8 @@ class FileTranscodingVuPlus
 			state_running
 		} encoder_state_t;
 
-		FileTranscodingVuPlus()							throw();
-		FileTranscodingVuPlus(FileTranscodingVuPlus &)	throw();
+		FileTranscodingVuPlus();
+		FileTranscodingVuPlus(FileTranscodingVuPlus &);
 
 		char *encoder_buffer;
 
@@ -36,8 +36,8 @@ class FileTranscodingVuPlus
 		FileTranscodingVuPlus(std::string file, int socketfd, std::string webauth,
 				const stb_traits_t &stb_traits_in,
 				const StreamingParameters &streaming_parameters,
-				const ConfigMap &config_map)	throw(trap);
-		~FileTranscodingVuPlus()				throw();
+				const ConfigMap &config_map);
+		~FileTranscodingVuPlus();
 };
 
 #endif

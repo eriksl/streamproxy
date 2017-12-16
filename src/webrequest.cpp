@@ -17,14 +17,14 @@ using std::string;
 
 WebRequest::WebRequest(const ConfigMap &config_map_in, const HeaderMap &headers_in,
 		const CookieMap &cookies_in, const UrlParameterMap &parameters_in,
-		const stb_traits_t &stb_traits_in) throw()
+		const stb_traits_t &stb_traits_in)
 	:
 		config_map(config_map_in), headers(headers_in), cookies(cookies_in), parameters(parameters_in),
 		stb_traits(stb_traits_in)
 {
 }
 
-string WebRequest::page_test_cookie(string &mimetype) const throw()
+string WebRequest::page_test_cookie(string &mimetype) const
 {
 	mimetype = "text/html";
 
@@ -60,7 +60,7 @@ string WebRequest::page_test_cookie(string &mimetype) const throw()
 	return(data);
 }
 
-string WebRequest::page_info(string &mimetype) const throw()
+string WebRequest::page_info(string &mimetype) const
 {
 	ConfigMap::const_iterator		itm;
 	HeaderMap::const_iterator		ithm;
@@ -300,7 +300,7 @@ string WebRequest::page_info(string &mimetype) const throw()
 	return(data);
 }
 
-string WebRequest::get(string &mimetype) const throw()
+string WebRequest::get(string &mimetype) const
 {
 	string request, html, data;
 

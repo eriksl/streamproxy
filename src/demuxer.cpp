@@ -17,7 +17,7 @@ using std::string;
 #include <linux/dvb/dmx.h>
 #include <poll.h>
 
-Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(trap)
+Demuxer::Demuxer(int id_in, const PidMap &pidmap)
 {
 	PidMap::const_iterator	demux_it;
 	PidMap::const_iterator	it;
@@ -81,7 +81,7 @@ Demuxer::Demuxer(int id_in, const PidMap &pidmap) throw(trap)
 	}
 }
 
-Demuxer::~Demuxer() throw()
+Demuxer::~Demuxer()
 {
 	struct pollfd pfd;
 	static char buffer[4096];
@@ -118,7 +118,7 @@ Demuxer::~Demuxer() throw()
 	Util::vlog("Demuxer: demuxer STOP, draining done");
 }
 
-int Demuxer::getfd() const throw()
+int Demuxer::getfd() const
 {
 	return(fd);
 }

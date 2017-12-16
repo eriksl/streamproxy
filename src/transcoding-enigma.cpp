@@ -37,7 +37,7 @@ static const struct addrinfo gai_localhost_hints =
 
 TranscodingEnigma::TranscodingEnigma(const string &service, int socketfd,
 		string webauth, const stb_traits_t &stb_traits,
-		const StreamingParameters &streaming_parameters) throw(trap)
+		const StreamingParameters &streaming_parameters)
 {
 	size_t				feature_index;
 	const stb_feature_t	*feature = 0;

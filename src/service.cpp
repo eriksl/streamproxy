@@ -14,7 +14,7 @@ using std::vector;
 
 #include <string.h>
 
-Service::Service(string service_in) throw(trap)
+Service::Service(string service_in)
 {
 	typedef boost::algorithm::split_iterator<string::iterator> string_split_iterator;
 
@@ -83,12 +83,12 @@ Service::Service(string service_in) throw(trap)
 	valid = true;
 }
 
-bool Service::is_valid() const throw()
+bool Service::is_valid() const
 {
 	return(valid);
 }
 
-string Service::service_string() const throw(trap)
+string Service::service_string() const
 {
 	if(!valid)
 		throw(trap("Service: service invalid"));
@@ -96,7 +96,7 @@ string Service::service_string() const throw(trap)
 	return(service);
 }
 
-Service::intvector Service::service_vector() const throw(trap)
+Service::intvector Service::service_vector() const
 {
 	if(!valid)
 		throw(trap("Service: service invalid"));

@@ -17,8 +17,8 @@ class TimeOffset
 
 	public:
 
-		TimeOffset(std::string timestring) throw(trap);
-		int as_seconds() const throw();
+		TimeOffset(std::string timestring);
+		int as_seconds() const;
 };
 
 #endif

@@ -13,14 +13,14 @@ class FileStreaming
 {
 	private:
 
-		FileStreaming()					throw();
-		FileStreaming(FileStreaming &)	throw();
+		FileStreaming();
+		FileStreaming(FileStreaming &);
 
 	public:
 
 		FileStreaming(std::string file, int socketfd, std::string webauth,
 				const StreamingParameters &streaming_parameters,
-				const ConfigMap &config_map) throw(trap);
+				const ConfigMap &config_map);
 };
 
 #endif

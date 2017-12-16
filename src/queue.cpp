@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-Queue::Queue(int size_in) throw(trap)
+Queue::Queue(int size_in)
 {
 	buffer_size = size_in;
 
@@ -19,22 +19,22 @@ Queue::Queue(int size_in) throw(trap)
 	Queue::reset();
 }
 
-Queue::~Queue() throw()
+Queue::~Queue()
 {
 	free(buffer);
 }
 
-void Queue::reset() throw()
+void Queue::reset()
 {
 	inptr	= 0;	// where the queue gets filled
 	outptr	= 0;	// where the queue gets emptied
 }
-size_t Queue::size() const throw()
+size_t Queue::size() const
 {
 	return(buffer_size);
 }
 
-size_t Queue::length() const throw()
+size_t Queue::length() const
 {
 	size_t len;
 
@@ -46,12 +46,12 @@ size_t Queue::length() const throw()
 	return(len);
 }
 
-size_t Queue::usage() const throw()
+size_t Queue::usage() const
 {
 	return((length() * 100) / buffer_size);
 }
 
-void Queue::append(size_t len, const char *data) throw()
+void Queue::append(size_t len, const char *data)
 {
 	size_t chunk;
 
@@ -73,7 +73,7 @@ void Queue::append(size_t len, const char *data) throw()
 	}
 }
 
-size_t Queue::extract(size_t data_size, char *data) throw()
+size_t Queue::extract(size_t data_size, char *data)
 {
 	size_t chunk, len = 0;
 
@@ -116,7 +116,7 @@ size_t Queue::extract(size_t data_size, char *data) throw()
 	return(len);
 }
 
-bool Queue::read(int fd, ssize_t maxread) throw()
+bool Queue::read(int fd, ssize_t maxread)
 {
 	ssize_t	rv, chunk;
 
@@ -174,7 +174,7 @@ bool Queue::read(int fd, ssize_t maxread) throw()
 	return(true);
 }
 
-bool Queue::write(int fd, ssize_t maxwrite) throw()
+bool Queue::write(int fd, ssize_t maxwrite)
 {
 	ssize_t		chunk;
 	ssize_t		rv;

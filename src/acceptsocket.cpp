@@ -30,7 +30,7 @@ static const struct linger so_linger =
 	.l_linger	= 0,
 };
 
-AcceptSocket::AcceptSocket(string port) throw(trap)
+AcceptSocket::AcceptSocket(string port)
 {
 	int rv;
 
@@ -60,7 +60,7 @@ AcceptSocket::AcceptSocket(string port) throw(trap)
 		throw(trap("AcceptSocket: cannot listen on accept socket"));
 }
 
-AcceptSocket::~AcceptSocket() throw()
+AcceptSocket::~AcceptSocket()
 {
 	if(gai_accept_address)
 		freeaddrinfo(gai_accept_address);
@@ -69,7 +69,7 @@ AcceptSocket::~AcceptSocket() throw()
 		close(fd);
 }
 
-int AcceptSocket::accept() const throw(trap)
+int AcceptSocket::accept() const
 {
 	int new_fd;
 
@@ -79,7 +79,7 @@ int AcceptSocket::accept() const throw(trap)
 	return(new_fd);
 }
 
-int AcceptSocket::get_fd() const throw()
+int AcceptSocket::get_fd() const
 {
 	return(fd);
 }

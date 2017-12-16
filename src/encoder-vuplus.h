@@ -38,19 +38,19 @@ class EncoderVuPlus
 
 		EncoderVuPlus(const PidMap &,
 				const stb_traits_t &,
-				const StreamingParameters &)					throw(trap);
-		~EncoderVuPlus()										throw();
+				const StreamingParameters &);
+		~EncoderVuPlus();
 
-		std::string	getprop(std::string)				const	throw();
+		std::string	getprop(std::string)				const;
 		void		setprop(const std::string &,
-							const std::string &)		const	throw();
+							const std::string &)		const;
 
-		bool		start_init()								throw();
-		bool		start_finish()								throw();
-		bool		stop()										throw();
+		bool		start_init();
+		bool		start_finish();
+		bool		stop();
 
-		int			getfd()								const	throw();
-		PidMap		getpids()							const	throw();
+		int			getfd()								const;
+		PidMap		getpids()							const;
 };
 
 #endif

@@ -23,16 +23,16 @@ using std::hex;
 using std::setfill;
 using std::setw;
 
-Url::Url(const string &url_in) throw() : url(url_in)
+Url::Url(const string &url_in) : url(url_in)
 {
 }
 
-string Url::plus_expand(const string &param) const throw()
+string Url::plus_expand(const string &param) const
 {
 	return(boost::replace_all_copy(param, "+", " "));
 }
 
-string Url::percent_expand(const string &param) const throw()
+string Url::percent_expand(const string &param) const
 {
 	size_t	current = 0;
 	size_t	needle;
@@ -70,7 +70,7 @@ string Url::percent_expand(const string &param) const throw()
 	return(rv);
 }
 
-UrlParameterMap Url::split() const throw()
+UrlParameterMap Url::split() const
 {
 	UrlParameterMap	rv;
 	size_t			needle;
@@ -104,7 +104,7 @@ UrlParameterMap Url::split() const throw()
 	return(rv);
 }
 
-string Url::encode() const throw()
+string Url::encode() const
 {
 	string::const_iterator it;
 	ostringstream conv;

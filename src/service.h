@@ -23,10 +23,10 @@ class Service
 		Service(const Service &);
 
 	public:
-						Service(std::string service) throw(trap);
-		bool			is_valid() const throw();
-		std::string		service_string() const throw(trap);
-		intvector		service_vector() const throw(trap);
+						Service(std::string service);
+		bool			is_valid() const;
+		std::string		service_string() const;
+		intvector		service_vector() const;
 };
 
 #endif

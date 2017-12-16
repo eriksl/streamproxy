@@ -28,7 +28,7 @@ using std::setprecision;
 
 bool Util::foreground = false;
 
-void Util::vlog(const char * format, ...) throw()
+void Util::vlog(const char * format, ...)
 {
     va_list ap;
 
@@ -56,34 +56,34 @@ void Util::vlog(const char * format, ...) throw()
     va_end(ap);
 }
 
-string Util::int_to_string(int64_t in) throw()
+string Util::int_to_string(int64_t in)
 {
 	stringstream conv;
 	conv << in;
 	return(conv.str());
 }
 
-string Util::uint_to_string(uint64_t in) throw()
+string Util::uint_to_string(uint64_t in)
 {
 	stringstream conv;
 	conv << in;
 	return(conv.str());
 }
-string Util::hex_to_string(int in, int width) throw()
+string Util::hex_to_string(int in, int width)
 {
 	stringstream conv;
 	conv << setw(width) << setfill('0') << hex << in;
 	return(conv.str());
 }
 
-string Util::float_to_string(double value, int precision) throw()
+string Util::float_to_string(double value, int precision)
 {
 	stringstream conv;
 	conv << fixed << setprecision(precision) << value;
 	return(conv.str());
 }
 
-double Util::string_to_float(string in) throw()
+double Util::string_to_float(string in)
 {
 	stringstream	conv;
 	double			rv;
@@ -101,7 +101,7 @@ double Util::string_to_float(string in) throw()
 	return(rv);
 }
 
-int64_t Util::string_to_int(string in) throw()
+int64_t Util::string_to_int(string in)
 {
 	stringstream	conv;
 	int				rv;
@@ -119,7 +119,7 @@ int64_t Util::string_to_int(string in) throw()
 	return(rv);
 }
 
-uint64_t Util::string_to_uint(string in) throw()
+uint64_t Util::string_to_uint(string in)
 {
 	stringstream	conv;
 	uint64_t		rv;

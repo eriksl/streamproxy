@@ -20,7 +20,7 @@ using std::string;
 
 FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 		const stb_traits_t &stb_traits, const StreamingParameters &streaming_parameters,
-		const ConfigMap &) throw(trap)
+		const ConfigMap &)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -243,7 +243,7 @@ FileTranscodingVuPlus::FileTranscodingVuPlus(string file, int socket_fd, string,
 	Util::vlog("FileTranscodingVuPlus: streaming ends, socket max queue fill: %d%%", max_fill_socket);
 }
 
-FileTranscodingVuPlus::~FileTranscodingVuPlus() throw()
+FileTranscodingVuPlus::~FileTranscodingVuPlus()
 {
 	delete [] encoder_buffer;
 	Util::vlog("FileTranscodingVuPlus: cleanup up");

@@ -36,7 +36,7 @@ static const struct addrinfo gai_webif_hints =
 };
 
 WebifRequest::WebifRequest(const Service &service_in,
-			string webauth, const ConfigMap &config_map_in) throw(trap)
+			string webauth, const ConfigMap &config_map_in)
 	:
 		service(service_in), config_map(config_map_in)
 {
@@ -93,7 +93,7 @@ WebifRequest::~WebifRequest()
 	close(fd);
 }
 
-void WebifRequest::poll() throw(trap)
+void WebifRequest::poll()
 {
 	typedef vector<string> stringvector;
 
@@ -183,12 +183,12 @@ void WebifRequest::poll() throw(trap)
 	}
 }
 
-PidMap WebifRequest::get_pids() const throw()
+PidMap WebifRequest::get_pids() const
 {
 	return(pids);
 }
 
-int WebifRequest::get_demuxer_id() const throw()
+int WebifRequest::get_demuxer_id() const
 {
 	return(demuxer_id);
 }

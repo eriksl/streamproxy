@@ -36,7 +36,7 @@ using std::string;
 ClientSocket::ClientSocket(int fd_in,
 		default_streaming_action default_action,
 		const ConfigMap &config_map_in,
-		const stb_traits_t &stb_traits_in) throw()
+		const stb_traits_t &stb_traits_in)
 	:
 		fd(fd_in), config_map(config_map_in),
 		stb_traits(stb_traits_in)
@@ -509,7 +509,7 @@ ClientSocket::ClientSocket(int fd_in,
 	}
 }
 
-ClientSocket::~ClientSocket() throw()
+ClientSocket::~ClientSocket()
 {
 	close(fd);
 }
@@ -550,7 +550,7 @@ bool ClientSocket::is_base64(unsigned char c)
 	return(isalnum(c) || (c == '+') || (c == '/'));
 }
 
-std::string ClientSocket::base64_decode(const std::string &encoded_string) throw()
+std::string ClientSocket::base64_decode(const std::string &encoded_string)
 {
 	int in_len = encoded_string.size();
 	int i = 0;
@@ -598,7 +598,7 @@ std::string ClientSocket::base64_decode(const std::string &encoded_string) throw
 	return ret;
 }
 
-bool ClientSocket::validate_user(string user, string password, string require_auth_group) throw()
+bool ClientSocket::validate_user(string user, string password, string require_auth_group)
 {
 	struct passwd	*pw;
 	struct group	*gr;
@@ -670,7 +670,7 @@ bool ClientSocket::validate_user(string user, string password, string require_au
 	return(encrypted == pw_password);
 }
 
-bool ClientSocket::get_feature_value(string feature_name, string value_in, string &value_out, string &api_data) const throw()
+bool ClientSocket::get_feature_value(string feature_name, string value_in, string &value_out, string &api_data) const
 {
 	const stb_feature_t *feature = 0;
 	size_t				feature_idx;
@@ -766,7 +766,7 @@ bool ClientSocket::get_feature_value(string feature_name, string value_in, strin
 	return(false);
 }
 
-void ClientSocket::check_add_defaults_from_config() throw()
+void ClientSocket::check_add_defaults_from_config()
 {
 	ConfigMap::const_iterator	it;
 	string						value_out;
@@ -784,7 +784,7 @@ void ClientSocket::check_add_defaults_from_config() throw()
 	}
 }
 
-void ClientSocket::add_default_params() throw()
+void ClientSocket::add_default_params()
 {
 	const stb_feature_t *feature = 0;
 	size_t				feature_idx;
@@ -853,7 +853,7 @@ void ClientSocket::add_default_params() throw()
 	}
 }
 
-void ClientSocket::check_add_urlparams() throw()
+void ClientSocket::check_add_urlparams()
 {
 	UrlParameterMap::const_iterator	it;
 	string							param, value;

@@ -14,14 +14,14 @@ class LiveStreaming
 {
 	private:
 
-		LiveStreaming()					throw();
-		LiveStreaming(LiveStreaming &)	throw();
+		LiveStreaming();
+		LiveStreaming(LiveStreaming &);
 
 	public:
 
 		LiveStreaming(const Service &service, int socketfd, std::string webauth,
 				const StreamingParameters &streaming_parameters,
-				const ConfigMap &config_map) throw(trap);
+				const ConfigMap &config_map);
 };
 
 #endif

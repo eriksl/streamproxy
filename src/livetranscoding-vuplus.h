@@ -27,16 +27,15 @@ class LiveTranscodingVuPlus
 			state_running
 		} encoder_state_t;
 
-		LiveTranscodingVuPlus()							throw();
-		LiveTranscodingVuPlus(LiveTranscodingVuPlus &)	throw();
+		LiveTranscodingVuPlus();
+		LiveTranscodingVuPlus(LiveTranscodingVuPlus &);
 
 	public:
 
 		LiveTranscodingVuPlus(const Service &service, int socketfd,
 				std::string webauth, const stb_traits_t &stb_traits,
 				const StreamingParameters &streaming_parameters,
-				const ConfigMap &config_map)
-			throw(trap);
+				const ConfigMap &config_map);
 };
 
 #endif

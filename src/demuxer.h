@@ -25,10 +25,10 @@ class Demuxer
 
 	public:
 
-		Demuxer(int id, const PidMap &)	throw(trap);
-		~Demuxer()						throw();
+		Demuxer(int id, const PidMap &);
+		~Demuxer();
 
-		int getfd()				const	throw();
+		int getfd()				const;
 };
 
 #endif

@@ -10,7 +10,7 @@ using::std::string;
 
 #include <stdlib.h>
 
-TimeOffset::TimeOffset(string timestring) throw(trap)
+TimeOffset::TimeOffset(string timestring)
 {
 	int c;
 	size_t ix;
@@ -31,7 +31,7 @@ TimeOffset::TimeOffset(string timestring) throw(trap)
 			seconds += strtoul(part.c_str(), 0, 10) * 60 * 60;
 			timestring.erase(0, ix + 1);
 
-			// fall through
+			__attribute__ ((fallthrough));
 		}
 
 		case(1):
@@ -41,7 +41,7 @@ TimeOffset::TimeOffset(string timestring) throw(trap)
 			seconds += strtoul(part.c_str(), 0, 10) * 60;
 			timestring.erase(0, ix + 1);
 
-			// fall through
+			__attribute__ ((fallthrough));
 		}
 
 		case(0):
@@ -60,7 +60,7 @@ TimeOffset::TimeOffset(string timestring) throw(trap)
 	}
 }
 
-int TimeOffset::as_seconds() const throw()
+int TimeOffset::as_seconds() const
 {
 	return(seconds);
 }

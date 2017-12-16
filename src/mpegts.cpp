@@ -16,7 +16,7 @@ using std::string;
 
 #include <boost/algorithm/string.hpp>
 
-MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(trap)
+MpegTS::MpegTS(int fd_in, bool request_time_seek_in)
 	:	private_fd(false),
 		fd(fd_in),
 		request_time_seek(request_time_seek_in)
@@ -24,7 +24,7 @@ MpegTS::MpegTS(int fd_in, bool request_time_seek_in) throw(trap)
 	init();
 }
 
-MpegTS::MpegTS(string filename, bool request_time_seek_in) throw(trap)
+MpegTS::MpegTS(string filename, bool request_time_seek_in)
 	:	private_fd(true),
 		request_time_seek(request_time_seek_in)
 {
@@ -34,13 +34,13 @@ MpegTS::MpegTS(string filename, bool request_time_seek_in) throw(trap)
 	init();
 }
 
-MpegTS::~MpegTS() throw()
+MpegTS::~MpegTS()
 {
 	if(private_fd)
 		close(fd);
 }
 
-void MpegTS::init() throw(trap)
+void MpegTS::init()
 {
 	mpegts_pat_t::const_iterator it;
 	struct stat filestat;
@@ -110,7 +110,7 @@ void MpegTS::init() throw(trap)
 	//Util::vlog("eof_offset is at %lld", eof_offset);
 }
 
-bool MpegTS::read_table(int filter_pid, int filter_table) throw(trap)
+bool MpegTS::read_table(int filter_pid, int filter_table)
 {
 	typedef boost::crc_optimal<32, 0x04c11db7, 0xffffffff, 0x0, false, false> boost_mpeg_crc_t;
 
@@ -324,7 +324,7 @@ retry:
 	return(true);
 }
 
-bool MpegTS::read_pat() throw(trap)
+bool MpegTS::read_pat()
 {
 	int		attempt;
 	int		current, entries, program, pid;
@@ -362,7 +362,7 @@ next_pat_entry:
 	return(false);
 }
 
-bool MpegTS::read_pmt(int filter_pid) throw(trap)
+bool MpegTS::read_pmt(int filter_pid)
 {
 	int		attempt, programinfo_length, esinfo_length;
 	int		es_pid, es_data_length, es_data_skip, es_data_offset;
@@ -509,12 +509,12 @@ next_descriptor_entry:
 	return(false);
 }
 
-int MpegTS::get_fd() const throw()
+int MpegTS::get_fd() const
 {
 	return(fd);
 }
 
-void MpegTS::parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw()
+void MpegTS::parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms)
 {
 	h		 = pts_ms / (60 * 60 * 1000);
 	pts_ms	-=     h  * (60 * 60 * 1000);
@@ -525,7 +525,7 @@ void MpegTS::parse_pts_ms(int pts_ms, int &h, int &m, int &s, int &ms) throw()
 	ms		 =     pts_ms;
 }
 
-int MpegTS::find_pcr_ms(seek_direction_t direction) const throw()
+int MpegTS::find_pcr_ms(seek_direction_t direction) const
 {
 	ts_packet_t				packet;
 	ts_adaptation_field_t	*afield;
@@ -602,7 +602,7 @@ int MpegTS::find_pcr_ms(seek_direction_t direction) const throw()
 	return(pcr_ms);
 }
 
-off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
+off_t MpegTS::seek(int whence, off_t offset) const
 {
 	ts_packet_t	packet;
 	off_t		actual_offset;
@@ -627,12 +627,12 @@ off_t MpegTS::seek(int whence, off_t offset) const throw(trap)
 	return(actual_offset);
 }
 
-off_t MpegTS::seek_absolute(off_t offset) const throw(trap)
+off_t MpegTS::seek_absolute(off_t offset) const
 {
 	return(seek(SEEK_SET, offset));
 }
 
-off_t MpegTS::seek_relative(off_t roffset, off_t limit) const throw(trap)
+off_t MpegTS::seek_relative(off_t roffset, off_t limit) const
 {
 	off_t offset;
 
@@ -644,7 +644,7 @@ off_t MpegTS::seek_relative(off_t roffset, off_t limit) const throw(trap)
 	return(seek(SEEK_SET, offset));
 }
 
-off_t MpegTS::seek_time(int pts_ms) const throw(trap)
+off_t MpegTS::seek_time(int pts_ms) const
 {
 	int		h, m, s, ms;
 	int		attempt;

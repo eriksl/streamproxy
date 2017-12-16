@@ -11,7 +11,7 @@ using std::string;
 #include <string.h>
 #include <stdlib.h>
 
-EnigmaSettings::EnigmaSettings() throw(trap)
+EnigmaSettings::EnigmaSettings()
 {
 	FILE *fp;
 	char buffer[1024];
@@ -50,12 +50,12 @@ EnigmaSettings::EnigmaSettings() throw(trap)
 	fclose(fp);
 }
 
-bool EnigmaSettings::exists(string key) const throw()
+bool EnigmaSettings::exists(string key) const
 {
 	return(!!key_values.count(key));
 }
 
-string EnigmaSettings::as_string(string key) const throw(trap)
+string EnigmaSettings::as_string(string key) const
 {
 	if(!exists(key))
 		throw(trap("key does not exist"));
@@ -63,7 +63,7 @@ string EnigmaSettings::as_string(string key) const throw(trap)
 	return(key_values.at(key));
 }
 
-int EnigmaSettings::as_int(string key) const throw(trap)
+int EnigmaSettings::as_int(string key) const
 {
 	string value = as_string(key);
 

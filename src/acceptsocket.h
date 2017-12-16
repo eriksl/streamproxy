@@ -18,10 +18,10 @@ class AcceptSocket
 		AcceptSocket(const AcceptSocket &);
 
 	public:
-			AcceptSocket(string port)	throw(trap);
-			~AcceptSocket()				throw();
-		int	accept()			const	throw(trap);
-		int	get_fd()			const	throw();
+			AcceptSocket(string port);
+			~AcceptSocket();
+		int	accept()			const;
+		int	get_fd()			const;
 };
 
 #endif

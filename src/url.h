@@ -17,18 +17,18 @@ class Url
 
 	public:
 
-		Url(const std::string &url)				throw();
+		Url(const std::string &url);
 
-		UrlParameterMap		split() 	const	throw();
-		std::string			encode()	const	throw();
+		UrlParameterMap		split() 	const;
+		std::string			encode()	const;
 
 	private:
 
 		Url();
 		Url(const Url &);
 
-		std::string plus_expand(const std::string &param)		const throw();
-		std::string percent_expand(const std::string &param)	const throw();
+		std::string plus_expand(const std::string &param)		const;
+		std::string percent_expand(const std::string &param)	const;
 };
 
 #endif

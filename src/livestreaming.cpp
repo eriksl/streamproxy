@@ -19,7 +19,7 @@ using std::string;
 #include <time.h>
 
 LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth,
-		const StreamingParameters &, const ConfigMap &config_map) throw(trap)
+		const StreamingParameters &, const ConfigMap &config_map)
 {
 	PidMap::const_iterator it;
 	bool			webifrequest_ok;

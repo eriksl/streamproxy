@@ -6,24 +6,24 @@
 #include <string>
 using std::string;
 
-ConfigValue::ConfigValue() throw()
+ConfigValue::ConfigValue()
 {
 	int_value = 0;
 }
 
-ConfigValue::ConfigValue(string in) throw()
+ConfigValue::ConfigValue(string in)
 {
 	string_value = in;
 	int_value = Util::string_to_int(in);
 }
 
-ConfigValue::ConfigValue(int in) throw()
+ConfigValue::ConfigValue(int in)
 {
 	string_value = Util::int_to_string(in);
 	int_value = in;
 }
 
-ConfigValue::ConfigValue(bool in) throw()
+ConfigValue::ConfigValue(bool in)
 {
 	if(!in)
 	{

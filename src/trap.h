@@ -10,9 +10,9 @@ class trap : public std::exception
 
 		std::string	message;
 
-		trap(std::string msg)								throw();
-		virtual	const char *what()					const	throw();
-		virtual	~trap()										throw();
+		trap(std::string msg);
+		virtual	const char *what() const noexcept;
+		virtual	~trap();
 };
 
 class http_trap : public trap
@@ -23,10 +23,10 @@ class http_trap : public trap
 		std::string	http_header;
 
 		http_trap(std::string msg,
-				int http_error, std::string http_header)	throw();
+				int http_error, std::string http_header);
 
-		virtual	const char *what()					const	throw();
-		virtual	~http_trap()								throw();
+		virtual	const char *what() const noexcept;
+		virtual	~http_trap();
 
 };
 

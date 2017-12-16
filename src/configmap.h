@@ -13,11 +13,11 @@ class ConfigValue
 		std::string	string_value;
 		int			int_value;
 
-		ConfigValue()					throw();
-		ConfigValue(std::string, int)	throw();
-		ConfigValue(std::string)		throw();
-		ConfigValue(int)				throw();
-		ConfigValue(bool)				throw();
+		ConfigValue();
+		ConfigValue(std::string, int);
+		ConfigValue(std::string);
+		ConfigValue(int);
+		ConfigValue(bool);
 };
 
 typedef std::map<std::string, ConfigValue> ConfigMap;
