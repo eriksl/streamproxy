@@ -22,41 +22,32 @@ TimeOffset::TimeOffset(string timestring)
 	c = boost::count(timestring, ':');
 	seconds = 0;
 
-	switch(c)
+	if(c > 2)
 	{
-		case(2):
-		{
-			ix = timestring.find(':');
-			part = timestring.substr(0, ix);
-			seconds += strtoul(part.c_str(), 0, 10) * 60 * 60;
-			timestring.erase(0, ix + 1);
+		throw(trap("TimeOffset: invalid timestring, to many colons"));
+	}
 
-			__attribute__ ((fallthrough));
-		}
+	if(c > 1)
+	{
+		ix = timestring.find(':');
+		part = timestring.substr(0, ix);
+		seconds += strtoul(part.c_str(), 0, 10) * 60 * 60;
+		timestring.erase(0, ix + 1);
+	}
 
-		case(1):
-		{
-			ix = timestring.find(':');
-			part = timestring.substr(0, ix);
-			seconds += strtoul(part.c_str(), 0, 10) * 60;
-			timestring.erase(0, ix + 1);
+	if(c > 0)
+	{
+		ix = timestring.find(':');
+		part = timestring.substr(0, ix);
+		seconds += strtoul(part.c_str(), 0, 10) * 60;
+		timestring.erase(0, ix + 1);
+	}
 
-			__attribute__ ((fallthrough));
-		}
-
-		case(0):
-		{
-			ix = timestring.find(':');
-			part = timestring.substr(0, ix);
-			seconds += strtoul(part.c_str(), 0, 10);
-
-			break;
-		}
-
-		default:
-		{
-			throw(trap("TimeOffset: invalid timestring, to many colons"));
-		}
+	if(c == 0)
+	{
+		ix = timestring.find(':');
+		part = timestring.substr(0, ix);
+		seconds += strtoul(part.c_str(), 0, 10);
 	}
 }
 
