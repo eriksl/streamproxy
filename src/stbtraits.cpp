@@ -506,7 +506,7 @@ static const stb_feature_t features_vusolo4k[] =
 				.default_value	= "480p",
 				.enum_values	=
 				{
-					"480p", "576p", "720p", "1080p", 0,
+					"480p", "576p", "720p", 0,
 				},
 			},
 		},
@@ -652,7 +652,7 @@ static const stb_feature_t features_vuuno4k[] =
 				.default_value	= "480p",
 				.enum_values	=
 				{
-					"480p", "576p", "720p", "1080p", 0,
+					"480p", "576p", "720p", 0,
 				},
 			},
 		},
@@ -798,7 +798,7 @@ static const stb_feature_t features_vuuno4kse[] =
 				.default_value	= "480p",
 				.enum_values	=
 				{
-					"480p", "576p", "720p", "1080p", 0,
+					"480p", "576p", "720p", 0,
 				},
 			},
 		},
@@ -944,7 +944,7 @@ static const stb_feature_t features_vuultimo4k[] =
 				.default_value	= "480p",
 				.enum_values	=
 				{
-					"480p", "576p", "720p", "1080p", 0,
+					"480p", "576p", "720p", 0,
 				},
 			},
 		},
