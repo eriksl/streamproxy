@@ -1178,7 +1178,7 @@ static const stb_feature_t features_generic[] =
 
 const stbs_traits_t stbs_traits =
 {
-	.num_traits = 8,
+	.num_traits = 10,
 	.traits_entry =
 	{
 		{
