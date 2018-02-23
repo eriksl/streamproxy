@@ -82,10 +82,15 @@ typedef struct
 	const stb_feature_t		*features;
 } stb_traits_t;
 
+enum
+{
+	stb_traits_size = 11
+};
+
 typedef struct
 {
 	size_t					num_traits;
-	const stb_traits_t		traits_entry[11];
+	const stb_traits_t		traits_entry[stb_traits_size];
 } stbs_traits_t;
 
 extern const stbs_traits_t stbs_traits;
