@@ -236,7 +236,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 	Util::vlog("audio: %d", audio);
 	Util::vlog("start ioctl");
 
-	if(stb_traits.quirks & stb_quirk_vu4k)
+	if(stb_traits.quirks & stb_quirk_bcm_4k)
 	{
 		ioctl_set_pmtpid = 13;
 		ioctl_set_vpid = 11;

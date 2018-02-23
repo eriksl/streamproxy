@@ -13,7 +13,7 @@ typedef enum
 
 typedef enum
 {
-	stb_quirk_vu4k = 1 << 0,
+	stb_quirk_bcm_4k = 1 << 0,
 } stb_quirks_t;
 
 typedef enum
