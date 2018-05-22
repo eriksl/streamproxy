@@ -1465,7 +1465,7 @@ const stbs_traits_t stbs_traits =
 			.num_id				= 2,
 			.id					=
 			{
-				{ "/proc/stb/info/model", "dm800se" },
+				{ "/proc/stb/info/model", "et10000" },
 				{ "/proc/stb/info/boxtype", "et10000" },
 			},
 			.num_features		= 4,
