@@ -1464,6 +1464,64 @@ static const stb_feature_t features_lunix34k[] =
 	},
 };
 
+static const stb_feature_t features_h9[] =
+{
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Video codec",
+		.id				= "vcodec",
+		.settable		= false,
+		.api_data		= 0,
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "h265",
+				.enum_values	=
+				{
+					"h264", "h265", 0,
+				},
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_int,
+		.description	= "Total stream bit rate",
+		.id				= "bitrate",
+		.settable		= true,
+		.api_data		= "bitrate",
+		.value			=
+		{
+			.int_type =
+			{
+				.default_value	= 1000,
+				.min_value		= 100,
+				.max_value		= 10000,
+				.scaling_factor	= 1000,
+			},
+		},
+	},
+	{
+		.type			= stb_traits_type_string_enum,
+		.description	= "Picture dimensions",
+		.id				= "size",
+		.settable		= true,
+		.api_data		= "display_format",
+		.value			=
+		{
+			.string_enum_type =
+			{
+				.default_value	= "480p",
+				.enum_values	=
+				{
+					"480p", "576p", "720p", 0,
+				},
+			},
+		},
+	},
+};
+
+
 static const stb_feature_t features_generic[] =
 {
 };
@@ -1647,6 +1705,22 @@ const stbs_traits_t stbs_traits =
 			},
 			.num_features		= 8,
 			.features			= features_lunix34k,
+		},
+		{
+			.manufacturer		= "Zgemma",
+			.model				= "h9",
+			.chipset			= "hi3798mv200",
+			.transcoding_type	= stb_transcoding_enigma,
+			.quirks				= (stb_quirks_t)0,
+			.encoders			= 2,
+			.num_id				= 2,
+			.id					=
+			{
+				{ "/proc/stb/info/model", "h9" },
+				{ "/proc/stb/info/boxtype", "h9" },
+			},
+			.num_features		= 3,
+			.features			= features_h9,
 		},
 		{
 			.manufacturer		= "generic",
