@@ -236,17 +236,17 @@ EncoderBroadcom::EncoderBroadcom(const PidMap &pids_in,
 	Util::vlog("audio: %d", audio);
 	Util::vlog("start ioctl");
 
-	if(stb_traits.quirks & stb_quirk_bcm_4k)
-	{
-		ioctl_set_pmtpid = 13;
-		ioctl_set_vpid = 11;
-		ioctl_set_apid = 12;
-	}
-	else
+	if(stb_traits.quirks & stb_quirk_bcm_mips)
 	{
 		ioctl_set_pmtpid = 3;
 		ioctl_set_vpid = 1;
 		ioctl_set_apid = 2;
+	}
+	else
+	{
+		ioctl_set_pmtpid = 13;
+		ioctl_set_vpid = 11;
+		ioctl_set_apid = 12;
 	}
 
 	if(ioctl(fd, ioctl_set_pmtpid, pmt) ||
