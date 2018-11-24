@@ -1,152 +1,6 @@
 #include "stbtraits.h"
 
-static const stb_feature_t features_vusolose[] =
-{
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Video codec",
-		.id				= "vcodec",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "h264",
-				.enum_values	=
-				{
-					"h264", 0,
-				},
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Audio codec",
-		.id				= "acodec",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "aac",
-				.enum_values	=
-				{
-					"aac", 0,
-				},
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_int,
-		.description	= "Total stream bit rate",
-		.id				= "bitrate",
-		.settable		= true,
-		.api_data		= "bitrate",
-		.value			=
-		{
-			.int_type =
-			{
-				.default_value	= 400,
-				.min_value		= 50,
-				.max_value		= 1000,
-				.scaling_factor	= 1000,
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Picture dimensions",
-		.id				= "size",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "416x224",
-				.enum_values	=
-				{
-					"416x224", 0,
-				},
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Video codec profile",
-		.id				= "profile",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "constrained baseline",
-				.enum_values	=
-				{
-					"constrained baseline", 0,
-				},
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Video codec level",
-		.id				= "level",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "3.0",
-				.enum_values	=
-				{
-					"3.0", 0,
-				},
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_int,
-		.description	= "Max. bidirectional frames in a row",
-		.id				= "bframes",
-		.settable		= false,
-		.api_data		= 0,
-		.value			=
-		{
-			.int_type =
-			{
-				.default_value	= 0,
-				.min_value		= 0,
-				.max_value		= 0,
-				.scaling_factor	= 1,
-			},
-		},
-	},
-	{
-		.type			= stb_traits_type_string_enum,
-		.description	= "Frame rate",
-		.id				= "framerate",
-		.settable		= true,
-		.api_data		= "framerate",
-		.value			=
-		{
-			.string_enum_type =
-			{
-				.default_value	= "30",
-				.enum_values	=
-				{
-					"24", "25", "30", 0,
-				},
-			},
-		},
-	},
-};
-
-static const stb_feature_t features_vusolo2[] =
+static const stb_feature_t features_vusolo[] =
 {
 	{
 		.type			= stb_traits_type_string_enum,
@@ -1837,7 +1691,7 @@ const stbs_traits_t stbs_traits =
 				{ "/proc/stb/info/vumodel", "solose" },
 			},
 			.num_features		= 8,
-			.features			= features_vusolose,
+			.features			= features_vusolo,
 		},
 		{
 			.manufacturer		= "VU+",
@@ -1853,7 +1707,7 @@ const stbs_traits_t stbs_traits =
 				{ "/proc/stb/info/vumodel", "solo2" },
 			},
 			.num_features		= 8,
-			.features			= features_vusolo2,
+			.features			= features_vusolo,
 		},
 		{
 			.manufacturer		= "VU+",
