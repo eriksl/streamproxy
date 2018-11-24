@@ -1,5 +1,5 @@
-#ifndef _filetranscoding_vuplus_h_
-#define _filetranscoding_vuplus_h_
+#ifndef _filetranscoding_broadcom_h_
+#define _filetranscoding_broadcom_h_
 
 #include "config.h"
 #include "trap.h"
@@ -10,13 +10,13 @@
 #include <string>
 #include <sys/types.h>
 
-class FileTranscodingVuPlus
+class FileTranscodingBroadcom
 {
 	private:
 
 		enum
 		{
-			vuplus_magic_buffer_size = 256 * 188,
+			broadcom_magic_buffer_size = 256 * 188,
 		};
 
 		typedef enum
@@ -26,18 +26,18 @@ class FileTranscodingVuPlus
 			state_running
 		} encoder_state_t;
 
-		FileTranscodingVuPlus();
-		FileTranscodingVuPlus(FileTranscodingVuPlus &);
+		FileTranscodingBroadcom();
+		FileTranscodingBroadcom(FileTranscodingBroadcom &);
 
 		char *encoder_buffer;
 
 	public:
 
-		FileTranscodingVuPlus(std::string file, int socketfd, std::string webauth,
+		FileTranscodingBroadcom(std::string file, int socketfd, std::string webauth,
 				const stb_traits_t &stb_traits_in,
 				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map);
-		~FileTranscodingVuPlus();
+		~FileTranscodingBroadcom();
 };
 
 #endif

@@ -4,9 +4,9 @@
 #include "clientsocket.h"
 #include "service.h"
 #include "livestreaming.h"
-#include "livetranscoding-vuplus.h"
+#include "livetranscoding-broadcom.h"
 #include "filestreaming.h"
-#include "filetranscoding-vuplus.h"
+#include "filetranscoding-broadcom.h"
 #include "transcoding-enigma.h"
 #include "util.h"
 #include "url.h"
@@ -296,10 +296,10 @@ ClientSocket::ClientSocket(int fd_in,
 
 			switch(stb_traits.transcoding_type)
 			{
-				case(stb_transcoding_vuplus):
+				case(stb_transcoding_broadcom):
 				{
-					Util::vlog("ClientSocket: transcoding service vuplus");
-					(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+					Util::vlog("ClientSocket: transcoding service broadcom");
+					(void)LiveTranscodingBroadcom(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 					break;
 				}
 
@@ -336,10 +336,10 @@ ClientSocket::ClientSocket(int fd_in,
 
 			switch(stb_traits.transcoding_type)
 			{
-				case(stb_transcoding_vuplus):
+				case(stb_transcoding_broadcom):
 				{
-					Util::vlog("ClientSocket: transcoding service vuplus");
-					(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+					Util::vlog("ClientSocket: transcoding service broadcom");
+					(void)FileTranscodingBroadcom(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 					break;
 				}
 
@@ -406,10 +406,10 @@ ClientSocket::ClientSocket(int fd_in,
 				{
 					switch(stb_traits.transcoding_type)
 					{
-						case(stb_transcoding_vuplus):
+						case(stb_transcoding_broadcom):
 						{
-							Util::vlog("ClientSocket: transcoding service vuplus");
-							(void)FileTranscodingVuPlus(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
+							Util::vlog("ClientSocket: transcoding service broadcom");
+							(void)FileTranscodingBroadcom(urlparams["file"], fd, webauth, stb_traits, streaming_parameters, config_map);
 							break;
 						}
 
@@ -452,10 +452,10 @@ ClientSocket::ClientSocket(int fd_in,
 
 						switch(stb_traits.transcoding_type)
 						{
-							case(stb_transcoding_vuplus):
+							case(stb_transcoding_broadcom):
 							{
-								Util::vlog("ClientSocket: transcoding service vuplus");
-								(void)LiveTranscodingVuPlus(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+								Util::vlog("ClientSocket: transcoding service broadcom");
+								(void)LiveTranscodingBroadcom(service, fd, webauth, stb_traits, streaming_parameters, config_map);
 								break;
 							}
 

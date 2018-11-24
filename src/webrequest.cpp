@@ -108,7 +108,7 @@ string WebRequest::page_info(string &mimetype) const
 		data += "   <traits>\n";
 		data += string("        <manufacturer>") + stb_traits.manufacturer + "</manufacturer>\n";
 		data += string("        <model>") + stb_traits.model + "</model>\n";
-		data += string("        <transcoding>") + ((stb_traits.transcoding_type == stb_transcoding_vuplus) ? "vuplus" : "enigma") + "</transcoding>\n";
+		data += string("        <transcoding>") + ((stb_traits.transcoding_type == stb_transcoding_broadcom) ? "broadcom" : "enigma") + "</transcoding>\n";
 		data += string("        <chipset>") + stb_traits.chipset + "</chipset>\n";
 		data += string("        <encoders>") + Util::int_to_string(stb_traits.encoders) + "</encoders>\n";
 		data += "        <features>\n";
@@ -232,7 +232,7 @@ string WebRequest::page_info(string &mimetype) const
 		data += "		<tr><th colspan=\"9\">stb features</th></tr>\n";
 		data += "       <tr><th colspan=\"2\">manufacturer</th><th>model</th><th>transcoding</th><th colspan=\"2\">chipset</th><th colspan=\"2\">encoders</th>\n";
 		data += "       ";
-		data += string("<tr><td colspan=\"2\">") + stb_traits.manufacturer + "</td><td>" + stb_traits.model + "</td><td>" + ((stb_traits.transcoding_type == stb_transcoding_vuplus) ? "vuplus" : "enigma") + "</td>\n" ;
+		data += string("<tr><td colspan=\"2\">") + stb_traits.manufacturer + "</td><td>" + stb_traits.model + "</td><td>" + ((stb_traits.transcoding_type == stb_transcoding_broadcom) ? "broadcom" : "enigma") + "</td>\n" ;
 		data += string("<td colspan=\"2\">") + stb_traits.chipset + "</td><td colspan=\"2\">" + Util::int_to_string(stb_traits.encoders) + "</td></tr>";
 		data += "		<tr><th>name</th><th>settable</th><th>description</th><th>proc entry</th>\n";
 		data += "		    <th>type</th><th>default</th><th>min-max/choices</th></tr>\n";

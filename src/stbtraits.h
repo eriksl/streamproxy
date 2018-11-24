@@ -7,7 +7,7 @@
 typedef enum
 {
 	stb_transcoding_unknown,
-	stb_transcoding_vuplus,
+	stb_transcoding_broadcom,
 	stb_transcoding_enigma,
 } stb_transcoding_t;
 

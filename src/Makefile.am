@@ -6,11 +6,11 @@ streamproxy_SOURCES = \
 	configmap.cpp \
 	demuxer.cpp \
 	enigma_settings.cpp \
-	encoder-vuplus.cpp \
+	encoder-broadcom.cpp \
 	filestreaming.cpp \
-	filetranscoding-vuplus.cpp \
+	filetranscoding-broadcom.cpp \
 	livestreaming.cpp \
-	livetranscoding-vuplus.cpp \
+	livetranscoding-broadcom.cpp \
 	mpegts.cpp \
 	queue.cpp \
 	service.cpp \

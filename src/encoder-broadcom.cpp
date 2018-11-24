@@ -2,7 +2,7 @@
 #include "trap.h"
 
 #include "types.h"
-#include "encoder-vuplus.h"
+#include "encoder-broadcom.h"
 #include "demuxer.h"
 #include "util.h"
 #include "stbtraits.h"
@@ -19,7 +19,7 @@ using std::string;
 #include <string.h>
 #include <stdlib.h>
 
-EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
+EncoderBroadcom::EncoderBroadcom(const PidMap &pids_in,
 		const stb_traits_t &stb_traits_in,
 		const StreamingParameters &streaming_parameters_in)
 	:
@@ -72,7 +72,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 	}
 
 	if((pmt == -1) || (video == -1) || (audio == -1))
-		throw(trap("EncoderVuPlus: missing pmt, video or audio pid"));
+		throw(trap("EncoderBroadcom: missing pmt, video or audio pid"));
 
 	// try multiples times with a little delay, as often multiple
 	// requests are sent from a single http client, resulting in multiple
@@ -86,11 +86,11 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 			if((fd = open("/dev/bcm_enc0", O_RDWR, 0)) >= 0)
 			{
 				encoder = 0;
-				Util::vlog("EncoderVuPlus: bcm_enc0 open");
+				Util::vlog("EncoderBroadcom: bcm_enc0 open");
 				break;
 			}
 
-			Util::vlog("EncoderVuPlus: waiting for encoder 0 to become available, attempt %d", attempt);
+			Util::vlog("EncoderBroadcom: waiting for encoder 0 to become available, attempt %d", attempt);
 
 			usleep(100000);
 		}
@@ -103,11 +103,11 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 			if((fd = open("/dev/bcm_enc1", O_RDWR, 0)) >= 0)
 			{
 				encoder = 1;
-				Util::vlog("EncoderVuPlus: bcm_enc1 open");
+				Util::vlog("EncoderBroadcom: bcm_enc1 open");
 				break;
 			}
 
-			Util::vlog("EncoderVuPlus: waiting for encoder 1 to become available, attempt %d", attempt);
+			Util::vlog("EncoderBroadcom: waiting for encoder 1 to become available, attempt %d", attempt);
 
 			usleep(100000);
 		}
@@ -128,15 +128,15 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 		if(feature_index >= stb_traits.num_features)
 		{
-			Util::vlog("EncoderVuPlus: no stb traits/feature entry for streaming parameter \"%s\"", it->first.c_str());
+			Util::vlog("EncoderBroadcom: no stb traits/feature entry for streaming parameter \"%s\"", it->first.c_str());
 			continue;
 		}
 
-		Util::vlog("EncoderVuPlus: found streaming parameter == stb_feature: \"%s\" [%s]", it->first.c_str(), it->second.c_str());
+		Util::vlog("EncoderBroadcom: found streaming parameter == stb_feature: \"%s\" [%s]", it->first.c_str(), it->second.c_str());
 
 		if(!feature->settable)
 		{
-			Util::vlog("EncoderVuPlus: feature not settable, skip");
+			Util::vlog("EncoderBroadcom: feature not settable, skip");
 			continue;
 		}
 
@@ -151,7 +151,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 						value = "on";
 					else
 					{
-						Util::vlog("EncoderVuPlus: invalid bool value: \"\%s\"", it->second.c_str());
+						Util::vlog("EncoderBroadcom: invalid bool value: \"\%s\"", it->second.c_str());
 						continue;
 					}
 
@@ -164,14 +164,14 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 				if(int_value < feature->value.int_type.min_value)
 				{
-					Util::vlog("EncoderVuPlus: integer value %s too small (%d)",
+					Util::vlog("EncoderBroadcom: integer value %s too small (%d)",
 							it->second.c_str(), feature->value.int_type.min_value);
 					continue;
 				}
 
 				if(int_value > feature->value.int_type.max_value)
 				{
-					Util::vlog("EncoderVuPlus: integer value %s too large (%d)",
+					Util::vlog("EncoderBroadcom: integer value %s too large (%d)",
 							it->second.c_str(), feature->value.int_type.max_value);
 					continue;
 				}
@@ -186,14 +186,14 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 			{
 				if(it->second.length() < feature->value.string_type.min_length)
 				{
-					Util::vlog("EncoderVuPlus: string value %s too short (%d)",
+					Util::vlog("EncoderBroadcom: string value %s too short (%d)",
 							it->second.c_str(), feature->value.string_type.min_length);
 					continue;
 				}
 
 				if(it->second.length() > feature->value.string_type.max_length)
 				{
-					Util::vlog("EncoderVuPlus: string value %s too long (%d)",
+					Util::vlog("EncoderBroadcom: string value %s too long (%d)",
 							it->second.c_str(), feature->value.string_type.max_length);
 					continue;
 				}
@@ -213,7 +213,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 				if(!*enum_value)
 				{
-					Util::vlog("EncoderVuPlus: invalid enum value: \"%s\"", it->second.c_str());
+					Util::vlog("EncoderBroadcom: invalid enum value: \"%s\"", it->second.c_str());
 					continue;
 				}
 
@@ -224,7 +224,7 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 
 			default:
 			{
-				throw(trap("EncoderVuPlus: unknown feature type"));
+				throw(trap("EncoderBroadcom: unknown feature type"));
 			}
 		}
 
@@ -253,61 +253,61 @@ EncoderVuPlus::EncoderVuPlus(const PidMap &pids_in,
 			ioctl(fd, ioctl_set_vpid, video) ||
 			ioctl(fd, ioctl_set_apid, audio))
 	{
-			throw(trap("EncoderVuPlus: cannot init encoder"));
+			throw(trap("EncoderBroadcom: cannot init encoder"));
 	}
 }
 
-EncoderVuPlus::~EncoderVuPlus()
+EncoderBroadcom::~EncoderBroadcom()
 {
 	stop();
 	close(fd);
 }
 
-void* EncoderVuPlus::start_thread_function(void * arg)
+void* EncoderBroadcom::start_thread_function(void * arg)
 {
-	EncoderVuPlus *_this = (EncoderVuPlus *)arg;
+	EncoderBroadcom *_this = (EncoderBroadcom *)arg;
 
-	//Util::vlog("EncoderVuPlus: start thread: start ioctl");
+	//Util::vlog("EncoderBroadcom: start thread: start ioctl");
 
 	_this->start_thread_joined	= false;
 	_this->start_thread_running	= true;
 	_this->stopped				= false;
 
-	if(ioctl(_this->fd, IOCTL_VUPLUS_START_TRANSCODING, 0))
-		Util::vlog("EncoderVuPlus: IOCTL start transcoding");
+	if(ioctl(_this->fd, IOCTL_BROADCOM_START_TRANSCODING, 0))
+		Util::vlog("EncoderBroadcom: IOCTL start transcoding");
 
 	_this->start_thread_running = false;
 
 	return((void *)0);
 }
 
-bool EncoderVuPlus::start_init()
+bool EncoderBroadcom::start_init()
 {
-	//Util::vlog("EncoderVuPlus: START TRANSCODING start");
+	//Util::vlog("EncoderBroadcom: START TRANSCODING start");
 
 	if(start_thread_running || !start_thread_joined)
 	{
-		Util::vlog("EncoderVuPlus: start thread already running");
+		Util::vlog("EncoderBroadcom: start thread already running");
 		return(true);
 	}
 
 	if(pthread_create(&start_thread, 0, &start_thread_function, (void *)this))
 	{
-		Util::vlog("EncoderVuPlus: pthread create failed");
+		Util::vlog("EncoderBroadcom: pthread create failed");
 		return(false);
 	}
 
-	//Util::vlog("EncoderVuPlus: START TRANSCODING done");
+	//Util::vlog("EncoderBroadcom: START TRANSCODING done");
 	return(true);
 }
 
-bool EncoderVuPlus::start_finish()
+bool EncoderBroadcom::start_finish()
 {
 	if(!start_thread_running && !start_thread_joined)
 	{
-		//Util::vlog("EncoderVuPlus: START detects start thread stopped");
+		//Util::vlog("EncoderBroadcom: START detects start thread stopped");
 		pthread_join(start_thread, 0);
-		//Util::vlog("EncoderVuPlus: START joined start thread");
+		//Util::vlog("EncoderBroadcom: START joined start thread");
 		start_thread_joined = true;
 
 		return(true);
@@ -316,17 +316,17 @@ bool EncoderVuPlus::start_finish()
 	return(false);
 }
 
-bool EncoderVuPlus::stop()
+bool EncoderBroadcom::stop()
 {
 	struct pollfd pfd;
 	static char buffer[4096];
 	ssize_t rv;
 
-	//Util::vlog("EncoderVuPlus: STOP TRANSCODING begin");
+	//Util::vlog("EncoderBroadcom: STOP TRANSCODING begin");
 
 	if(stopped)
 	{
-		Util::vlog("EncoderVuPlus: already stopped");
+		Util::vlog("EncoderBroadcom: already stopped");
 		return(true);
 	}
 
@@ -339,10 +339,10 @@ bool EncoderVuPlus::stop()
 	if(!start_finish())
 		return(false);
 
-	if(ioctl(fd, IOCTL_VUPLUS_STOP_TRANSCODING, 0))
-		Util::vlog("EncoderVuPlus: IOCTL stop transcoding");
+	if(ioctl(fd, IOCTL_BROADCOM_STOP_TRANSCODING, 0))
+		Util::vlog("EncoderBroadcom: IOCTL stop transcoding");
 
-	Util::vlog("EncoderVuPlus: starting draining");
+	Util::vlog("EncoderBroadcom: starting draining");
 
 	for(;;)
 	{
@@ -354,14 +354,14 @@ bool EncoderVuPlus::stop()
 
 		if(rv < 0)
 		{
-			Util::vlog("EncoderVuPlus: poll error");
+			Util::vlog("EncoderBroadcom: poll error");
 			break;
 		}
 
 		if(pfd.revents & POLLIN)
 		{
 			rv = read(fd, buffer, sizeof(buffer));
-			Util::vlog("EncoderVuPlus: STOP, drained %d bytes", rv);
+			Util::vlog("EncoderBroadcom: STOP, drained %d bytes", rv);
 
 			if(rv <= 0)
 				break;
@@ -372,22 +372,22 @@ bool EncoderVuPlus::stop()
 
 	stopped = true;
 
-	Util::vlog("EncoderVuPlus: encoder STOP TRANSCODING done");
+	Util::vlog("EncoderBroadcom: encoder STOP TRANSCODING done");
 
 	return(true);
 }
 
-int EncoderVuPlus::getfd() const
+int EncoderBroadcom::getfd() const
 {
 	return(fd);
 }
 
-PidMap EncoderVuPlus::getpids() const
+PidMap EncoderBroadcom::getpids() const
 {
 	return(pids);
 }
 
-string EncoderVuPlus::getprop(string property) const
+string EncoderBroadcom::getprop(string property) const
 {
 	int		procfd;
 	ssize_t	rv;
@@ -398,13 +398,13 @@ string EncoderVuPlus::getprop(string property) const
 
 	if((procfd = open(path.c_str(), O_RDONLY, 0)) < 0)
 	{
-		Util::vlog("EncoderVuPlus::getprop: cannot open property %s", path.c_str());
+		Util::vlog("EncoderBroadcom::getprop: cannot open property %s", path.c_str());
 		return("");
 	}
 
 	if((rv = read(procfd, tmp, sizeof(tmp))) <= 0)
 	{
-		Util::vlog("EncoderVuPlus::getprop: cannot read from property %s", property.c_str());
+		Util::vlog("EncoderBroadcom::getprop: cannot read from property %s", property.c_str());
 		rv = 0;
 	}
 
@@ -415,7 +415,7 @@ string EncoderVuPlus::getprop(string property) const
 	return(tmp);
 }
 
-void EncoderVuPlus::setprop(const string &property, const string &value) const
+void EncoderBroadcom::setprop(const string &property, const string &value) const
 {
 	int		procfd;
 	string	path;
@@ -426,12 +426,12 @@ void EncoderVuPlus::setprop(const string &property, const string &value) const
 
 	if((procfd = open(path.c_str(), O_WRONLY, 0)) < 0)
 	{
-		Util::vlog("EncoderVuPlus::setprop: cannot open property %s", path.c_str());
+		Util::vlog("EncoderBroadcom::setprop: cannot open property %s", path.c_str());
 		return;
 	}
 
 	if(write(procfd, value.c_str(), value.length()) != (ssize_t)value.length())
-		Util::vlog("EncoderVuPlus::setprop: cannot write to property %s", property.c_str());
+		Util::vlog("EncoderBroadcom::setprop: cannot write to property %s", property.c_str());
 
 	close(procfd);
 }

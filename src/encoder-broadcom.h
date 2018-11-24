@@ -1,5 +1,5 @@
-#ifndef _encoder_vuplus_h_
-#define _encoder_vuplus_h_
+#ifndef _encoder_broadcom_h_
+#define _encoder_broadcom_h_
 
 #include "config.h"
 #include "trap.h"
@@ -9,18 +9,18 @@
 #include <string>
 #include <pthread.h>
 
-class EncoderVuPlus
+class EncoderBroadcom
 {
 	private:
 
 		enum
 		{
-			IOCTL_VUPLUS_START_TRANSCODING	= 100,
-			IOCTL_VUPLUS_STOP_TRANSCODING	= 200,
+			IOCTL_BROADCOM_START_TRANSCODING	= 100,
+			IOCTL_BROADCOM_STOP_TRANSCODING	= 200,
 		};
 
-		EncoderVuPlus();
-		EncoderVuPlus(const EncoderVuPlus &);
+		EncoderBroadcom();
+		EncoderBroadcom(const EncoderBroadcom &);
 
 		pthread_t					start_thread;
 		bool						start_thread_running;
@@ -36,10 +36,10 @@ class EncoderVuPlus
 
 	public:
 
-		EncoderVuPlus(const PidMap &,
+		EncoderBroadcom(const PidMap &,
 				const stb_traits_t &,
 				const StreamingParameters &);
-		~EncoderVuPlus();
+		~EncoderBroadcom();
 
 		std::string	getprop(std::string)				const;
 		void		setprop(const std::string &,

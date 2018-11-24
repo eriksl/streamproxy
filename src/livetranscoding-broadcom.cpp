@@ -7,9 +7,9 @@
 #include "queue.h"
 #include "service.h"
 #include "demuxer.h"
-#include "encoder-vuplus.h"
+#include "encoder-broadcom.h"
 #include "configmap.h"
-#include "livetranscoding-vuplus.h"
+#include "livetranscoding-broadcom.h"
 #include "stbtraits.h"
 
 #include <string>
@@ -20,7 +20,7 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketfd,
+LiveTranscodingBroadcom::LiveTranscodingBroadcom(const Service &service, int socketfd,
 		string webauth, const stb_traits_t &stb_traits,
 		const StreamingParameters &streaming_parameters,
 		const ConfigMap &config_map)
@@ -44,10 +44,10 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 	Queue			encoder_queue(1024 * 1024);
 	Queue			socket_queue(1024 * 1024);
 
-	Util::vlog("LiveTranscodingVuPlus: %s", service.service_string().c_str());
+	Util::vlog("LiveTranscodingBroadcom: %s", service.service_string().c_str());
 
 	if(!service.is_valid())
-		throw(http_trap("LiveTranscodingVuPlus: invalid service", 404, "Not found, unknown service"));
+		throw(http_trap("LiveTranscodingBroadcom: invalid service", 404, "Not found, unknown service"));
 
 	WebifRequest webifrequest(service, webauth, config_map);
 
@@ -70,26 +70,26 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 	}
 
 	if(!webifrequest_ok)
-		throw(http_trap("LiveTranscodingVuPlus: tuning request to enigma failed (webif timeout)", 404, "Not found, cannot tune to service"));
+		throw(http_trap("LiveTranscodingBroadcom: tuning request to enigma failed (webif timeout)", 404, "Not found, cannot tune to service"));
 
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("LiveTranscodingVuPlus: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingBroadcom: pid[%s] = %x", it->first.c_str(), it->second);
 
-	EncoderVuPlus encoder(pids, stb_traits, streaming_parameters);
+	EncoderBroadcom encoder(pids, stb_traits, streaming_parameters);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		Util::vlog("LiveTranscodingVuPlus: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingBroadcom: encoder pid[%s] = %x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 
 	if((encoder_fd = encoder.getfd()) < 0)
-		throw(trap("LiveTranscodingVuPlus: encoder: fd not open"));
+		throw(trap("LiveTranscodingBroadcom: encoder: fd not open"));
 
 	if((demuxer_fd = demuxer.getfd()) < 0)
-		throw(trap("LiveTranscodingVuPlus: demuxer: fd not open"));
+		throw(trap("LiveTranscodingBroadcom: demuxer: fd not open"));
 
 	socket_queue.append(httpok.length(), httpok.c_str());
 
@@ -110,7 +110,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 				if(encoder.start_init())
 				{
 					encoder_state = state_starting;
-					Util::vlog("LiveTranscodingVuPlus: state init -> starting");
+					Util::vlog("LiveTranscodingBroadcom: state init -> starting");
 				}
 				break;
 			}
@@ -120,7 +120,7 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 				if(encoder.start_finish())
 				{
 					encoder_state = state_running;
-					Util::vlog("LiveTranscodingVuPlus: state starting -> running");
+					Util::vlog("LiveTranscodingBroadcom: state starting -> running");
 				}
 				break;
 			}
@@ -140,36 +140,36 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 		pfd[2].fd		= socketfd;
 		pfd[2].events	= POLLRDHUP;
 
-		if(encoder_queue.length() >= vuplus_magic_buffer_size)
+		if(encoder_queue.length() >= broadcom_magic_buffer_size)
 			pfd[1].events |= POLLOUT;
 
 		if(socket_queue.length() > 0)
 			pfd[2].events |= POLLOUT;
 
 		if(poll(pfd, 3, -1) <= 0)
-			throw(trap("LiveTranscodingVuPlus: streaming: poll error"));
+			throw(trap("LiveTranscodingBroadcom: streaming: poll error"));
 
 		if(pfd[0].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			Util::vlog("LiveTranscodingVuPlus: demuxer error");
+			Util::vlog("LiveTranscodingBroadcom: demuxer error");
 			break;
 		}
 
 		if(pfd[1].revents & (POLLERR | POLLHUP | POLLNVAL))
 		{
-			Util::vlog("LiveTranscodingVuPlus: encoder error");
+			Util::vlog("LiveTranscodingBroadcom: encoder error");
 			break;
 		}
 
 		if(pfd[2].revents & (POLLRDHUP | POLLHUP))
 		{
-			Util::vlog("LiveTranscodingVuPlus: client hung up");
+			Util::vlog("LiveTranscodingBroadcom: client hung up");
 			break;
 		}
 
 		if(pfd[2].revents & (POLLERR | POLLNVAL))
 		{
-			Util::vlog("LiveTranscodingVuPlus: socket error");
+			Util::vlog("LiveTranscodingBroadcom: socket error");
 			break;
 		}
 
@@ -177,25 +177,25 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 		{
 			if(!encoder_queue.read(demuxer_fd))
 			{
-				Util::vlog("LiveTranscodingVuPlus: read demux error");
+				Util::vlog("LiveTranscodingBroadcom: read demux error");
 				break;
 			}
 		}
 
 		if(pfd[1].revents & POLLOUT)
 		{
-			if(!encoder_queue.write(encoder_fd, vuplus_magic_buffer_size))
+			if(!encoder_queue.write(encoder_fd, broadcom_magic_buffer_size))
 			{
-				Util::vlog("LiveTranscodingVuPlus: write encoder error");
+				Util::vlog("LiveTranscodingBroadcom: write encoder error");
 				break;
 			}
 		}
 
 		if(pfd[1].revents & POLLIN)
 		{
-			if(!socket_queue.read(encoder_fd, vuplus_magic_buffer_size))
+			if(!socket_queue.read(encoder_fd, broadcom_magic_buffer_size))
 			{
-				Util::vlog("LiveTranscodingVuPlus: read encoder error");
+				Util::vlog("LiveTranscodingBroadcom: read encoder error");
 				break;
 			}
 		}
@@ -204,12 +204,12 @@ LiveTranscodingVuPlus::LiveTranscodingVuPlus(const Service &service, int socketf
 		{
 			if(!socket_queue.write(socketfd))
 			{
-				Util::vlog("LiveTranscodingVuPlus: write socket error");
+				Util::vlog("LiveTranscodingBroadcom: write socket error");
 				break;
 			}
 		}
 	}
 
-	Util::vlog("LiveTranscodingVuPlus: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
-	Util::vlog("LiveTranscodingVuPlus: socket max queue fill: %d%%", max_fill_socket);
+	Util::vlog("LiveTranscodingBroadcom: streaming ends, encoder max queue fill: %d%%", max_fill_encoder);
+	Util::vlog("LiveTranscodingBroadcom: socket max queue fill: %d%%", max_fill_socket);
 }
