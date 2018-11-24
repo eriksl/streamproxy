@@ -84,7 +84,7 @@ typedef struct
 
 enum
 {
-	stb_traits_size = 14
+	stb_traits_size = 16
 };
 
 typedef struct
