@@ -14,7 +14,7 @@ using std::string;
 EnigmaSettings::EnigmaSettings()
 {
 	FILE *fp;
-	char buffer[1024];
+	char buffer[4096];
 	char *value;
 	char *eol;
 	key_value_t::const_iterator it;
