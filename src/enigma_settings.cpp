@@ -11,13 +11,27 @@ using std::string;
 #include <string.h>
 #include <stdlib.h>
 
+#if defined(__GNUC__) && (__GNUC__ >= 7)
+#define FALL_THROUGH __attribute__ ((fallthrough))
+#else
+#define FALL_THROUGH ((void)0)
+#endif /* __GNUC__ >= 7 */
+
+typedef enum
+{
+	state_skip_nl,
+	state_key,
+	state_value,
+} state_t;
+
 EnigmaSettings::EnigmaSettings()
 {
 	FILE *fp;
-	char buffer[1024];
-	char *value;
-	char *eol;
+	string key, value;
+	int current_char;
 	key_value_t::const_iterator it;
+	state_t state;
+	enum { key_value_size = 64 };
 
 	if(!(fp = fopen("/etc/enigma2/settings", "r")))
 	{
@@ -25,27 +39,70 @@ EnigmaSettings::EnigmaSettings()
 		return;
 	}
 
-	while(fgets(buffer, sizeof(buffer), fp))
+	state = state_key;
+
+	for(;;)
 	{
-		if(!(value = strchr(buffer, '=')))
+		if((current_char = fgetc(fp)) == EOF)
+			break;
+
+		switch(state)
 		{
-			Util::vlog("line does not contain delimiter: \"%s\"", buffer);
-			continue;
+			case(state_skip_nl):
+			{
+				if((current_char == '\n') || (current_char == '\r'))
+					continue;
+
+				state = state_key;
+				FALL_THROUGH;
+			}
+
+			case(state_key):
+			{
+				if(current_char == '=')
+				{
+					value.clear();
+					state = state_value;
+					continue;
+				}
+
+				if((current_char == '\n') || (current_char == '\r'))
+				{
+					// line ends but we didn't see an '=' yet
+					Util::vlog("line does not contain delimiter: \"%s\"", key.c_str());
+					value.clear();
+					key.clear();
+					// after a CR a NL may follow or vv., skip it and then try again
+					state = state_skip_nl;
+					continue;
+				}
+
+				if(key.length() < key_value_size)
+					key.append(1, current_char);
+
+				break;
+			}
+
+			case(state_value):
+			{
+				if((current_char == '\n') || (current_char == '\r'))
+				{
+					if((key.length() < key_value_size) && (value.length() < key_value_size))
+						key_values[key] = value;
+					key.clear();
+					value.clear();
+					// after a CR a NL may follow or vv., skip it and then try again
+					state = state_skip_nl;
+					continue;
+				}
+
+				if(value.length() < key_value_size)
+					value.append(1, current_char);
+
+				break;
+			}
 		}
-
-		*value++ = '\0';
-
-		if((eol = strchr(value, '\r')))
-			*eol = '\0';
-
-		if((eol = strchr(value, '\n')))
-			*eol = '\0';
-
-		key_values[buffer] = value;
 	}
-
-	//for(it = key_values.begin(); it != key_values.end(); it++)
-		//Util::vlog("> \"%s\"=\"%s\"", it->first.c_str(), it->second.c_str());
 
 	fclose(fp);
 }
