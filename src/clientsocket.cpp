@@ -282,7 +282,7 @@ ClientSocket::ClientSocket(int fd_in,
 			Service service(urlparams["service"]);
 
 			Util::vlog("ClientSocket: live streaming request");
-			(void)LiveStreaming(service, fd, webauth, streaming_parameters, config_map);
+			(void)LiveStreaming(service, fd, streaming_parameters, config_map);
 			Util::vlog("ClientSocket: live streaming ends");
 
 			return;
@@ -299,7 +299,7 @@ ClientSocket::ClientSocket(int fd_in,
 				case(stb_transcoding_broadcom):
 				{
 					Util::vlog("ClientSocket: transcoding service broadcom");
-					(void)LiveTranscodingBroadcom(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+					(void)LiveTranscodingBroadcom(service, fd, stb_traits, streaming_parameters, config_map);
 					break;
 				}
 
@@ -444,7 +444,7 @@ ClientSocket::ClientSocket(int fd_in,
 					if(default_action == action_stream)
 					{
 						Util::vlog("ClientSocket: streaming service");
-						(void)LiveStreaming(service, fd, webauth, streaming_parameters, config_map);
+						(void)LiveStreaming(service, fd, streaming_parameters, config_map);
 					}
 					else
 					{
@@ -455,7 +455,7 @@ ClientSocket::ClientSocket(int fd_in,
 							case(stb_transcoding_broadcom):
 							{
 								Util::vlog("ClientSocket: transcoding service broadcom");
-								(void)LiveTranscodingBroadcom(service, fd, webauth, stb_traits, streaming_parameters, config_map);
+								(void)LiveTranscodingBroadcom(service, fd, stb_traits, streaming_parameters, config_map);
 								break;
 							}
 

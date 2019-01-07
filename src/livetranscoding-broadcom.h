@@ -33,7 +33,7 @@ class LiveTranscodingBroadcom
 	public:
 
 		LiveTranscodingBroadcom(const Service &service, int socketfd,
-				std::string webauth, const stb_traits_t &stb_traits,
+				const stb_traits_t &stb_traits,
 				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map);
 };

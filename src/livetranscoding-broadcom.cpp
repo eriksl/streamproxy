@@ -21,7 +21,7 @@ using std::string;
 #include <time.h>
 
 LiveTranscodingBroadcom::LiveTranscodingBroadcom(const Service &service, int socketfd,
-		string webauth, const stb_traits_t &stb_traits,
+		const stb_traits_t &stb_traits,
 		const StreamingParameters &streaming_parameters,
 		const ConfigMap &config_map)
 {
@@ -49,7 +49,7 @@ LiveTranscodingBroadcom::LiveTranscodingBroadcom(const Service &service, int soc
 	if(!service.is_valid())
 		throw(http_trap("LiveTranscodingBroadcom: invalid service", 404, "Not found, unknown service"));
 
-	WebifRequest webifrequest(service, webauth, config_map);
+	WebifRequest webifrequest(service, config_map);
 
 	for(webifrequest_ok = false; (time(0) - timeout) < 60; )
 	{

@@ -19,7 +19,7 @@ class LiveStreaming
 
 	public:
 
-		LiveStreaming(const Service &service, int socketfd, std::string webauth,
+		LiveStreaming(const Service &service, int socketfd,
 				const StreamingParameters &streaming_parameters,
 				const ConfigMap &config_map);
 };
