@@ -174,7 +174,7 @@ int main(int argc, char *const argv[], char *const arge[])
 		config_map["level"]			= ConfigValue(option_default_level);
 		config_map["bframes"]		= ConfigValue(option_default_bframes);
 
-		if(settings.exists("config.OpenWebif.auth"))
+		if(settings.exists("config.OpenWebif.auth_for_streaming"))
 			if(settings.as_string("config.OpenWebif.auth") == "true")
 				config_map["auth"] = ConfigValue(true);
 			else
