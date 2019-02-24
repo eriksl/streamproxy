@@ -389,7 +389,7 @@ static	int getselectedlang_prio(string stream_language, string audiolang)				// 
 		prio++;
 	}
 
-	return 255;
+	return 256;
 }
 
 
