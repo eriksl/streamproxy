@@ -128,7 +128,7 @@ FileTranscodingBroadcom::FileTranscodingBroadcom(string file, int socket_fd, str
 	socket_queue.append(http_reply.length(), http_reply.c_str());
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("FileTranscodingBroadcom: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("FileTranscodingBroadcom: pid[%s] = 0x%x", it->first.c_str(), it->second);
 
 	encoder_buffer = new char[broadcom_magic_buffer_size];
 
@@ -140,7 +140,7 @@ FileTranscodingBroadcom::FileTranscodingBroadcom(string file, int socket_fd, str
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		Util::vlog("FileTranscodingBroadcom: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("FileTranscodingBroadcom: encoder pid[%s] = 0x%x", it->first.c_str(), it->second);
 
 	if((encoder_fd = encoder.getfd()) < 0)
 		throw(trap("FileTranscodingBroadcom: transcoding: encoder: fd not open"));
