@@ -20,7 +20,7 @@ using std::string;
 
 FileTranscodingBroadcom::FileTranscodingBroadcom(string file, int socket_fd, string,
 		const stb_traits_t &stb_traits, const StreamingParameters &streaming_parameters,
-		const ConfigMap &)
+		const ConfigMap &config_map)
 {
 	PidMap::const_iterator it;
 	PidMap			pids, encoder_pids;
@@ -33,6 +33,7 @@ FileTranscodingBroadcom::FileTranscodingBroadcom(string file, int socket_fd, str
 	off_t			byte_offset = 0;
 	off_t			http_range = 0;
 	int				pct_offset = 0;
+	string			audio_lang;
 	bool			partial = false;
 	encoder_state_t	encoder_state;
 	Queue			socket_queue(1024 * 1024);
@@ -56,7 +57,9 @@ FileTranscodingBroadcom::FileTranscodingBroadcom(string file, int socket_fd, str
 	if(streaming_parameters.count("pct_offset"))
 		pct_offset = Util::string_to_uint(streaming_parameters.at("pct_offset"));
 
-	MpegTS stream(file, time_offset_s > 0);
+	audio_lang = config_map.at("audiolang").string_value;
+	Util::vlog("FileTrancoding: audiolang: %s", audio_lang.c_str());
+	MpegTS stream(file, audio_lang, time_offset_s > 0);
 
 	Util::vlog("FileTrancoding: streaming file: %s", file.c_str());
 	Util::vlog("FileTrancoding: byte_offset: %llu / %llu (%llu %%)", byte_offset, stream.stream_length,

@@ -96,6 +96,36 @@ static void sigchld(int) // prevent Z)ombie processes
 		Util::vlog("streamproxy: sigchld called but no childeren to wait for");
 }
 
+/*
+	if audiolang in streamproxy.conf is xxx or empty
+	then user the enigma autolanguage parameters
+	build a string with / as a delimiter between
+	the autolanguage parameters for later use
+*/
+
+static string getaudiolang(string option_default_audiolang)
+{
+	string				audiolang = "";
+	EnigmaSettings		settings;
+
+	if((option_default_audiolang.compare("xxx")==0) || option_default_audiolang.empty())
+	{
+		if(settings.exists("config.autolanguage.audio_autoselect1"))
+			audiolang += settings.as_string("config.autolanguage.audio_autoselect1") + "/";		// use audioautolang1 of enigma
+		if(settings.exists("config.autolanguage.audio_autoselect2"))
+			audiolang += settings.as_string("config.autolanguage.audio_autoselect2") + "/";		// use audioautolang2 of enigma
+		if(settings.exists("config.autolanguage.audio_autoselect3"))
+			audiolang += settings.as_string("config.autolanguage.audio_autoselect3") + "/";		// use audioautolang3 of enigma
+		if(settings.exists("config.autolanguage.audio_autoselect4"))
+			audiolang += settings.as_string("config.autolanguage.audio_autoselect4") + "/";		// use audioautolang4 of enigma
+	}
+	else
+		audiolang = option_default_audiolang;
+
+	//Util::vlog("streamproxy: audiolang: %s", audiolang.c_str());
+	return(audiolang);
+}
+
 int main(int argc, char *const argv[], char *const arge[])
 {
 	bpo::options_description	options("Use single or multiple pairs of port_number:default_action either with --listen or positional");
@@ -134,6 +164,7 @@ int main(int argc, char *const argv[], char *const arge[])
 		string									option_default_profile;
 		string									option_default_level;
 		string									option_default_bframes;
+		string									option_default_audiolang;
 		string									option_webifport = "80";
 		bool									option_webifauth = false;
 		ConfigMap								config_map;
@@ -152,6 +183,7 @@ int main(int argc, char *const argv[], char *const arge[])
 			("profile,P",		bpo::value<string>(&option_default_profile),					"default transcoding h264 profile")
 			("level,L",			bpo::value<string>(&option_default_level),						"default transcoding h264 level")
 			("bframes,B",		bpo::value<string>(&option_default_bframes),					"default transcoding h264 b frames")
+			("audiolang,A",		bpo::value<string>(&option_default_audiolang),					"default audio language")
 			("webifport,a",		bpo::value<string>(&option_webifport),							"tcp port OpenWebIf is listening on")
 			("webifauth,c",		bpo::bool_switch(&option_webifauth)->implicit_value(true),		"whether OpenWebIf requires basic http authentication");
 
@@ -173,6 +205,7 @@ int main(int argc, char *const argv[], char *const arge[])
 		config_map["profile"]		= ConfigValue(option_default_profile);
 		config_map["level"]			= ConfigValue(option_default_level);
 		config_map["bframes"]		= ConfigValue(option_default_bframes);
+		config_map["audiolang"]		= ConfigValue(getaudiolang(option_default_audiolang));
 
 		if(settings.exists("config.OpenWebif.auth_for_streaming"))
 			if(settings.as_string("config.OpenWebif.auth") == "true")

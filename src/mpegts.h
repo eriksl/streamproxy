@@ -37,6 +37,8 @@ class MpegTS
 		{
 			pmt_desc_language	= 0x0a,
 			pmt_desc_ac3		= 0x6a,
+			pmt_desc_teletext	= 0x56,
+			pmt_desc_subtitle	= 0x59,
 		};
 
 		enum
@@ -194,6 +196,7 @@ class MpegTS
 		int		pcr_pid;
 		int		video_pid;
 		int		audio_pid;
+		std::string	audiolang;
 
 		bool	request_time_seek;
 		bool	is_time_seekable;
@@ -204,7 +207,7 @@ class MpegTS
 		off_t	stream_length;
 
 		MpegTS(int fd, bool request_time_seek);
-		MpegTS(std::string file, bool request_time_seek);
+		MpegTS(std::string file, std::string audiolang, bool request_time_seek);
 		~MpegTS();
 
 		int		get_fd()									const;
