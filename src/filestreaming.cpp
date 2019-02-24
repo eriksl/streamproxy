@@ -48,7 +48,7 @@ FileStreaming::FileStreaming(string file, int socket_fd, string,
 	if(streaming_parameters.count("pct_offset"))
 		pct_offset = Util::string_to_uint(streaming_parameters.at("pct_offset"));
 
-	MpegTS stream(file, time_offset_s > 0);
+	MpegTS stream(file, "", time_offset_s > 0);
 	
 	Util::vlog("FileStreaming: streaming file: %sd", file.c_str());
 	Util::vlog("FileStreaming: byte_offset: %llu / %llu (%llu %%)", byte_offset, stream.stream_length,

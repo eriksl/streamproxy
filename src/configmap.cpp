@@ -14,7 +14,10 @@ ConfigValue::ConfigValue()
 ConfigValue::ConfigValue(string in)
 {
 	string_value = in;
-	int_value = Util::string_to_int(in);
+	if (in.length())
+		int_value = Util::string_to_int(in);
+	else
+		int_value = 0;
 }
 
 ConfigValue::ConfigValue(int in)
