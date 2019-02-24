@@ -178,7 +178,7 @@ bool MpegTS::read_table(int filter_pid, int filter_table)
 			}
 		}
 
-		//Util::vlog("MpegTS::read_table: correct packet with pid: %x, %s", pid, packet.header.pusi ? "start" : "continuation");
+		//Util::vlog("MpegTS::read_table: correct packet with pid: 0x%x, %s", pid, packet.header.pusi ? "start" : "continuation");
 
 		packet_payload_offset = offsetof(ts_packet_t, header.payload);
 
@@ -222,13 +222,13 @@ bool MpegTS::read_table(int filter_pid, int filter_table)
 
 			if(table->reserved != 0x03)
 			{
-				Util::vlog("MpegTS::read_table: reserved != 0x03: %x", table->reserved);
+				Util::vlog("MpegTS::read_table: reserved != 0x03: 0x%x", table->reserved);
 				goto retry;
 			}
 
 			if(table->section_length_unused != 0x00)
 			{
-				Util::vlog("MpegTS::read_table: section length unused != 0x00: %x", table->section_length_unused);
+				Util::vlog("MpegTS::read_table: section length unused != 0x00: 0x%x", table->section_length_unused);
 				goto retry;
 			}
 
@@ -317,7 +317,7 @@ retry:
 
 	if(my_crc.checksum() != their_crc)
 	{
-		Util::vlog("MpegTS::read_table: crc mismatch: my crc: %x, their crc: %x", my_crc.checksum(), their_crc);
+		Util::vlog("MpegTS::read_table: crc mismatch: my crc: 0x%x, their crc: 0x%x", my_crc.checksum(), their_crc);
 		return(false);
 	}
 
@@ -342,7 +342,7 @@ bool MpegTS::read_pat()
 		{
 			program = (entry[current].program_high << 8) | (entry[current].program_low);
 			pid = (entry[current].pmt_pid_high << 8) | (entry[current].pmt_pid_low);
-			//Util::vlog("MpegTS::read_pat > program: %d -> pid %x", program, pid);
+			//Util::vlog("MpegTS::read_pat > program: %d -> pid 0x%x", program, pid);
 
 			if(entry[current].reserved != 0x07)
 			{
@@ -390,22 +390,22 @@ bool MpegTS::read_pmt(int filter_pid)
 
 		if(pmt_header->reserved_1 != 0x07)
 		{
-			Util::vlog("MpegTS::read_pmt > reserved_1: %x", pmt_header->reserved_1);
+			Util::vlog("MpegTS::read_pmt > reserved_1: 0x%x", pmt_header->reserved_1);
 			continue;
 		}
 
-		//Util::vlog("MpegTS::read_pmt: > pcr_pid: %x", pcr_pid);
+		//Util::vlog("MpegTS::read_pmt: > pcr_pid: 0x%x", pcr_pid);
 		//Util::vlog("MpegTS::read_pmt: > program info length: %d", programinfo_length);
 
 		if(pmt_header->unused != 0x00)
 		{
-			Util::vlog("MpegTS::read_pmt: > unused: %x", pmt_header->unused);
+			Util::vlog("MpegTS::read_pmt: > unused: 0x%x", pmt_header->unused);
 			continue;
 		}
 
 		if(pmt_header->reserved_2 != 0x0f)
 		{
-			Util::vlog("MpegTS::read_pmt: > reserved_2: %x", pmt_header->reserved_2);
+			Util::vlog("MpegTS::read_pmt: > reserved_2: 0x%x", pmt_header->reserved_2);
 			continue;
 		}
 
@@ -421,21 +421,21 @@ bool MpegTS::read_pmt(int filter_pid)
 
 			if(es_entry->reserved_1 != 0x07)
 			{
-				Util::vlog("MpegTS::read_pmt: reserved 1: %x", es_entry->reserved_1);
+				Util::vlog("MpegTS::read_pmt: reserved 1: 0x%x", es_entry->reserved_1);
 				goto next_descriptor_entry;
 			}
 
-			//Util::vlog("MpegTS::read_pmt: >> pid: %x", es_pid);
+			//Util::vlog("MpegTS::read_pmt: >> pid: 0x%x", es_pid);
 
 			if(es_entry->reserved_2 != 0x0f)
 			{
-				Util::vlog("MpegTS::read_pmt: reserved 2: %x", es_entry->reserved_2);
+				Util::vlog("MpegTS::read_pmt: reserved 2: 0x%x", es_entry->reserved_2);
 				goto next_descriptor_entry;
 			}
 
 			if(es_entry->unused != 0x00)
 			{
-				Util::vlog("MpegTS::read_pmt: unused: %x", es_entry->unused);
+				Util::vlog("MpegTS::read_pmt: unused: 0x%x", es_entry->unused);
 				goto next_descriptor_entry;
 			}
 
@@ -465,7 +465,7 @@ bool MpegTS::read_pmt(int filter_pid)
 						ds_entry = (const pmt_ds_entry_t *)&es_data[ds_data_skip + ds_data_offset];
 
 						//Util::vlog("MpegTS::read_pmt: >>> offset: %d", ds_data_offset);
-						//Util::vlog("MpegTS::read_pmt: >>> descriptor id: %x", ds_entry->id);
+						//Util::vlog("MpegTS::read_pmt: >>> descriptor id: 0x%x", ds_entry->id);
 						//Util::vlog("MpegTS::read_pmt: >>> length: %d", ds_entry->length);
 
 						switch(ds_entry->id)

@@ -75,13 +75,13 @@ LiveTranscodingBroadcom::LiveTranscodingBroadcom(const Service &service, int soc
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("LiveTranscodingBroadcom: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingBroadcom: pid[%s] = 0x%x", it->first.c_str(), it->second);
 
 	EncoderBroadcom encoder(pids, stb_traits, streaming_parameters);
 	encoder_pids = encoder.getpids();
 
 	for(it = encoder_pids.begin(); it != encoder_pids.end(); it++)
-		Util::vlog("LiveTranscodingBroadcom: encoder pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveTranscodingBroadcom: encoder pid[%s] = 0x%x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, encoder_pids);
 

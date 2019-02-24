@@ -66,7 +66,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd,
 	demuxer_id = webifrequest.get_demuxer_id();
 
 	for(it = pids.begin(); it != pids.end(); it++)
-		Util::vlog("LiveStreaming: pid[%s] = %x", it->first.c_str(), it->second);
+		Util::vlog("LiveStreaming: pid[%s] = 0x%x", it->first.c_str(), it->second);
 
 	Demuxer demuxer(demuxer_id, pids);
 
