@@ -514,7 +514,7 @@ bool MpegTS::read_pmt(int filter_pid)
 						{
 								ds_a = (const pmt_ds_a_t *)&ds_entry->data;
 								//Util::vlog("MpegTS::read_pmt: >>>> lang: %c%c%c [%d]", ds_a->lang[0],
-								//		 ds_a->lang[1], ds_a->lang[2], ds_a->code);
+										// ds_a->lang[1], ds_a->lang[2], ds_a->code);
 
 								stream_language.assign((const char *)&ds_a->lang, offsetof(pmt_ds_a_t, code));
 
@@ -549,8 +549,8 @@ bool MpegTS::read_pmt(int filter_pid)
 
 					if (private_stream_is_audio && !(boost::iequals(stream_language, "nar")) )
 					{
-                        if((audiolang_prio = getselectedlang_prio(stream_language, audiolang)) > 0)	// if audiolang found with prio 1..4
-                        {
+						if((audiolang_prio = getselectedlang_prio(stream_language, audiolang)) > 0)	// if audiolang found with prio 1..4
+						{
 							if (audiolang_prio < audiolang_prio_act)								// better prio found
 								audiolangac3_pid = audiolang_pid = -1;
 							if (audiolang_prio <= audiolang_prio_act)								// better prio found
@@ -601,12 +601,12 @@ next_descriptor_entry:
 		if (audiolang_pid != -1)
 		{
 			audio_pid = audiolang_pid;              // language has preference
-			Util::vlog("MpegTS::=> choose audiolang [%s] with prio %d, pid: %d", audiolang_choose.c_str(), audiolang_prio_act, audio_pid); 
+			Util::vlog("MpegTS::=> choose audiolang [%s] with prio %d, pid: %d", audiolang_choose.c_str(), audiolang_prio_act, audio_pid);
 		}
 		else
 		{
 			if (audio_pid != -1)
-				Util::vlog("MpegTS::=> no audiolang [%s] found, use audiolang [%s]: pid: %d", audiolang.c_str(), audiolang_fallback.c_str(), audio_pid); 
+				Util::vlog("MpegTS::=> no audiolang [%s] found, use audiolang [%s]: pid: %d", audiolang.c_str(), audiolang_fallback.c_str(), audio_pid);
 		}
 
 		return(true);

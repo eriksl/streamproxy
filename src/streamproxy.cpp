@@ -99,8 +99,8 @@ static void sigchld(int) // prevent Z)ombie processes
 
 static string getaudiolang(string option_default_audiolang)										// if audiolang in streamproxy.conf is xxx oder empty
 {	string				audiolang = "";															// then user the enigma autolanguage parameters
-	EnigmaSettings		settings;																// build a string with / as a delimiter between	
-																								// the autolanguage parameters for later use//
+	EnigmaSettings		settings;																// build a string with / as a delimiter between
+																								// the autolanguage parameters for later use
 
 	if((option_default_audiolang.compare("xxx")==0) || option_default_audiolang.empty())
 	{
