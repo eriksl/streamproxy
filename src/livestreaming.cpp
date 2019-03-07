@@ -18,7 +18,7 @@ using std::string;
 #include <poll.h>
 #include <time.h>
 
-LiveStreaming::LiveStreaming(const Service &service, int socketfd,
+LiveStreaming::LiveStreaming(const Service &service, int socketfd, string webauth,
 		const StreamingParameters &, const ConfigMap &config_map)
 {
 	PidMap::const_iterator it;
@@ -40,7 +40,7 @@ LiveStreaming::LiveStreaming(const Service &service, int socketfd,
 	if(!service.is_valid())
 		throw(http_trap("LiveStreaming: invalid service", 404, "Not found, service not found"));
 
-	WebifRequest webifrequest(service, config_map);
+	WebifRequest webifrequest(service, webauth, config_map);
 
 	for(webifrequest_ok = false; (time(0) - timeout) < 60; )
 	{
