@@ -583,13 +583,13 @@ bool MpegTS::read_pmt(int filter_pid)
 								audio_pid = audioac3_pid = es_pid;							// first AC3 Audio
 								audiolang_fallback = stream_language;
 							}
-							else
-								if (audio_pid == -1)
-								{
-									audio_pid = es_pid;										// First Audio
-									audiolang_fallback = stream_language;
-								}
 						}
+						else
+							if (audio_pid == -1)
+							{
+								audio_pid = es_pid;											// First Audio
+								audiolang_fallback = stream_language;
+							}
 					}
 				}
 			}
