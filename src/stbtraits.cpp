@@ -1062,6 +1062,22 @@ const stbs_traits_t stbs_traits =
 		},
 		{
 			.manufacturer		= "VU+",
+			.model				= "Duo4kSE",
+			.chipset			= "bcm7444s",
+			.transcoding_type	= stb_transcoding_broadcom,
+			.quirks				= (stb_quirks_t)0,
+			.encoders			= 2,
+			.num_id				= 2,
+			.id					=
+			{
+				{ "/proc/stb/info/chipset", "7444s" },
+				{ "/proc/stb/info/vumodel", "duo4kse" },
+			},
+			.num_features		= 8,
+			.features			= features_vuarm,
+		},
+		{
+			.manufacturer		= "VU+",
 			.model				= "Duo4k",
 			.chipset			= "bcm7278",
 			.transcoding_type	= stb_transcoding_broadcom,
