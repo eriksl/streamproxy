@@ -1125,6 +1125,22 @@ const stbs_traits_t stbs_traits =
 			.features			= features_gb4k,
 		},
 		{
+			.manufacturer		= "GigaBlue",
+			.model				= "Quad 4k PRO",
+			.chipset			= "bcm7252s",
+			.transcoding_type	= stb_transcoding_broadcom,
+			.quirks				= (stb_quirks_t)0,
+			.encoders			= 1,
+			.num_id				= 2,
+			.id					=
+			{
+				{ "/proc/stb/info/chipset", "bcm7252s" },
+				{ "/proc/stb/info/model", "gbquad4kpro" },
+			},
+			.num_features		= 8,
+			.features			= features_gb4k,
+		},
+		{
 			.manufacturer		= "XSarius",
 			.model				= "Galaxy4k",
 			.chipset			= "bcm7252s",
