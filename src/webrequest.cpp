@@ -12,7 +12,11 @@ using std::string;
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef __GLIBC__
 #include <sys/unistd.h>
+#else
+#include <unistd.h>
+#endif
 #include <string.h>
 
 WebRequest::WebRequest(const ConfigMap &config_map_in, const HeaderMap &headers_in,
