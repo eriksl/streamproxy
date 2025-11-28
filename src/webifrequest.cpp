@@ -35,7 +35,8 @@ static const struct addrinfo gai_webif_hints =
 	.ai_next        = 0,
 };
 
-WebifRequest::WebifRequest(const Service &service_in, const ConfigMap &config_map_in)
+WebifRequest::WebifRequest(const Service &service_in,
+			string webauth, const ConfigMap &config_map_in)
 	:
 		service(service_in), config_map(config_map_in)
 {
@@ -74,7 +75,12 @@ WebifRequest::WebifRequest(const Service &service_in, const ConfigMap &config_ma
 
 	freeaddrinfo(gai_webif_address);
 
-	request = string("GET /web/stream?StreamService=") + service.service_string() + " HTTP/1.0\r\n\r\n";
+	request = string("GET /web/stream?StreamService=") + service.service_string() + " HTTP/1.0\r\n";
+
+	if(webauth.length())
+		request += "Authorization: Basic " + webauth + "\r\n";
+
+	request += "\r\n";
 
 	Util::vlog("WebifRequest: send request to webif: \"%s\"", request.c_str());
 

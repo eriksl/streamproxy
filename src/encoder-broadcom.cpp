@@ -30,7 +30,7 @@ EncoderBroadcom::EncoderBroadcom(const PidMap &pids_in,
 	const stb_feature_t		*feature = 0;
 	string					value;
 	int						int_value;
-	int						pmt = -1, video = -1, audio = -1;
+	int						pmt = -1, video = -1, audio = -1, default_audio_pid = -1;
 	int						attempt;
 	int						ioctl_set_pmtpid;
 	int						ioctl_set_vpid;
@@ -44,6 +44,9 @@ EncoderBroadcom::EncoderBroadcom(const PidMap &pids_in,
 
 	for(PidMap::const_iterator it(pids_in.begin()); it != pids_in.end(); it++)
 	{
+		if (it->first == "default_audio_pid")
+			default_audio_pid = it->second;
+
 		if((it->first != "pat") && (it->first != "pmt") &&
 				(it->first != "audio") && (it->first != "video"))
 			continue;
@@ -70,6 +73,9 @@ EncoderBroadcom::EncoderBroadcom(const PidMap &pids_in,
 
 		pids[it->first] = it->second;
 	}
+
+	if (default_audio_pid != -1)
+		pids["audio"] = audio = default_audio_pid;
 
 	if((pmt == -1) || (video == -1) || (audio == -1))
 		throw(trap("EncoderBroadcom: missing pmt, video or audio pid"));

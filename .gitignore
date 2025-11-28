@@ -23,3 +23,6 @@ configure
 depcomp
 install-sh
 missing
+streamproxy.bb
+build
+

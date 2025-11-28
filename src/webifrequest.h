@@ -26,7 +26,8 @@ class WebifRequest
 
 	public:
 
-		WebifRequest(const Service &service, const ConfigMap &config_map);
+		WebifRequest(const Service &service, std::string webauth,
+					const ConfigMap &config_map);
 		~WebifRequest();
 
 		void	poll();
